@@ -134,6 +134,15 @@ namespace Lykke.Job.Messages.Services.Email.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cash out request processed.
+        /// </summary>
+        internal static string GenerateSwiftCashoutProcessed_Subject {
+            get {
+                return ResourceManager.GetString("GenerateSwiftCashoutProcessed_Subject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Lykke coins.
         /// </summary>
         internal static string LykkeCoins_name {

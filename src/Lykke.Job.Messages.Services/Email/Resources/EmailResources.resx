@@ -141,6 +141,9 @@
   <data name="FailedTransaction_Subject" xml:space="preserve">
     <value>[Lykke] Failed transaction</value>
   </data>
+  <data name="GenerateSwiftCashoutProcessed_Subject" xml:space="preserve">
+    <value>Cash out request processed</value>
+  </data>
   <data name="LykkeCoins_name" xml:space="preserve">
     <value>Lykke coins</value>
   </data>
