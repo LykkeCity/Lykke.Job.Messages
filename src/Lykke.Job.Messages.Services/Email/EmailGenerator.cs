@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -6,14 +7,14 @@ using System.Threading.Tasks;
 using Common;
 using Lykke.Job.Messages.Core;
 using Lykke.Job.Messages.Core.Domain.Clients;
-using Lykke.Job.Messages.Core.Domain.Email;
-using Lykke.Job.Messages.Core.Domain.Email.MessagesData;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Job.Messages.Core.Services.SwiftCredentials;
 using Lykke.Job.Messages.Core.Services.Templates;
 using Lykke.Job.Messages.Services.Email.Resources;
-using Lykke.Job.Messages.Services.Email.TemplateModels;
+using Lykke.Messages.Email.MessageData;
 using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.EmailFormatter.TemplateModels;
+using Lykke.Service.EmailSender;
 
 namespace Lykke.Job.Messages.Services.Email
 {
@@ -28,7 +29,7 @@ namespace Lykke.Job.Messages.Services.Email
         private readonly ISwiftCredentialsService _swiftCredentialsService;
 
         public EmailGenerator(
-            ICachedAssetsService assetsService, IPersonalDataRepository personalDataRepository, 
+            ICachedAssetsService assetsService, IPersonalDataRepository personalDataRepository,
             AppSettings.EmailSettings emailSettings, AppSettings.BlockchainSettings blockchainSettings, AppSettings.WalletApiSettings walletApiSettings,
             IRemoteTemplateGenerator templateGenerator, ISwiftCredentialsService swiftCredentialsService)
         {
@@ -41,37 +42,27 @@ namespace Lykke.Job.Messages.Services.Email
             _swiftCredentialsService = swiftCredentialsService;
         }
 
-        public async Task<EmailMessage> GenerateWelcomeMsg(RegistrationData kycOkData)
+        public Task<EmailMessage> GenerateWelcomeMsg(string partnerId, RegistrationMessageData kycOkData)
         {
             var templateVm = new BaseTemplate
             {
                 Year = kycOkData.Year
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("WelcomeTemplate", templateVm),
-                Subject = EmailResources.Welcome_Subject,
-                IsHtml = true
-            };
+            return _templateGenerator.GenerateAsync(partnerId, "WelcomeTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateWelcomeFxMsg(KycOkData kycOkData)
+        public Task<EmailMessage> GenerateWelcomeFxMsg(string partnerId, KycOkData kycOkData)
         {
             var templateVm = new BaseTemplate
             {
                 Year = kycOkData.Year
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("WelcomeFxTemplate", templateVm),
-                Subject = EmailResources.WelcomeFx_Subject,
-                IsHtml = true
-            };
+            return _templateGenerator.GenerateAsync(partnerId, "WelcomeFxTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateConfirmEmailMsg(EmailComfirmationData registrationData)
+        public Task<EmailMessage> GenerateConfirmEmailMsg(string partnerId, EmailComfirmationData registrationData)
         {
             var templateVm = new EmailVerificationTemplate
             {
@@ -79,18 +70,13 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = registrationData.Year
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("EmailConfirmation", templateVm),
-                Subject = EmailResources.EmailConfirmation_Subject,
-                IsHtml = true
-            };
+            return _templateGenerator.GenerateAsync(partnerId, "EmailConfirmation", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateCashInMsg(CashInData cashInData)
+        public async Task<EmailMessage> GenerateCashInMsg(string partnerId, CashInData cashInData)
         {
             if (cashInData.AssetId == null)
-                throw new ArgumentNullException("AssetId");
+                throw new ArgumentNullException(nameof(cashInData.AssetId));
 
             var asset = await _assetsService.TryGetAssetAsync(cashInData.AssetId);
             var templateVm = new CashInTemplate
@@ -100,17 +86,12 @@ namespace Lykke.Job.Messages.Services.Email
                 AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.Name
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("CashInTemplate", templateVm),
-                Subject = string.Format(EmailResources.CashIn_Subject, templateVm.AssetName),
-                IsHtml = true
-            };
+            return await _templateGenerator.GenerateAsync(partnerId, "CashInTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateNoRefundDepositDoneMsg(NoRefundDepositDoneData messageData)
+        public async Task<EmailMessage> GenerateNoRefundDepositDoneMsg(string partnerId, NoRefundDepositDoneData messageData)
         {
-            var asset = await FindAssetByBlockchainAssetIdAsync(messageData.AssetBcnId);
+            var asset = await FindAssetByBlockchainAssetIdAsync(partnerId, messageData.AssetBcnId);
             var templateVm = new BtcDepositDoneTempate
             {
                 AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.Name,
@@ -118,17 +99,10 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = DateTime.UtcNow.Year
             };
 
-            var emailMessage = new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("NoRefundDepositDoneTemplate", templateVm),
-                Subject = string.Format(EmailResources.Deposit_no_refund_done_subject, templateVm.AssetName),
-                IsHtml = true
-            };
-
-            return emailMessage;
+            return await _templateGenerator.GenerateAsync(partnerId, "NoRefundDepositDoneTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateNoRefundOCashOutMsg(NoRefundOCashOutData messageData)
+        public Task<EmailMessage> GenerateNoRefundOCashOutMsg(string partnerId, NoRefundOCashOutData messageData)
         {
             var templateVm = new NoRefundCashOutTemplate
             {
@@ -138,17 +112,10 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = DateTime.UtcNow.Year
             };
 
-            var emailMessage = new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("NoRefundOCashOutTemplate", templateVm),
-                Subject = EmailResources.Cash_out_no_refund_subject,
-                IsHtml = true
-            };
-
-            return emailMessage;
+            return _templateGenerator.GenerateAsync(partnerId, "NoRefundOCashOutTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateBankCashInMsg(BankCashInData messageData)
+        public async Task<EmailMessage> GenerateBankCashInMsg(string partnerId, BankCashInData messageData)
         {
             var personalData = await _personalDataRepository.GetAsync(messageData.ClientId);
             var asset = await _assetsService.TryGetAssetAsync(messageData.AssetId);
@@ -169,26 +136,10 @@ namespace Lykke.Job.Messages.Services.Email
                 CompanyAddress = swiftCredentials.CompanyAddress
             };
 
-            var msg = new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("BankCashInTemplate", templateVm),
-                Subject = EmailResources.BankCashIn_Subject,
-                IsHtml = true
-            };
-
-            //var stream = new MemoryStream();
-            //await _srvPdfGenerator.PrintInvoice(stream, messageData.ClientId, messageData.Amount, messageData.AssetId);
-
-            //msg.Attachments = new[]
-            //{
-            //    new EmailAttachment {ContentType = MediaTypeNames.Application.Pdf,
-            //        FileName = "invoice.pdf", Stream = stream}
-            //};
-
-            return msg;
+            return await _templateGenerator.GenerateAsync(partnerId, "BankCashInTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateCashInRefundMsg(CashInRefundData refundData)
+        public Task<EmailMessage> GenerateCashInRefundMsg(string partnerId, CashInRefundData refundData)
         {
             var templateVm = new BtcDepositDoneTempate
             {
@@ -198,19 +149,10 @@ namespace Lykke.Job.Messages.Services.Email
                 ValidDays = refundData.ValidDays > 0 ? refundData.ValidDays : _emailSettings.RefundTimeoutInDays
             };
 
-            var emailMessage = new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("BtcDepositDoneTemplate", templateVm),
-                Subject = EmailResources.Deposit_done_Subject,
-                IsHtml = true
-            };
-
-            AddRefundAttachment(emailMessage, refundData.RefundTransaction);
-
-            return emailMessage;
+            return _templateGenerator.GenerateAsync(partnerId, "BtcDepositDoneTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateSwapRefundMsg(SwapRefundData refundData)
+        public async Task<EmailMessage> GenerateSwapRefundMsg(string partnerId, SwapRefundData refundData)
         {
             var templateVm = new SwapDoneTemplate
             {
@@ -219,19 +161,12 @@ namespace Lykke.Job.Messages.Services.Email
                 ValidDays = refundData.ValidDays > 0 ? refundData.ValidDays : _emailSettings.RefundTimeoutInDays
             };
 
-            var emailMessage = new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("SwapDoneTemplate", templateVm),
-                Subject = EmailResources.Swap_done_Subject,
-                IsHtml = true
-            };
-
+            var emailMessage = await _templateGenerator.GenerateAsync(partnerId, "SwapDoneTemplate", templateVm);
             AddRefundAttachment(emailMessage, refundData.RefundTransaction);
-
             return emailMessage;
         }
 
-        public async Task<EmailMessage> GenerateOrdinaryCashOutRefundMsg(OrdinaryCashOutRefundData refundData)
+        public async Task<EmailMessage> GenerateOrdinaryCashOutRefundMsg(string partnerId, OrdinaryCashOutRefundData refundData)
         {
             var templateVm = new OrdinaryCashOutDoneTemplate
             {
@@ -242,19 +177,12 @@ namespace Lykke.Job.Messages.Services.Email
                 ValidDays = refundData.ValidDays > 0 ? refundData.ValidDays : _emailSettings.RefundTimeoutInDays
             };
 
-            var emailMessage = new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("OCashOutDoneTemplate", templateVm),
-                Subject = EmailResources.OrdinaryCashOut_done_Subject,
-                IsHtml = true
-            };
-
+            var emailMessage = await _templateGenerator.GenerateAsync(partnerId, "OCashOutDoneTemplate", templateVm);
             AddRefundAttachment(emailMessage, refundData.RefundTransaction);
-
             return emailMessage;
         }
 
-        public async Task<EmailMessage> GenerateTransferCompletedMsg(TransferCompletedData transferCompletedData)
+        public Task<EmailMessage> GenerateTransferCompletedMsg(string partnerId, TransferCompletedData transferCompletedData)
         {
             const int maxAccuracy = 8;
 
@@ -269,17 +197,10 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = DateTime.UtcNow.Year
             };
 
-            var emailMessage = new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("TransferCompleteTemplate", templateVm),
-                Subject = EmailResources.TransferCompleted_Subject,
-                IsHtml = true
-            };
-
-            return emailMessage;
+            return _templateGenerator.GenerateAsync(partnerId, "TransferCompleteTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateDirectTransferCompletedMsg(DirectTransferCompletedData transferCompletedData)
+        public Task<EmailMessage> GenerateDirectTransferCompletedMsg(string partnerId, DirectTransferCompletedData transferCompletedData)
         {
             var templateVm = new DirectTransferTemplate
             {
@@ -290,17 +211,10 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = DateTime.UtcNow.Year
             };
 
-            var emailMessage = new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("DirectTransferCompleteTemplate", templateVm),
-                Subject = EmailResources.TransferCompleted_Subject,
-                IsHtml = true
-            };
-
-            return emailMessage;
+            return _templateGenerator.GenerateAsync(partnerId, "DirectTransferCompleteTemplate", templateVm);
         }
-        
-        public async Task<EmailMessage> GenerateMyLykkeCashInMsg(MyLykkeCashInData messageData)
+
+        public Task<EmailMessage> GenerateMyLykkeCashInMsg(string partnerId, MyLykkeCashInData messageData)
         {
             var templateVm = new MyLykkeCashInTemplate
             {
@@ -312,29 +226,17 @@ namespace Lykke.Job.Messages.Services.Email
                 AssetId = messageData.AssetId
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("MyLykkeCashInTemplate", templateVm),
-                Subject = string.Format(EmailResources.MyLykkeCashIn_Subject),
-                IsHtml = true
-            };
+            return _templateGenerator.GenerateAsync(partnerId, "MyLykkeCashInTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateRemindPasswordMsg(RemindPasswordData messageData)
+        public Task<EmailMessage> GenerateRemindPasswordMsg(string partnerId, RemindPasswordData messageData)
         {
             var templateVm = new RemindPasswordTemplate(messageData.PasswordHint, DateTime.UtcNow.Year);
 
-            var emailMessage = new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("RemindPasswordTemplate", templateVm),
-                Subject = EmailResources.RemindPassword_Subject,
-                IsHtml = true
-            };
-
-            return emailMessage;
+            return _templateGenerator.GenerateAsync(partnerId, "RemindPasswordTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GeneratPrivateWalletAddressMsg(PrivateWalletAddressData messageData)
+        public Task<EmailMessage> GeneratPrivateWalletAddressMsg(string partnerId, PrivateWalletAddressData messageData)
         {
             var templateVm = new PrivateWalletAddressTemplate
             {
@@ -343,15 +245,10 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = DateTime.UtcNow.Year.ToString()
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("PrivateWalletAddressTemplate", templateVm),
-                Subject = EmailResources.PrivateWalletAddress_Subject,
-                IsHtml = true
-            };
+            return _templateGenerator.GenerateAsync(partnerId, "PrivateWalletAddressTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GeneratSolarCashOutMsg(SolarCashOutData messageData)
+        public Task<EmailMessage> GeneratSolarCashOutMsg(string partnerId, SolarCashOutData messageData)
         {
             var templateVm = new SolarCashOutTemplate
             {
@@ -360,15 +257,10 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = DateTime.UtcNow.Year
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("SolarCashOutTemplate", templateVm),
-                Subject = EmailResources.SolarCashOut_Subject,
-                IsHtml = true
-            };
+            return _templateGenerator.GenerateAsync(partnerId, "SolarCashOutTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GeneratSolarAddressMsg(SolarCoinAddressData messageData)
+        public Task<EmailMessage> GeneratSolarAddressMsg(string partnerId, SolarCoinAddressData messageData)
         {
             var templateVm = new SolarCoinAddressTemplate
             {
@@ -376,32 +268,33 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = DateTime.UtcNow.Year
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("SolarCoinAddressTemplate", templateVm),
-                Subject = EmailResources.SolarCoinAddress_Subject,
-                IsHtml = true
-            };
+            return _templateGenerator.GenerateAsync(partnerId, "SolarCoinAddressTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateDeclinedDocumentsMsg(DeclinedDocumentsData messageData)
+        public Task<EmailMessage> GenerateDeclinedDocumentsMsg(string partnerId, DeclinedDocumentsData messageData)
         {
             var templateVm = new DeclinedDocumentsTemplate
             {
                 FullName = messageData.FullName,
-                Documents = messageData.Documents,
+                Documents = messageData.Documents?.Select(x => new KycDocument
+                {
+                    ClientId = x.ClientId,
+                    DateTime = x.DateTime,
+                    DocumentId = x.DocumentId,
+                    DocumentName = x.DocumentName,
+                    FileName = x.FileName,
+                    KycComment = x.KycComment,
+                    Mime = x.Mime,
+                    State = x.State,
+                    Type = x.Type
+                }).ToArray(),
                 Year = DateTime.UtcNow.Year
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("DeclinedDocumentsTemplate", templateVm),
-                Subject = EmailResources.DeclinedDocuments_Subject,
-                IsHtml = true
-            };
+            return _templateGenerator.GenerateAsync(partnerId, "DeclinedDocumentsTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateCashoutUnlockMsg(CashoutUnlockData messageData)
+        public Task<EmailMessage> GenerateCashoutUnlockMsg(string partnerId, CashoutUnlockData messageData)
         {
             var templateVm = new CashoutUnlockTemplate
             {
@@ -409,15 +302,10 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = DateTime.UtcNow.Year
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("CashoutUnlockTemplate", templateVm),
-                Subject = EmailResources.WithdrawalRequest_Subject,
-                IsHtml = true
-            };
+            return _templateGenerator.GenerateAsync(partnerId, "CashoutUnlockTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateSwiftConfirmedMsg(SwiftConfirmedData data)
+        public Task<EmailMessage> GenerateSwiftConfirmedMsg(string partnerId, SwiftConfirmedData data)
         {
             var templateVm = new SwiftConfirmedTemplate
             {
@@ -434,15 +322,10 @@ namespace Lykke.Job.Messages.Services.Email
                     : string.Empty
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("SwiftConfirmedTemplate", templateVm),
-                Subject = EmailResources.SwiftConfirmed_subject,
-                IsHtml = true
-            };
+            return _templateGenerator.GenerateAsync(partnerId, "SwiftConfirmedTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateSwiftCashOutRequestMsg(SwiftCashOutRequestData messageData)
+        public async Task<EmailMessage> GenerateSwiftCashOutRequestMsg(string partnerId, SwiftCashOutRequestData messageData)
         {
             var personalData = await _personalDataRepository.GetAsync(messageData.ClientId);
 
@@ -461,25 +344,26 @@ namespace Lykke.Job.Messages.Services.Email
                 DeclineUrl = $"{_walletApiSettings.Host}/api/CashOutSwiftRequest/{messageData.CashOutRequestId}?result=false&clientid={messageData.ClientId}"
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("SwiftCashOutRequest", templateVm),
-                Subject = EmailResources.SwiftCashOutRequest_Subject,
-                IsHtml = true
-            };
+            return await _templateGenerator.GenerateAsync(partnerId, "SwiftCashOutRequest", templateVm);
         }
 
         private void AddRefundAttachment(EmailMessage emailMessage, string refundData)
         {
-            emailMessage.Attachments = new[]
+            var newAttachments = null != emailMessage.Attachments
+                ? new List<EmailAttachment>(emailMessage.Attachments)
+                : new List<EmailAttachment>(1);
+
+            newAttachments.Add(new EmailAttachment
             {
-                new EmailAttachment {ContentType = MediaTypeNames.Text.Plain,
-                    FileName = "refund.txt", Stream = new MemoryStream(Encoding.UTF8.GetBytes(refundData))
-                }
-            };
+                MimeType = MediaTypeNames.Text.Plain,
+                FileName = "refund.txt",
+                ContentInBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(refundData))
+            });
+
+            emailMessage.Attachments = newAttachments.ToArray();
         }
 
-        public async Task<EmailMessage> GenerateUserRegisteredMsg(IPersonalData personalData)
+        public Task<EmailMessage> GenerateUserRegisteredMsg(string partnerId, IPersonalData personalData)
         {
             var templateVm = new UserRegisteredTemplate
             {
@@ -491,36 +375,25 @@ namespace Lykke.Job.Messages.Services.Email
                 UserId = personalData.Id
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("UserRegisteredTemplate", templateVm),
-                Subject = EmailResources.UserRegistered_Subject,
-                IsHtml = true
-            };
+            return _templateGenerator.GenerateAsync(partnerId, "UserRegisteredTemplate", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateRejectedEmailMsg()
+        public Task<EmailMessage> GenerateRejectedEmailMsg(string partnerId)
         {
             var templateVm = new BaseTemplate
             {
                 Year = DateTime.UtcNow.Year.ToString()
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("RejectedTemplate", templateVm),
-                Subject = EmailResources.Rejected_Subject,
-                IsHtml = true
-            };
+            return _templateGenerator.GenerateAsync(partnerId, "RejectedTemplate", templateVm);
         }
 
-        public EmailMessage GenerateFailedTransactionMsg(string transactionId, string[] clientIds)
+        public EmailMessage GenerateFailedTransactionMsg(string partnerId, string transactionId, string[] clientIds)
         {
             return new EmailMessage
             {
-                Body = GetFailedTransactionBody(transactionId, clientIds),
-                Subject = EmailResources.FailedTransaction_Subject,
-                IsHtml = false
+                TextBody = GetFailedTransactionBody(transactionId, clientIds),
+                Subject = EmailResources.FailedTransaction_Subject
             };
         }
 
@@ -538,7 +411,7 @@ namespace Lykke.Job.Messages.Services.Email
             return sb.ToString();
         }
 
-        public async Task<EmailMessage> GenerateRequestForDocumentMsg(RequestForDocumentData messageData)
+        public async Task<EmailMessage> GenerateRequestForDocumentMsg(string partnerId, RequestForDocumentData messageData)
         {
             var personalData = await _personalDataRepository.GetAsync(messageData.ClientId);
 
@@ -552,15 +425,10 @@ namespace Lykke.Job.Messages.Services.Email
                 AssetId = messageData.AssetId
             };
 
-            return new EmailMessage
-            {
-                Body = await _templateGenerator.GenerateAsync("RequestForDocument", templateVm),
-                Subject = EmailResources.RequestForDocument_Subject,
-                IsHtml = true
-            };
+            return await _templateGenerator.GenerateAsync(partnerId, "RequestForDocument", templateVm);
         }
 
-        public async Task<IAsset> FindAssetByBlockchainAssetIdAsync(string blockchainAssetId)
+        public async Task<IAsset> FindAssetByBlockchainAssetIdAsync(string partnerId, string blockchainAssetId)
         {
             if (blockchainAssetId == null)
             {

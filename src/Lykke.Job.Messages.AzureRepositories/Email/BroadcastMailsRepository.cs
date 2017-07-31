@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using AzureStorage;
 using Lykke.Job.Messages.Core.Domain.Email;
+using Lykke.Messages.Email;
 
 namespace Lykke.Job.Messages.AzureRepositories.Email
 {

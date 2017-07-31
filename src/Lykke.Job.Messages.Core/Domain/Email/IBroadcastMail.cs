@@ -1,4 +1,6 @@
-﻿namespace Lykke.Job.Messages.Core.Domain.Email
+﻿using Lykke.Messages.Email;
+
+namespace Lykke.Job.Messages.Core.Domain.Email
 {
     public interface IBroadcastMail
     {
