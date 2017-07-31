@@ -57,15 +57,9 @@ namespace Lykke.Job.Messages.Core
 
         public class EmailSettings
         {
-            public string EmailTemplatesHost { get; set; }
+            public string EmailFormatterUrl { get; set; }
+            public string EmailPartnerRouterUrl { get; set; }
             public int RefundTimeoutInDays { get; set; }
-            public string SmtpHost { get; set; }
-            public int SmtpPort { get; set; }
-            public string SmtpLogin { get; set; }
-            public string SmtpPwd { get; set; }
-            public string EmailFromDisplayName { get; set; }
-            public string EmailFrom { get; set; }
-            public bool UseMocks { get; set; }
         }
 
         public class SmsSettings
