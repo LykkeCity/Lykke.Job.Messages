@@ -7,7 +7,6 @@ namespace Lykke.Job.Messages.Tests
         [Fact]
         public void Test1()
         {
-            var Welcome
         }
     }
 }
