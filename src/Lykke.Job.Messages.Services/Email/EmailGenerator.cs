@@ -446,6 +446,10 @@ namespace Lykke.Job.Messages.Services.Email
         {
             var personalData = await _personalDataRepository.GetAsync(messageData.ClientId);
 
+            var apiHost = _walletApiSettings.Host.Trim().ToLower();
+            if (apiHost.Last() != '/')
+                apiHost += "/";
+
             var templateVm = new SwiftCashOutRequestTemplate
             {
                 Amount = messageData.Amount,
@@ -457,8 +461,8 @@ namespace Lykke.Job.Messages.Services.Email
                 BankName = messageData.BankName,
                 AccHolderAddress = messageData.AccHolderAddress,
                 FullName = personalData.FullName,
-                ConfirmUrl = $"{_walletApiSettings.Host}/api/CashOutSwiftRequest/{messageData.CashOutRequestId}?result=true&clientid={messageData.ClientId}",
-                DeclineUrl = $"{_walletApiSettings.Host}/api/CashOutSwiftRequest/{messageData.CashOutRequestId}?result=false&clientid={messageData.ClientId}"
+                ConfirmUrl = $"{apiHost}api/CashOutSwiftRequest/{messageData.CashOutRequestId}?result=true&clientid={messageData.ClientId}",
+                DeclineUrl = $"{apiHost}api/CashOutSwiftRequest/{messageData.CashOutRequestId}?result=false&clientid={messageData.ClientId}"
             };
 
             return new EmailMessage

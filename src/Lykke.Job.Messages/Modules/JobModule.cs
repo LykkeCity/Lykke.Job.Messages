@@ -209,7 +209,12 @@ namespace Lykke.Job.Messages.Modules
             }
             else
             {
+                builder.RegisterInstance(_settings.Sms.Nexmo)
+                    .SingleInstance();
                 builder.RegisterType<NexmoSmsSender>().As<ISmsSender>().SingleInstance();
+
+                builder.RegisterInstance(_settings.Sms.Twilio)
+                    .SingleInstance();
                 builder.RegisterType<TwilioSmsSender>().As<IAlternativeSmsSender>().SingleInstance();
             }
         }
