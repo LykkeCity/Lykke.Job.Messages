@@ -38,6 +38,8 @@ using Lykke.Service.Assets.Client.Custom;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.DependencyInjection;
 using MimeKit;
+using Lykke.Job.Messages.Core.Domain.DepositRefId;
+using Lykke.Job.Messages.AzureRepositories.DepositRefId;
 
 namespace Lykke.Job.Messages.Modules
 {
@@ -98,6 +100,14 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterInstance<IPersonalDataRepository>(
                 new PersonalDataRepository(
                     new AzureTableStorage<PersonalDataEntity>(_settings.Db.ClientPersonalInfoConnString, "PersonalData", _log)));
+
+            builder.RegisterInstance<IDepositRefIdInUseRepository>(
+                new DepositRefIdInUseRepository(
+                    new AzureTableStorage<DepositRefIdInUseEntity>(_settings.Db.ClientPersonalInfoConnString, "DepositRefIdsInUse", _log)));
+
+            builder.RegisterInstance<IDepositRefIdRepository>(
+                new DepositRefIdRepository(
+                    new AzureTableStorage<DepositRefIdEntity>(_settings.Db.ClientPersonalInfoConnString, "DepositRefIds", _log)));
 
             builder.RegisterInstance<IAttachmentFileRepository>(
                 new AttachmentFileRepository(
