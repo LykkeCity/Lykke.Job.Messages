@@ -101,14 +101,6 @@ namespace Lykke.Job.Messages.Modules
                 new PersonalDataRepository(
                     new AzureTableStorage<PersonalDataEntity>(_settings.Db.ClientPersonalInfoConnString, "PersonalData", _log)));
 
-            builder.RegisterInstance<IDepositRefIdInUseRepository>(
-                new DepositRefIdInUseRepository(
-                    new AzureTableStorage<DepositRefIdInUseEntity>(_settings.Db.ClientPersonalInfoConnString, "DepositRefIdsInUse", _log)));
-
-            builder.RegisterInstance<IDepositRefIdRepository>(
-                new DepositRefIdRepository(
-                    new AzureTableStorage<DepositRefIdEntity>(_settings.Db.ClientPersonalInfoConnString, "DepositRefIds", _log)));
-
             builder.RegisterInstance<IAttachmentFileRepository>(
                 new AttachmentFileRepository(
                     new AzureBlobStorage(_settings.Db.ClientPersonalInfoConnString)));
@@ -132,6 +124,14 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterInstance<ISmsMockRepository>(
                 new SmsMockRepository(
                     new AzureTableStorage<SmsMessageMockEntity>(_settings.Db.ClientPersonalInfoConnString, "MockSms", _log)));
+
+            builder.RegisterInstance<IDepositRefIdInUseRepository>(
+                new DepositRefIdInUseRepository(
+                    new AzureTableStorage<DepositRefIdInUseEntity>(_settings.Db.ClientPersonalInfoConnString, "DepositRefIdsInUse", _log)));
+
+            builder.RegisterInstance<IDepositRefIdRepository>(
+                new DepositRefIdRepository(
+                    new AzureTableStorage<DepositRefIdEntity>(_settings.Db.ClientPersonalInfoConnString, "DepositRefIds", _log)));
 
             builder.RegisterInstance<ISwiftCredentialsRepository>(
                 new SwiftCredentialsRepository(
