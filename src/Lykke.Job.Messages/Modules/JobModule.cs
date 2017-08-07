@@ -8,12 +8,14 @@ using AzureStorage.Queue;
 using AzureStorage.Tables;
 using Common.Log;
 using Lykke.Job.Messages.AzureRepositories.Clients;
+using Lykke.Job.Messages.AzureRepositories.DepositRefId;
 using Lykke.Job.Messages.AzureRepositories.Email;
 using Lykke.Job.Messages.AzureRepositories.Regulator;
 using Lykke.Job.Messages.AzureRepositories.Sms;
 using Lykke.Job.Messages.AzureRepositories.SwiftCredentials;
 using Lykke.Job.Messages.Core;
 using Lykke.Job.Messages.Core.Domain.Clients;
+using Lykke.Job.Messages.Core.Domain.DepositRefId;
 using Lykke.Job.Messages.Core.Domain.Email;
 using Lykke.Job.Messages.Core.Domain.Sms;
 using Lykke.Job.Messages.Core.Domain.SwiftCredentials;
@@ -38,8 +40,6 @@ using Lykke.Service.Assets.Client.Custom;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.DependencyInjection;
 using MimeKit;
-using Lykke.Job.Messages.Core.Domain.DepositRefId;
-using Lykke.Job.Messages.AzureRepositories.DepositRefId;
 
 namespace Lykke.Job.Messages.Modules
 {

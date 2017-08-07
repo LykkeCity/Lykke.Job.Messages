@@ -72,9 +72,10 @@ namespace Lykke.Job.Messages.Services.SwiftCredentials
                 string email = personalData.Email.Replace("@", "..");
                 clientIdentity = $"{email}_{date}_{refId.Code}";
                 _depositRefIdRepository.AddCodeAsync(clientIdentity, refId.ClientId, date, refId.Code);
+                purposeOfPayment = string.Format(sourceCredentials.PurposeOfPayment, assetTitle, clientIdentity);
             }
             else
-            { 
+            {
                 clientIdentity = personalData != null ? personalData.Email.Replace("@", ".") : "{1}";
                 purposeOfPayment = string.Format(sourceCredentials.PurposeOfPayment, assetTitle, clientIdentity);
 
