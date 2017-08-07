@@ -8,12 +8,14 @@ using AzureStorage.Queue;
 using AzureStorage.Tables;
 using Common.Log;
 using Lykke.Job.Messages.AzureRepositories.Clients;
+using Lykke.Job.Messages.AzureRepositories.DepositRefId;
 using Lykke.Job.Messages.AzureRepositories.Email;
 using Lykke.Job.Messages.AzureRepositories.Regulator;
 using Lykke.Job.Messages.AzureRepositories.Sms;
 using Lykke.Job.Messages.AzureRepositories.SwiftCredentials;
 using Lykke.Job.Messages.Core;
 using Lykke.Job.Messages.Core.Domain.Clients;
+using Lykke.Job.Messages.Core.Domain.DepositRefId;
 using Lykke.Job.Messages.Core.Domain.Email;
 using Lykke.Job.Messages.Core.Domain.Sms;
 using Lykke.Job.Messages.Core.Domain.SwiftCredentials;
@@ -110,6 +112,14 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterInstance<ISmsMockRepository>(
                 new SmsMockRepository(
                     new AzureTableStorage<SmsMessageMockEntity>(_settings.Db.ClientPersonalInfoConnString, "MockSms", _log)));
+
+            builder.RegisterInstance<IDepositRefIdInUseRepository>(
+                new DepositRefIdInUseRepository(
+                    new AzureTableStorage<DepositRefIdInUseEntity>(_settings.Db.ClientPersonalInfoConnString, "DepositRefIdsInUse", _log)));
+
+            builder.RegisterInstance<IDepositRefIdRepository>(
+                new DepositRefIdRepository(
+                    new AzureTableStorage<DepositRefIdEntity>(_settings.Db.ClientPersonalInfoConnString, "DepositRefIds", _log)));
 
             builder.RegisterInstance<ISwiftCredentialsRepository>(
                 new SwiftCredentialsRepository(
