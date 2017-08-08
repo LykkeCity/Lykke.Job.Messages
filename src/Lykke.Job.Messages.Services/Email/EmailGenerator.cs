@@ -231,7 +231,11 @@ namespace Lykke.Job.Messages.Services.Email
 
         public Task<EmailMessage> GenerateRemindPasswordMsg(string partnerId, RemindPasswordData messageData)
         {
-            var templateVm = new RemindPasswordTemplate(messageData.PasswordHint, DateTime.UtcNow.Year);
+            var templateVm = new RemindPasswordTemplate
+            {
+                Hint = messageData.PasswordHint,
+                Year = DateTime.UtcNow.Year
+            };
 
             return _templateGenerator.GenerateAsync(partnerId, "RemindPasswordTemplate", templateVm);
         }
@@ -273,21 +277,27 @@ namespace Lykke.Job.Messages.Services.Email
 
         public Task<EmailMessage> GenerateDeclinedDocumentsMsg(string partnerId, DeclinedDocumentsData messageData)
         {
+            var documentsAsHtml = new StringBuilder();
+            if (null != messageData.Documents)
+            {
+                foreach (var document in messageData.Documents)
+                {
+                    KycDocumentTypeApi kycDocType;
+                    Enum.TryParse(document.Type, out kycDocType);
+
+                    documentsAsHtml.AppendLine("<tr style='border-top: 1px solid #8C94A0; border-bottom: 1px solid #8C94A0;'>");
+                    documentsAsHtml.AppendLine(
+                        $"<td style='padding: 15px 0 15px 0;' width='260'><span style='font-size: 1.1em;color: #8C94A0;'>{KycDocumentTypes.GetDocumentTypeName(kycDocType)}</span></td>");
+                    documentsAsHtml.AppendLine(
+                        $"<td style='padding: 15px 0 15px 0;' width='260'><span style='font-size: 1.1em;color: #3F4D60;'>{HtmlBreaks(document.KycComment)}</span></td>");
+                    documentsAsHtml.AppendLine("</tr>");
+                }
+            }
+
             var templateVm = new DeclinedDocumentsTemplate
             {
                 FullName = messageData.FullName,
-                Documents = messageData.Documents?.Select(x => new KycDocument
-                {
-                    ClientId = x.ClientId,
-                    DateTime = x.DateTime,
-                    DocumentId = x.DocumentId,
-                    DocumentName = x.DocumentName,
-                    FileName = x.FileName,
-                    KycComment = x.KycComment,
-                    Mime = x.Mime,
-                    State = x.State,
-                    Type = x.Type
-                }).ToArray(),
+                DocumentsAsHtml = documentsAsHtml.ToString(),
                 Year = DateTime.UtcNow.Year
             };
 
@@ -438,6 +448,11 @@ namespace Lykke.Job.Messages.Services.Email
             var assets = await _assetsService.GetAllAssetsAsync();
 
             return assets.FirstOrDefault(itm => itm.BlockChainAssetId == blockchainAssetId || itm.Id == blockchainAssetId);
+        }
+
+        private static string HtmlBreaks(string src)
+        {
+            return src.Replace("\r\n", "<br>");
         }
     }
 }

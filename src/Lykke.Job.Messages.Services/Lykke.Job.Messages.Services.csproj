@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Email\TemplateModels\**" />
+    <EmbeddedResource Remove="Email\TemplateModels\**" />
+    <None Remove="Email\TemplateModels\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Sms\Templates\SmsConfirmation.cshtml" />
   </ItemGroup>
 
@@ -14,9 +20,9 @@
 
   <ItemGroup>
     <PackageReference Include="Lykke.Common" Version="1.1.79" />
-    <PackageReference Include="Lykke.Messages" Version="1.0.5" />
+    <PackageReference Include="Lykke.Messages" Version="1.0.6" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="1.0.15" />
-    <PackageReference Include="Lykke.Service.EmailFormatter" Version="1.0.5" />
+    <PackageReference Include="Lykke.Service.EmailFormatter" Version="1.0.10" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
     <PackageReference Include="RazorLight" Version="1.1.0" />
     <PackageReference Include="RestSharp.NetCore" Version="105.2.3" />
@@ -39,10 +45,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>EmailResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Email\TemplateModels\" />
   </ItemGroup>
 
 </Project>
