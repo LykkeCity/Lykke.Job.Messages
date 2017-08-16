@@ -547,9 +547,7 @@ namespace Lykke.Job.Messages.Services.Email
                 Text = messageData.Text,
                 Comment = messageData.Comment,
                 FullName = personalData.FullName,
-                ClientId = messageData.ClientId,
-                Amount = messageData.Amount,
-                AssetId = messageData.AssetId
+                Year = DateTime.UtcNow.Year.ToString(),
             };
 
             return new EmailMessage
@@ -577,14 +575,7 @@ namespace Lykke.Job.Messages.Services.Email
             var templateVm = new SwiftCashoutProcessedTemplate
             {
                 FullName = messageData.FullName,
-                Amount = messageData.Amount,
-                Year = DateTime.UtcNow.Year,
-                AssetId = messageData.AssetId,
-                AccName = messageData.AccName,
-                AccNum = messageData.AccNum,
-                Bic = messageData.Bic,
-                BankName = messageData.BankName,
-                AccHolderAddress = messageData.AccHolderAddress                
+                Year = DateTime.UtcNow.Year.ToString()             
             };
 
             return new EmailMessage
