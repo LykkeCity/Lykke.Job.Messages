@@ -551,9 +551,7 @@ namespace Lykke.Job.Messages.Services.Email
                 Text = messageData.Text,
                 Comment = messageData.Comment,
                 FullName = personalData.FullName,
-                ClientId = messageData.ClientId,
-                Amount = messageData.Amount,
-                AssetId = messageData.AssetId
+                Year = DateTime.UtcNow.Year.ToString(),
             };
 
             return new EmailMessage
@@ -574,6 +572,22 @@ namespace Lykke.Job.Messages.Services.Email
             var assets = await _assetsService.GetAllAssetsAsync();
 
             return assets.FirstOrDefault(itm => itm.BlockChainAssetId == blockchainAssetId || itm.Id == blockchainAssetId);
+        }
+
+        public async Task<EmailMessage> GenerateSwiftCashoutProcessedMsg(SwiftCashoutProcessedData messageData)
+        {
+            var templateVm = new SwiftCashoutProcessedTemplate
+            {
+                FullName = messageData.FullName,
+                Year = DateTime.UtcNow.Year.ToString()             
+            };
+
+            return new EmailMessage
+            {
+                Body = await _templateGenerator.GenerateAsync(messageData.MessageId(), templateVm),
+                Subject = EmailResources.GenerateSwiftCashoutProcessed_Subject,
+                IsHtml = true
+            };
         }
     }
 }
