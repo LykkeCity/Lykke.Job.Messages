@@ -129,7 +129,7 @@ namespace Lykke.Job.Messages.QueueConsumers
                     RequestForDocumentData.QueueName, itm => HandleRequestForDocumentEmailAsync(itm.Data));
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<SwiftCashoutProcessedData>>>(
-                    SwiftCashoutProcessedData.QueueName, itm => HandleSwiftCashoutProcessedAsync(itm.Data));
+                    RequestForDocumentData.QueueName, itm => HandleSwiftCashoutProcessedEmailAsync(itm.Data));
             }
         }
 
@@ -365,10 +365,10 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
 
-        private async Task HandleSwiftCashoutProcessedAsync(SendEmailData<SwiftCashoutProcessedData> result)
+        private async Task HandleSwiftCashoutProcessedEmailAsync(SendEmailData<SwiftCashoutProcessedData> result)
         {
-            await _log.WriteInfoAsync("EmailRequestQueueConsumer", "HandleSwiftCashoutProcessedtAsync", null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
-                                                                                                           $"{Environment.NewLine}{result.ToJson()}");
+            await _log.WriteInfoAsync("EmailRequestQueueConsumer", "HandleSwiftCashoutProcessedEmailAsync", null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                               $"{Environment.NewLine}{result.ToJson()}");
             var msg = await _emailGenerator.GenerateSwiftCashoutProcessedMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }

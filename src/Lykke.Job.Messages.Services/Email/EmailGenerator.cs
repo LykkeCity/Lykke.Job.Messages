@@ -427,16 +427,12 @@ namespace Lykke.Job.Messages.Services.Email
 
         public async Task<EmailMessage> GenerateRequestForDocumentMsg(string partnerId, RequestForDocumentData messageData)
         {
-            var personalData = await _personalDataRepository.GetAsync(messageData.ClientId);
-
             var templateVm = new RequestForDocumentTemplate
             {
                 Text = messageData.Text,
                 Comment = messageData.Comment,
-                FullName = personalData.FullName,
-                ClientId = messageData.ClientId,
-                Amount = messageData.Amount,
-                AssetId = messageData.AssetId
+                FullName = messageData.FullName,
+                Year = DateTime.UtcNow.Year
             };
 
             return await _templateGenerator.GenerateAsync(partnerId, "RequestForDocument", templateVm);
@@ -454,23 +450,15 @@ namespace Lykke.Job.Messages.Services.Email
             return assets.FirstOrDefault(itm => itm.BlockChainAssetId == blockchainAssetId || itm.Id == blockchainAssetId);
         }
 
-        public Task<EmailMessage> GenerateSwiftCashoutProcessedMsg(string partnerId,
-            SwiftCashoutProcessedData messageData)
+        public async Task<EmailMessage> GenerateSwiftCashoutProcessedMsg(string partnerId, SwiftCashoutProcessedData messageData)
         {
             var templateVm = new SwiftCashoutProcessedTemplate
             {
                 FullName = messageData.FullName,
-                Amount = messageData.Amount,
-                Year = DateTime.UtcNow.Year,
-                AssetId = messageData.AssetId,
-                AccName = messageData.AccName,
-                AccNum = messageData.AccNum,
-                Bic = messageData.Bic,
-                BankName = messageData.BankName,
-                AccHolderAddress = messageData.AccHolderAddress
+                Year = DateTime.UtcNow.Year.ToString()
             };
-
-            return _templateGenerator.GenerateAsync(partnerId, SwiftCashoutProcessedData.QueueName, templateVm);
+            
+            return await _templateGenerator.GenerateAsync(partnerId, "SwiftCashoutProcessed", templateVm);
         }
 
         private static string HtmlBreaks(string src)

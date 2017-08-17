@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Lykke.Common" Version="1.1.79" />
-    <PackageReference Include="Lykke.Messages" Version="1.0.6" />
+    <PackageReference Include="Lykke.Messages" Version="1.0.8" />
     <PackageReference Include="Lykke.Service.EmailSender" Version="1.0.13" />
   </ItemGroup>
 
