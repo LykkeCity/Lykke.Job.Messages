@@ -129,7 +129,7 @@ namespace Lykke.Job.Messages.QueueConsumers
                     RequestForDocumentData.QueueName, itm => HandleRequestForDocumentEmailAsync(itm.Data));
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<SwiftCashoutProcessedData>>>(
-                    RequestForDocumentData.QueueName, itm => HandleSwiftCashoutProcessedEmailAsync(itm.Data));
+                    SwiftCashoutProcessedData.QueueName, itm => HandleSwiftCashoutProcessedEmailAsync(itm.Data));
             }
         }
 
