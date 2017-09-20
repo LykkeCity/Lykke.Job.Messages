@@ -8,12 +8,14 @@ using AzureStorage.Queue;
 using AzureStorage.Tables;
 using Common.Log;
 using Lykke.Job.Messages.AzureRepositories.Clients;
+using Lykke.Job.Messages.AzureRepositories.DepositRefId;
 using Lykke.Job.Messages.AzureRepositories.Email;
 using Lykke.Job.Messages.AzureRepositories.Regulator;
 using Lykke.Job.Messages.AzureRepositories.Sms;
 using Lykke.Job.Messages.AzureRepositories.SwiftCredentials;
 using Lykke.Job.Messages.Core;
 using Lykke.Job.Messages.Core.Domain.Clients;
+using Lykke.Job.Messages.Core.Domain.DepositRefId;
 using Lykke.Job.Messages.Core.Domain.Email;
 using Lykke.Job.Messages.Core.Domain.Sms;
 using Lykke.Job.Messages.Core.Domain.SwiftCredentials;
@@ -35,9 +37,9 @@ using Lykke.Job.Messages.Services.Sms.Twilio;
 using Lykke.Job.Messages.Services.SwiftCredentials;
 using Lykke.Job.Messages.Services.Templates;
 using Lykke.Service.Assets.Client.Custom;
-using MailKit.Net.Smtp;
+using Lykke.Service.EmailFormatter;
+using Lykke.Service.EmailPartnerRouter;
 using Microsoft.Extensions.DependencyInjection;
-using MimeKit;
 
 namespace Lykke.Job.Messages.Modules
 {
@@ -99,21 +101,9 @@ namespace Lykke.Job.Messages.Modules
                 new PersonalDataRepository(
                     new AzureTableStorage<PersonalDataEntity>(_settings.Db.ClientPersonalInfoConnString, "PersonalData", _log)));
 
-            builder.RegisterInstance<IAttachmentFileRepository>(
-                new AttachmentFileRepository(
-                    new AzureBlobStorage(_settings.Db.ClientPersonalInfoConnString)));
-
             builder.RegisterInstance<IBroadcastMailsRepository>(
                 new BroadcastMailsRepository(
                     new AzureTableStorage<BroadcastMailEntity>(_settings.Db.ClientPersonalInfoConnString, "BroadcastMails", _log)));
-
-            builder.RegisterInstance<IEmailAttachmentsMockRepository>(
-                new EmailAttachmentsMockRepository(
-                    new AzureTableStorage<EmailAttachmentsMockEntity>(_settings.Db.ClientPersonalInfoConnString, "EmailAttachmentsMock", _log)));
-
-            builder.RegisterInstance<IEmailMockRepository>(
-                new EmailMockRepository(
-                    new AzureTableStorage<EmailMockEntity>(_settings.Db.ClientPersonalInfoConnString, "MockMails", _log)));
 
             builder.RegisterInstance<IRegulatorRepository>(
                 new RegulatorRepository(
@@ -122,6 +112,14 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterInstance<ISmsMockRepository>(
                 new SmsMockRepository(
                     new AzureTableStorage<SmsMessageMockEntity>(_settings.Db.ClientPersonalInfoConnString, "MockSms", _log)));
+
+            builder.RegisterInstance<IDepositRefIdInUseRepository>(
+                new DepositRefIdInUseRepository(
+                    new AzureTableStorage<DepositRefIdInUseEntity>(_settings.Db.ClientPersonalInfoConnString, "DepositRefIdsInUse", _log)));
+
+            builder.RegisterInstance<IDepositRefIdRepository>(
+                new DepositRefIdRepository(
+                    new AzureTableStorage<DepositRefIdEntity>(_settings.Db.ClientPersonalInfoConnString, "DepositRefIds", _log)));
 
             builder.RegisterInstance<ISwiftCredentialsRepository>(
                 new SwiftCredentialsRepository(
@@ -139,7 +137,8 @@ namespace Lykke.Job.Messages.Modules
             var emailsQueue = new AzureQueueExt(_settings.Db.ClientPersonalInfoConnString, "emailsqueue");
             var internalEmailQueueReader = new QueueReader(emailsQueue, "InternalEmailQueueReader", 3000, _log);
             var blockChainEmailQueue = new AzureQueueExt(_settings.Db.BitCoinQueueConnectionString, "emailsqueue");
-            var blockChainEmailQueueReader = new QueueReader(blockChainEmailQueue, "BlockchainEmailQueueReader", 3000, _log);
+            var blockChainEmailQueueReader =
+                new QueueReader(blockChainEmailQueue, "BlockchainEmailQueueReader", 3000, _log);
             var sharedEmailQueue = new AzureQueueExt(_settings.Db.SharedStorageConnString, "emailsqueue");
             var sharedEmailQueueReader = new QueueReader(sharedEmailQueue, "SharedEmailQueueReader", 3000, _log);
 
@@ -150,47 +149,35 @@ namespace Lykke.Job.Messages.Modules
                     sharedEmailQueueReader
                 })
                 .SingleInstance();
+
+            builder.RegisterType<HttpRequestClient>();
+
+            builder.RegisterType<SwiftCredentialsService>()
+                .As<ISwiftCredentialsService>()
+                .SingleInstance();
+
+            // Email formatting dependencies
+
+            builder.RegisterEmailFormatter(_appSettings.MessagesJob.Email.EmailFormatterUrl, _log);
+            builder.RegisterType<RemoteTemplateGenerator>()
+                .As<IRemoteTemplateGenerator>()
+                .SingleInstance();
             builder.RegisterType<EmailGenerator>()
                 .As<IEmailGenerator>()
                 .SingleInstance()
-                .WithParameters(new []
+                .WithParameters(new[]
                 {
                     TypedParameter.From(_settings.Email),
                     TypedParameter.From(_settings.Blockchain),
                     TypedParameter.From(_settings.WalletApi)
                 });
-            builder.RegisterType<HttpRequestClient>();
-            builder.RegisterType<RemoteTemplateGenerator>()
-                .As<IRemoteTemplateGenerator>()
-                .SingleInstance()
-                .WithParameter(TypedParameter.From(_settings.Email.EmailTemplatesHost));
-            builder.RegisterType<SwiftCredentialsService>().As<ISwiftCredentialsService>().SingleInstance();
 
-            SmtpClient ClientFactory()
-            {
-                var client = new SmtpClient
-                {
-                    Timeout = 10000
-                };
+            // Email sending dependencies
 
-                client.Connect(_settings.Email.SmtpHost, _settings.Email.SmtpPort);
-                client.Authenticate(new NetworkCredential(_settings.Email.SmtpLogin, _settings.Email.SmtpPwd));
-
-                return client;
-            }
-
-            var from = new MailboxAddress(_settings.Email.EmailFromDisplayName, _settings.Email.EmailFrom);
-
-            if (_settings.Email.UseMocks)
-            {
-                builder.RegisterType<SmtpMailSenderMock>().SingleInstance();
-                builder.Register(x => new SmtpMailSender(_log, ClientFactory, from, x.Resolve<IBroadcastMailsRepository>()));
-                builder.RegisterType<MockAndRealMailSender>().As<ISmtpEmailSender>().SingleInstance();
-            }
-            else
-            {
-                builder.Register<ISmtpEmailSender>(x => new SmtpMailSender(_log, ClientFactory, from, x.Resolve<IBroadcastMailsRepository>()));
-            }
+            builder.RegisterEmailPartnerRouter(_appSettings.MessagesJob.Email.EmailPartnerRouterUrl, _log);
+            builder.Register<ISmtpEmailSender>(x => new SmtpMailSender(_log, x.Resolve<IEmailPartnerRouter>(), x.Resolve<IBroadcastMailsRepository>()))
+                .As<ISmtpEmailSender>()
+                .SingleInstance();
         }
 
         private void RegistermSmsServices(ContainerBuilder builder)

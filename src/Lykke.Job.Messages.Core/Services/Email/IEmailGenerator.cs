@@ -1,37 +1,38 @@
 ﻿using System.Threading.Tasks;
 using Lykke.Job.Messages.Core.Domain.Clients;
 using Lykke.Job.Messages.Core.Domain.Email;
-using Lykke.Job.Messages.Core.Domain.Email.MessagesData;
+using Lykke.Messages.Email.MessageData;
+using Lykke.Service.EmailSender;
 
 namespace Lykke.Job.Messages.Core.Services.Email
 {
     public interface IEmailGenerator
     {
-        Task<EmailMessage> GenerateWelcomeMsg(RegistrationData kycOkData);
-        Task<EmailMessage> GenerateWelcomeFxMsg(KycOkData kycOkData);
-        Task<EmailMessage> GenerateConfirmEmailMsg(EmailComfirmationData registrationData);
-        Task<EmailMessage> GenerateCashInMsg(CashInData messageData);
-        Task<EmailMessage> GenerateNoRefundDepositDoneMsg(NoRefundDepositDoneData messageData);
-        Task<EmailMessage> GenerateNoRefundOCashOutMsg(NoRefundOCashOutData messageData);
-        Task<EmailMessage> GenerateBankCashInMsg(BankCashInData messageData);
-        Task<EmailMessage> GenerateCashInRefundMsg(CashInRefundData messageData);
-        Task<EmailMessage> GenerateUserRegisteredMsg(IPersonalData messageData);
-        Task<EmailMessage> GenerateRejectedEmailMsg();
-        EmailMessage GenerateFailedTransactionMsg(string transactionId, string[] clientIds);
-        Task<EmailMessage> GenerateSwapRefundMsg(SwapRefundData messageData);
-        Task<EmailMessage> GenerateOrdinaryCashOutRefundMsg(OrdinaryCashOutRefundData messageData);
-        Task<EmailMessage> GenerateTransferCompletedMsg(TransferCompletedData transferCompletedData);
-        Task<EmailMessage> GenerateDirectTransferCompletedMsg(DirectTransferCompletedData transferCompletedData);
-        Task<EmailMessage> GenerateMyLykkeCashInMsg(MyLykkeCashInData messageData);
-        Task<EmailMessage> GenerateRemindPasswordMsg(RemindPasswordData messageData);
-        Task<EmailMessage> GeneratPrivateWalletAddressMsg(PrivateWalletAddressData messageData);
-        Task<EmailMessage> GeneratSolarCashOutMsg(SolarCashOutData messageData);
-        Task<EmailMessage> GeneratSolarAddressMsg(SolarCoinAddressData messageData);
-        Task<EmailMessage> GenerateDeclinedDocumentsMsg(DeclinedDocumentsData messageData);
-        Task<EmailMessage> GenerateCashoutUnlockMsg(CashoutUnlockData messageData);
-        Task<EmailMessage> GenerateSwiftConfirmedMsg(SwiftConfirmedData messageData);
-        Task<EmailMessage> GenerateSwiftCashOutRequestMsg(SwiftCashOutRequestData messageData);
-        Task<EmailMessage> GenerateRequestForDocumentMsg(RequestForDocumentData messageData);
-        Task<EmailMessage> GenerateSwiftCashoutProcessedMsg(SwiftCashoutProcessedData messageData);
+        Task<EmailMessage> GenerateWelcomeMsg(string partnerId, RegistrationMessageData kycOkData);
+        Task<EmailMessage> GenerateWelcomeFxMsg(string partnerId, KycOkData kycOkData);
+        Task<EmailMessage> GenerateConfirmEmailMsg(string partnerId, EmailComfirmationData registrationData);
+        Task<EmailMessage> GenerateCashInMsg(string partnerId, CashInData messageData);
+        Task<EmailMessage> GenerateNoRefundDepositDoneMsg(string partnerId, NoRefundDepositDoneData messageData);
+        Task<EmailMessage> GenerateNoRefundOCashOutMsg(string partnerId, NoRefundOCashOutData messageData);
+        Task<EmailMessage> GenerateBankCashInMsg(string partnerId, BankCashInData messageData);
+        Task<EmailMessage> GenerateCashInRefundMsg(string partnerId, CashInRefundData messageData);
+        Task<EmailMessage> GenerateUserRegisteredMsg(string partnerId, IPersonalData messageData);
+        Task<EmailMessage> GenerateRejectedEmailMsg(string partnerId);
+        EmailMessage GenerateFailedTransactionMsg(string partnerId, string transactionId, string[] clientIds);
+        Task<EmailMessage> GenerateSwapRefundMsg(string partnerId, SwapRefundData messageData);
+        Task<EmailMessage> GenerateOrdinaryCashOutRefundMsg(string partnerId, OrdinaryCashOutRefundData messageData);
+        Task<EmailMessage> GenerateTransferCompletedMsg(string partnerId, TransferCompletedData transferCompletedData);
+        Task<EmailMessage> GenerateDirectTransferCompletedMsg(string partnerId, DirectTransferCompletedData transferCompletedData);
+        Task<EmailMessage> GenerateMyLykkeCashInMsg(string partnerId, MyLykkeCashInData messageData);
+        Task<EmailMessage> GenerateRemindPasswordMsg(string partnerId, RemindPasswordData messageData);
+        Task<EmailMessage> GeneratPrivateWalletAddressMsg(string partnerId, PrivateWalletAddressData messageData);
+        Task<EmailMessage> GeneratSolarCashOutMsg(string partnerId, SolarCashOutData messageData);
+        Task<EmailMessage> GeneratSolarAddressMsg(string partnerId, SolarCoinAddressData messageData);
+        Task<EmailMessage> GenerateDeclinedDocumentsMsg(string partnerId, DeclinedDocumentsData messageData);
+        Task<EmailMessage> GenerateCashoutUnlockMsg(string partnerId, CashoutUnlockData messageData);
+        Task<EmailMessage> GenerateSwiftConfirmedMsg(string partnerId, SwiftConfirmedData messageData);
+        Task<EmailMessage> GenerateSwiftCashOutRequestMsg(string partnerId, SwiftCashOutRequestData messageData);
+        Task<EmailMessage> GenerateRequestForDocumentMsg(string partnerId, RequestForDocumentData messageData);
+        Task<EmailMessage> GenerateSwiftCashoutProcessedMsg(string partnerId, SwiftCashoutProcessedData messageData);
     }
 }
