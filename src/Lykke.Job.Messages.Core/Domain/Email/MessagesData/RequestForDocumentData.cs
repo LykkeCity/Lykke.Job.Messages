@@ -1,4 +1,6 @@
-﻿namespace Lykke.Job.Messages.Core.Domain.Email.MessagesData
+﻿using Lykke.Messages.Email.MessageData;
+
+namespace Lykke.Job.Messages.Core.Domain.Email.MessagesData
 {
     public class RequestForDocumentData : IEmailMessageData
     {
