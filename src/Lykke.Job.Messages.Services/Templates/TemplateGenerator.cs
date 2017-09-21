@@ -1,16 +1,21 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using Lykke.Job.Messages.Core.Services.Templates;
 using RazorLight;
+using Common.Log;
+using Lykke.Job.Messages.Core.Services.Templates;
 
 namespace Lykke.Job.Messages.Services.Templates
 {
     public class TemplateGenerator : ITemplateGenerator
     {
-        public Task<string> GenerateAsync<T>(string templateName, T templateModel)
+        private readonly ILog _log;
+
+        public TemplateGenerator(ILog log)
+        {
+            _log = log;
+        }
+
+        public async Task<string> GenerateAsync<T>(string templateName, T templateModel)
         {
             var template = $"{templateName}.cshtml";
             var config = EngineConfiguration.Default;
@@ -21,11 +26,15 @@ namespace Lykke.Job.Messages.Services.Templates
 
             try
             {
-                return Task.FromResult(engine.Parse(Path.GetFileNameWithoutExtension(template), templateModel));
+                return engine.Parse(templateName, templateModel);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Fail template \"{template}\" compilation: {ex.Message}");
+                await _log.WriteWarningAsync(
+                    nameof(Messages),
+                    nameof(TemplateGenerator),
+                    nameof(GenerateAsync),
+                    $"Fail template \"{template}\" compilation: {ex.Message}");
                 throw;
             }
         }
