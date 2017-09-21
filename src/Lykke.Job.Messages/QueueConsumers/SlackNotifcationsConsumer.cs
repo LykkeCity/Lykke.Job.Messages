@@ -19,7 +19,7 @@ namespace Lykke.Job.Messages.QueueConsumers
             _log = log;
         }
 
-        [QueueTrigger("slack-notifications")]
+        //[QueueTrigger("slack-notifications")]
         public async Task ProcessInMessage(SlackNotificationRequestMsg msg)
         {
             try

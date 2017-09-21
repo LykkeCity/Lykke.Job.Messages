@@ -46,11 +46,12 @@ namespace Lykke.Job.Messages
                 triggerHost = new TriggerHost(webHost.Services);
 
                 webHostTask = webHost.RunAsync(webHostCancellationTokenSource.Token);
-                triggerHostTask = triggerHost.Start();
+                webHostTask.Wait();
+                //triggerHostTask = triggerHost.Start();
 
                 // WhenAny to handle any task termination with exception, 
                 // or gracefully termination of webHostTask
-                Task.WhenAny(webHostTask, triggerHostTask).Wait();
+                //Task.WhenAny(webHostTask, triggerHostTask).Wait();
             }
             finally
             {
