@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Autofac.Builder;
 using AzureStorage.Queue;
 using Common;
 using Common.Log;
 using Lykke.Job.Messages.Core.Domain.Clients;
-using Lykke.Job.Messages.Core.Domain.Email;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Messages.Email.MessageData;
 using Lykke.Service.EmailSender;
@@ -378,7 +376,12 @@ namespace Lykke.Job.Messages.QueueConsumers
             foreach (var queueReader in _queueReadersList)
             {
                 queueReader.Start();
-                Console.WriteLine($"Started:{queueReader.GetComponentName()}");
+                _log.WriteInfoAsync(
+                    nameof(Messages),
+                    nameof(EmailQueueConsumer),
+                    nameof(Start),
+                    $"Started:{queueReader.GetComponentName()}")
+                    .Wait();
             }
         }
     }

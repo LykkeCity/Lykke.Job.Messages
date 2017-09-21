@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Common.Log;
 using AzureStorage.Queue;
 using Lykke.Job.Messages.Contract.Sms;
 using Lykke.Job.Messages.Core.Domain.Sms;
@@ -13,13 +14,20 @@ namespace Lykke.Job.Messages.QueueConsumers
         private readonly ISmsSender _smsSender;
         private readonly ISmsTextGenerator _smsTextGenerator;
         private readonly IAlternativeSmsSender _alternativeSmsSender;
+        private readonly ILog _log;
 
-        public SmsQueueConsumer(IQueueReader queueReader, ISmsSender emailSender, ISmsTextGenerator smsTextGenerator, IAlternativeSmsSender alternativeSmsSender)
+        public SmsQueueConsumer(
+            IQueueReader queueReader,
+            ISmsSender emailSender,
+            ISmsTextGenerator smsTextGenerator,
+            IAlternativeSmsSender alternativeSmsSender,
+            ILog log)
         {
             _queueReader = queueReader;
             _smsSender = emailSender;
             _smsTextGenerator = smsTextGenerator;
             _alternativeSmsSender = alternativeSmsSender;
+            _log = log;
 
             InitQueues();
         }
@@ -30,7 +38,12 @@ namespace Lykke.Job.Messages.QueueConsumers
             {
                 if (data == null)
                 {
-                    Console.WriteLine("Queue had unknown SMS send request");
+                    _log.WriteWarningAsync(
+                        nameof(Messages),
+                        nameof(SmsQueueConsumer),
+                        nameof(InitQueues),
+                        "Queue had unknown SMS send request")
+                        .Wait();
                     return Task.FromResult(false);
                 }
                 return Task.FromResult(true);
@@ -40,12 +53,21 @@ namespace Lykke.Job.Messages.QueueConsumers
                 "SmsConfirmMessage", HandleSmsRequestAsync);
             _queueReader.RegisterHandler<SendSmsData<string>>("SimpleSmsMessage", HandleSimpleSmsRequestAsync);
 
-            Console.WriteLine($"Registered:{_queueReader.GetComponentName()}");
+            _log.WriteInfoAsync(
+                nameof(Messages),
+                nameof(SmsQueueConsumer),
+                nameof(InitQueues),
+                $"Registered:{_queueReader.GetComponentName()}")
+                .Wait();
         }
 
         private async Task HandleSimpleSmsRequestAsync(SendSmsData<string> request)
         {
-            Console.WriteLine($"SMS: {request.MessageData}. Receiver: {request.PhoneNumber}, UTC: {DateTime.UtcNow}");
+            await _log.WriteInfoAsync(
+                nameof(Messages),
+                nameof(SmsQueueConsumer),
+                nameof(HandleSimpleSmsRequestAsync),
+                $"SMS: {request.MessageData}. Receiver: {request.PhoneNumber}, UTC: {DateTime.UtcNow}");
 
             var sender = GetSender(request.UseAlternativeProvider);
 
@@ -54,7 +76,11 @@ namespace Lykke.Job.Messages.QueueConsumers
 
         private async Task HandleSmsRequestAsync(SendSmsData<SmsConfirmationData> request)
         {
-            Console.WriteLine($"SMS: Phone confirmation. Receiver: {request.PhoneNumber}, UTC: {DateTime.UtcNow}");
+            await _log.WriteInfoAsync(
+                nameof(Messages),
+                nameof(SmsQueueConsumer),
+                nameof(HandleSmsRequestAsync),
+                $"SMS: Phone confirmation. Receiver: {request.PhoneNumber}, UTC: {DateTime.UtcNow}");
 
             var msgText = await _smsTextGenerator.GenerateConfirmSmsText(request.MessageData.ConfirmationCode);
             var sender = GetSender(request.UseAlternativeProvider);
@@ -65,7 +91,12 @@ namespace Lykke.Job.Messages.QueueConsumers
         public void Start()
         {
             _queueReader.Start();
-            Console.WriteLine($"Started:{_queueReader.GetComponentName()}");
+            _log.WriteInfoAsync(
+                nameof(Messages),
+                nameof(SmsQueueConsumer),
+                nameof(Start),
+                $"Started:{_queueReader.GetComponentName()}")
+                .Wait();
         }
 
         private ISmsSender GetSender(bool useAlternative)
