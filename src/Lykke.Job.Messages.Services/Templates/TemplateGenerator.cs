@@ -22,7 +22,7 @@ namespace Lykke.Job.Messages.Services.Templates
 
             config.Namespaces.Add("Lykke.Job.Messages.Core.Extensions");
 
-            var engine = EngineFactory.CreateEmbedded(typeof(HealthService), config);
+            var engine = EngineFactory.CreateEmbedded(templateModel.GetType(), config);
 
             try
             {
