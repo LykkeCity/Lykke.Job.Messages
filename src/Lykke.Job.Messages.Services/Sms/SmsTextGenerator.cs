@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Lykke.Job.Messages.Core.Services.Sms;
 using Lykke.Job.Messages.Core.Services.Templates;
-using Lykke.Job.Messages.Services.Sms.Templates.ViewModels;
+using Lykke.Job.Messages.Services.Sms.Templates;
 
 namespace Lykke.Job.Messages.Services.Sms
 {
