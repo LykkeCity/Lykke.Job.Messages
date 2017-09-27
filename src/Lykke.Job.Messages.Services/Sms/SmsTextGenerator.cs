@@ -21,7 +21,7 @@ namespace Lykke.Job.Messages.Services.Sms
                 ConfirmationCode = confirmationCode
             };
 
-            return await _templateGenerator.GenerateAsync("Sms.Templates.SmsConfirmation", templateVm);
+            return await _templateGenerator.GenerateAsync("SmsConfirmation", templateVm);
         }
     }
 }
