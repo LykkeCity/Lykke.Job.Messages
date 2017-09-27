@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Lykke.Job.Messages.Core.Services.Sms;
 using Lykke.Job.Messages.Core.Services.Templates;
-using Lykke.Job.Messages.Services.Sms.Templates;
 
 namespace Lykke.Job.Messages.Services.Sms
 {
@@ -16,12 +15,7 @@ namespace Lykke.Job.Messages.Services.Sms
 
         public async Task<string> GenerateConfirmSmsText(string confirmationCode)
         {
-            var templateVm = new SmsConfirmationTemplate
-            {
-                ConfirmationCode = confirmationCode
-            };
-
-            return await _templateGenerator.GenerateAsync("SmsConfirmation", templateVm);
+            return $"Lykke Confirmation code: {confirmationCode}";
         }
     }
 }
