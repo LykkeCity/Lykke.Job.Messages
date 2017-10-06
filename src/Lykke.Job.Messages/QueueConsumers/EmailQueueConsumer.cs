@@ -128,6 +128,9 @@ namespace Lykke.Job.Messages.QueueConsumers
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<SwiftCashoutProcessedData>>>(
                     SwiftCashoutProcessedData.QueueName, itm => HandleSwiftCashoutProcessedEmailAsync(itm.Data));
+
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RegistrationEmailVerifyData>>>(
+                    RegistrationEmailVerifyData.QueueName, itm => HandleRegistrationVerifyEmailAsync(itm.Data));
             }
         }
 
@@ -368,6 +371,14 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _log.WriteInfoAsync("EmailRequestQueueConsumer", "HandleSwiftCashoutProcessedEmailAsync", null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                                $"{Environment.NewLine}{result.ToJson()}");
             var msg = await _emailGenerator.GenerateSwiftCashoutProcessedMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+        }
+
+        private async Task HandleRegistrationVerifyEmailAsync(SendEmailData<RegistrationEmailVerifyData> result)
+        {
+            await _log.WriteInfoAsync("EmailRequestQueueConsumer", "HandleRegistrationVerifyEmailAsync", null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                               $"{Environment.NewLine}{result.ToJson()}");
+            var msg = await _emailGenerator.GenerateRegistrationVerifyEmailMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
 
