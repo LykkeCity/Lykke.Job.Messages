@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Lykke.Common" Version="1.1.97" />
-    <PackageReference Include="Lykke.Messages" Version="1.0.10" />
+    <PackageReference Include="Lykke.Messages" Version="1.0.17" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="1.0.17" />
     <PackageReference Include="Lykke.Service.EmailFormatter" Version="1.0.19" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />

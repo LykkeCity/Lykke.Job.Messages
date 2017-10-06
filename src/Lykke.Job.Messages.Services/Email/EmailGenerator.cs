@@ -475,6 +475,18 @@ namespace Lykke.Job.Messages.Services.Email
             return await _templateGenerator.GenerateAsync(partnerId, "SwiftCashoutDeclined", templateVm);
         }
 
+        public async Task<EmailMessage> GenerateRegistrationVerifyEmailMsg(string partnerId, RegistrationEmailVerifyData messageData)
+        {
+            var templateVm = new RegistrationEmailVerifyData
+            {
+                Code = messageData.Code,
+                Url = messageData.Url,
+                Year = DateTime.UtcNow.Year.ToString()
+            };
+
+            return await _templateGenerator.GenerateAsync(partnerId, "EmailVerificationCode", templateVm);
+        }
+
         private static string HtmlBreaks(string src)
         {
             return src.Replace("\r\n", "<br>");
