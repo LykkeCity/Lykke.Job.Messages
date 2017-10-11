@@ -1,20 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using AzureStorage.Blob;
 using AzureStorage.Queue;
 using AzureStorage.Tables;
 using Common.Log;
-using Lykke.Job.Messages.AzureRepositories.Clients;
 using Lykke.Job.Messages.AzureRepositories.DepositRefId;
 using Lykke.Job.Messages.AzureRepositories.Email;
 using Lykke.Job.Messages.AzureRepositories.Regulator;
 using Lykke.Job.Messages.AzureRepositories.Sms;
 using Lykke.Job.Messages.AzureRepositories.SwiftCredentials;
 using Lykke.Job.Messages.Core;
-using Lykke.Job.Messages.Core.Domain.Clients;
 using Lykke.Job.Messages.Core.Domain.DepositRefId;
 using Lykke.Job.Messages.Core.Domain.Email;
 using Lykke.Job.Messages.Core.Domain.Sms;
@@ -39,6 +35,8 @@ using Lykke.Job.Messages.Services.Templates;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.EmailFormatter;
 using Lykke.Service.EmailPartnerRouter;
+using Lykke.Service.PersonalData.Client;
+using Lykke.Service.PersonalData.Contract;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Lykke.Job.Messages.Modules
@@ -86,10 +84,13 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<SmsQueueConsumer>().SingleInstance();
             builder.RegisterType<EmailQueueConsumer>().SingleInstance();
 
+            builder.RegisterType<PersonalDataService>()
+                .As<IPersonalDataService>()
+                .WithParameter(TypedParameter.From(_appSettings.PersonalDataServiceSettings));
+
             RegistermSmsServices(builder);
             RegisterEmailServices(builder);
             RegisterSlackServices(builder);
-
             RegisterRepositories(builder);
 
             builder.Populate(_services);
@@ -97,10 +98,6 @@ namespace Lykke.Job.Messages.Modules
 
         private void RegisterRepositories(ContainerBuilder builder)
         {
-            builder.RegisterInstance<IPersonalDataRepository>(
-                new PersonalDataRepository(
-                    new AzureTableStorage<PersonalDataEntity>(_settings.Db.ClientPersonalInfoConnString, "PersonalData", _log)));
-
             builder.RegisterInstance<IBroadcastMailsRepository>(
                 new BroadcastMailsRepository(
                     new AzureTableStorage<BroadcastMailEntity>(_settings.Db.ClientPersonalInfoConnString, "BroadcastMails", _log)));

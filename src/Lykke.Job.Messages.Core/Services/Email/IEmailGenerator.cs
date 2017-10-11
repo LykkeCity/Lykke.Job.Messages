@@ -1,8 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Lykke.Job.Messages.Core.Domain.Clients;
-using Lykke.Job.Messages.Core.Domain.Email;
 using Lykke.Messages.Email.MessageData;
 using Lykke.Service.EmailSender;
+using Lykke.Service.PersonalData.Contract.Models;
 
 namespace Lykke.Job.Messages.Core.Services.Email
 {
