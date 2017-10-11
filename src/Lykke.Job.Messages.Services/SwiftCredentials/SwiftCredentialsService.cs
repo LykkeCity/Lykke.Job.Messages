@@ -56,6 +56,8 @@ namespace Lykke.Job.Messages.Services.SwiftCredentials
             string clientIdentity = null;
             string purposeOfPayment = null;
 
+            // deposit Ref ID is generated in LW app
+            // there it is only loaded from DB
             DateTime d1 = DateTime.Now;
             string date = d1.ToString("ddMMMyyyy", CultureInfo.InvariantCulture);
             IDepositRefIdInUse refId = await _depositRefIdInUseRepository.GetRefIdAsync(personalData.Id, date, assetId);
