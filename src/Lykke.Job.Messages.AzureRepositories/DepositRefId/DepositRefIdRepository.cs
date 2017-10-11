@@ -15,7 +15,7 @@ namespace Lykke.Job.Messages.AzureRepositories.DepositRefId
             _tableStorage = tableStorage;
         }
 
-        public async void AddCodeAsync(string refCode, string clientId, string date, string code)
+        public async Task AddCodeAsync(string refCode, string clientId, string date, string code)
         {
             DepositRefIdEntity depositRefId = new DepositRefIdEntity();
             depositRefId.ClientId = clientId;
