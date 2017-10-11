@@ -1,4 +1,5 @@
 ﻿using System;
+using Lykke.Service.PersonalData.Settings;
 
 namespace Lykke.Job.Messages.Core
 {
@@ -7,6 +8,7 @@ namespace Lykke.Job.Messages.Core
         public MessagesSettings MessagesJob { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public AssetsSettings Assets { get; set; }
+        public PersonalDataServiceSettings PersonalDataServiceSettings { get; set; }
 
         public class MessagesSettings
         {

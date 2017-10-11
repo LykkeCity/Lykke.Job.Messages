@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using AzureStorage.Queue;
 using Common;
 using Common.Log;
-using Lykke.Job.Messages.Core.Domain.Clients;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Messages.Email.MessageData;
 using Lykke.Service.EmailSender;
+using Lykke.Service.PersonalData.Contract;
 
 namespace Lykke.Job.Messages.QueueConsumers
 {
@@ -16,16 +16,16 @@ namespace Lykke.Job.Messages.QueueConsumers
         private readonly IEnumerable<IQueueReader> _queueReadersList;
         private readonly ISmtpEmailSender _smtpEmailSender;
         private readonly IEmailGenerator _emailGenerator;
-        private readonly IPersonalDataRepository _personalDataRepository;
+        private readonly IPersonalDataService _personalDataService;
         private readonly ILog _log;
 
         public EmailQueueConsumer(IEnumerable<IQueueReader> queueReadersList, ISmtpEmailSender smtpEmailSender,
-            IEmailGenerator emailGenerator, IPersonalDataRepository personalDataRepository, ILog log)
+            IEmailGenerator emailGenerator, IPersonalDataService personalDataService, ILog log)
         {
             _queueReadersList = queueReadersList;
             _smtpEmailSender = smtpEmailSender;
             _emailGenerator = emailGenerator;
-            _personalDataRepository = personalDataRepository;
+            _personalDataService = personalDataService;
             _log = log;
 
             InitQueues();
@@ -226,7 +226,7 @@ namespace Lykke.Job.Messages.QueueConsumers
         {
             await _log.WriteInfoAsync("EmailRequestQueueConsumer", "HandleUserRegisteredBroadcastAsync", null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                                $"{Environment.NewLine}{result.ToJson()}");
-            var personalData = await _personalDataRepository.GetAsync(result.MessageData.ClientId);
+            var personalData = await _personalDataService.GetAsync(result.MessageData.ClientId);
             var msg = await _emailGenerator.GenerateUserRegisteredMsg(result.PartnerId, personalData);
             await _smtpEmailSender.SendBroadcastAsync(result.PartnerId, result.BroadcastGroup, msg);
         }

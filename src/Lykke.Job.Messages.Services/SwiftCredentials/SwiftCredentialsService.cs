@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Lykke.Job.Messages.Core.Domain.Clients;
 using Lykke.Job.Messages.Core.Domain.SwiftCredentials;
 using Lykke.Job.Messages.Core.Regulator;
 using Lykke.Job.Messages.Core.Services.SwiftCredentials;
@@ -7,6 +6,7 @@ using Lykke.Service.Assets.Client.Custom;
 using Lykke.Job.Messages.Core.Domain.DepositRefId;
 using System;
 using System.Globalization;
+using Lykke.Service.PersonalData.Contract.Models;
 
 namespace Lykke.Job.Messages.Services.SwiftCredentials
 {
@@ -53,8 +53,8 @@ namespace Lykke.Job.Messages.Services.SwiftCredentials
             var asset = await _assetsService.TryGetAssetAsync(assetId);
             var assetTitle = asset?.DisplayId ?? assetId;
 
-            string clientIdentity = null;
-            string purposeOfPayment = null;
+            string clientIdentity;
+            string purposeOfPayment;
 
             DateTime d1 = DateTime.Now;
             string date = d1.ToString("ddMMMyyyy", CultureInfo.InvariantCulture);
@@ -63,7 +63,6 @@ namespace Lykke.Job.Messages.Services.SwiftCredentials
             {
                 // maybe a day has just been changed from yestrday to today
                 // so it is required to check yesterday's ref ids
-                DateTime d2 = d1.AddDays(-1);
                 date = d1.ToString("ddMMMyyyy", CultureInfo.InvariantCulture);
                 refId = await _depositRefIdInUseRepository.GetRefIdAsync(personalData.Id, date, assetId);
             }

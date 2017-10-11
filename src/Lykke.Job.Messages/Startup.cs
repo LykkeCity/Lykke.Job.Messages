@@ -55,7 +55,7 @@ namespace Lykke.Job.Messages
             var appSettings = Configuration.LoadSettings<AppSettings>();
             var log = CreateLogWithSlack(services, appSettings);
 
-            builder.RegisterModule(new JobModule(appSettings.CurrentValue, log));
+            builder.RegisterModule(new JobModule(appSettings, log));
 
             builder.AddTriggers(pool =>
             {
