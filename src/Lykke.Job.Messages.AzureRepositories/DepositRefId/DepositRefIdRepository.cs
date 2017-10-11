@@ -3,6 +3,7 @@ using Lykke.Job.Messages.Core.Domain.DepositRefId;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Lykke.Job.Messages.AzureRepositories.DepositRefId
 {
