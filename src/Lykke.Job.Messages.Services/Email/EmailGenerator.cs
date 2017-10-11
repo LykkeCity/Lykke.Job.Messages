@@ -119,7 +119,7 @@ namespace Lykke.Job.Messages.Services.Email
         {
             var personalData = await _personalDataRepository.GetAsync(messageData.ClientId);
             var asset = await _assetsService.TryGetAssetAsync(messageData.AssetId);
-            var swiftCredentials = await _swiftCredentialsService.GetCredentialsAsync(asset.Id, personalData);
+            var swiftCredentials = await _swiftCredentialsService.GetCredentialsAsync(asset.Id, messageData.Amount, personalData);
 
             var templateVm = new BankCashInTemplate
             {

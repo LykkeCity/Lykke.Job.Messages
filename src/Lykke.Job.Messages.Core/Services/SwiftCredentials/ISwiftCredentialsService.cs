@@ -6,6 +6,6 @@ namespace Lykke.Job.Messages.Core.Services.SwiftCredentials
 {
     public interface ISwiftCredentialsService
     {
-        Task<ISwiftCredentials> GetCredentialsAsync(string assetId, IPersonalData personalData);
+        Task<ISwiftCredentials> GetCredentialsAsync(string assetId, double amount, IPersonalData personalData);
     }
 }
