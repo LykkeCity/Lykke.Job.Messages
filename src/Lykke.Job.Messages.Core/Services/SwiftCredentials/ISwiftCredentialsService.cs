@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
-using Lykke.Job.Messages.Core.Domain.Clients;
 using Lykke.Job.Messages.Core.Domain.SwiftCredentials;
+using Lykke.Service.PersonalData.Contract.Models;
 
 namespace Lykke.Job.Messages.Core.Services.SwiftCredentials
 {

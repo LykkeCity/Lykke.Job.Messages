@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Lykke.Job.Messages.Core.Domain.Clients;
 using Lykke.Job.Messages.Core.Domain.SwiftCredentials;
 using Lykke.Job.Messages.Core.Regulator;
 using Lykke.Job.Messages.Core.Services.SwiftCredentials;
@@ -7,6 +6,7 @@ using Lykke.Service.Assets.Client.Custom;
 using Lykke.Job.Messages.Core.Domain.DepositRefId;
 using System;
 using System.Globalization;
+using Lykke.Service.PersonalData.Contract.Models;
 using Lykke.Job.Messages.Services.Deposits;
 
 namespace Lykke.Job.Messages.Services.SwiftCredentials
@@ -53,8 +53,8 @@ namespace Lykke.Job.Messages.Services.SwiftCredentials
             var asset = await _assetsService.TryGetAssetAsync(assetId);
             var assetTitle = asset?.DisplayId ?? assetId;
 
-            string clientIdentity = null;
-            string purposeOfPayment = null;
+            string clientIdentity;
+            string purposeOfPayment;
 
             clientIdentity = personalData != null ? await DepositRefIdGenService.GenerateReferenceId(assetId, amount, personalData.Email, personalData.Id, _depositRefIdInUseRepository) : "{1}";
             //clientIdentity = personalData != null ? personalData.Email.Replace("@", ".") : "{1}";

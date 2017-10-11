@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Common;
 using Lykke.Job.Messages.Core;
-using Lykke.Job.Messages.Core.Domain.Clients;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Job.Messages.Core.Services.SwiftCredentials;
 using Lykke.Job.Messages.Core.Services.Templates;
@@ -15,13 +13,15 @@ using Lykke.Messages.Email.MessageData;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.EmailFormatter.TemplateModels;
 using Lykke.Service.EmailSender;
+using Lykke.Service.PersonalData.Contract;
+using Lykke.Service.PersonalData.Contract.Models;
 
 namespace Lykke.Job.Messages.Services.Email
 {
     public class EmailGenerator : IEmailGenerator
     {
         private readonly ICachedAssetsService _assetsService;
-        private readonly IPersonalDataRepository _personalDataRepository;
+        private readonly IPersonalDataService _personalDataService;
         private readonly IRemoteTemplateGenerator _templateGenerator;
         private readonly AppSettings.EmailSettings _emailSettings;
         private readonly AppSettings.BlockchainSettings _blockchainSettings;
@@ -29,12 +29,12 @@ namespace Lykke.Job.Messages.Services.Email
         private readonly ISwiftCredentialsService _swiftCredentialsService;
 
         public EmailGenerator(
-            ICachedAssetsService assetsService, IPersonalDataRepository personalDataRepository,
+            ICachedAssetsService assetsService, IPersonalDataService personalDataService,
             AppSettings.EmailSettings emailSettings, AppSettings.BlockchainSettings blockchainSettings, AppSettings.WalletApiSettings walletApiSettings,
             IRemoteTemplateGenerator templateGenerator, ISwiftCredentialsService swiftCredentialsService)
         {
             _assetsService = assetsService;
-            _personalDataRepository = personalDataRepository;
+            _personalDataService = personalDataService;
             _templateGenerator = templateGenerator;
             _emailSettings = emailSettings;
             _blockchainSettings = blockchainSettings;
@@ -117,7 +117,7 @@ namespace Lykke.Job.Messages.Services.Email
 
         public async Task<EmailMessage> GenerateBankCashInMsg(string partnerId, BankCashInData messageData)
         {
-            var personalData = await _personalDataRepository.GetAsync(messageData.ClientId);
+            var personalData = await _personalDataService.GetAsync(messageData.ClientId);
             var asset = await _assetsService.TryGetAssetAsync(messageData.AssetId);
             var swiftCredentials = await _swiftCredentialsService.GetCredentialsAsync(asset.Id, messageData.Amount, personalData);
 
@@ -337,7 +337,7 @@ namespace Lykke.Job.Messages.Services.Email
 
         public async Task<EmailMessage> GenerateSwiftCashOutRequestMsg(string partnerId, SwiftCashOutRequestData messageData)
         {
-            var personalData = await _personalDataRepository.GetAsync(messageData.ClientId);
+            var personalData = await _personalDataService.GetAsync(messageData.ClientId);
 
             var apiHost = _walletApiSettings.Host.Trim().ToLower();
             if (apiHost.Last() != '/')
