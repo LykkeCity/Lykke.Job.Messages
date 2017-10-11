@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Lykke.Job.Messages.Core.Domain.Clients;
 using Lykke.Job.Messages.Core.Domain.SwiftCredentials;
 using Lykke.Job.Messages.Core.Regulator;
 using Lykke.Job.Messages.Core.Services.SwiftCredentials;
@@ -7,6 +6,7 @@ using Lykke.Service.Assets.Client.Custom;
 using Lykke.Job.Messages.Core.Domain.DepositRefId;
 using System;
 using System.Globalization;
+using Lykke.Service.PersonalData.Contract.Models;
 
 namespace Lykke.Job.Messages.Services.SwiftCredentials
 {
@@ -71,7 +71,7 @@ namespace Lykke.Job.Messages.Services.SwiftCredentials
             {
                 string email = personalData.Email.Replace("@", "..");
                 clientIdentity = $"{email}_{date}_{refId.Code}";
-                _depositRefIdRepository.AddCodeAsync(clientIdentity, refId.ClientId, date, refId.Code);
+                await _depositRefIdRepository.AddCodeAsync(clientIdentity, refId.ClientId, date, refId.Code);
                 purposeOfPayment = string.Format(sourceCredentials.PurposeOfPayment, assetTitle, clientIdentity);
             }
             else
