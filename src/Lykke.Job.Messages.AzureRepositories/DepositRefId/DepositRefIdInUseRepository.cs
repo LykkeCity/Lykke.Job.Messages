@@ -32,27 +32,6 @@ namespace Lykke.Job.Messages.AzureRepositories.DepositRefId
             return null;
         }
 
-        public async void AddUsedCodesAsync(string clientId, string date, string code, string assetId, double amount)
-        {
-            DepositRefIdInUseEntity depositRefIdInUse = new DepositRefIdInUseEntity();
-            depositRefIdInUse.ClientId = clientId;
-            depositRefIdInUse.Date = date;
-            depositRefIdInUse.Code = code;
-            depositRefIdInUse.AssetId = assetId;
-            depositRefIdInUse.Amount = amount;
-            depositRefIdInUse.PartitionKey = GeneratePartitionKey(date, clientId);
-            depositRefIdInUse.RowKey = GenerateRowKey(code);
-            depositRefIdInUse.isEmailSent = false;
-
-            await _tableStorage.InsertAsync(depositRefIdInUse);
-        }
-
-        public async Task<IEnumerable<IDepositRefIdInUse>> GetAllUsedCodesAsync(string clientId, string date)
-        {
-            string partitionKey = GeneratePartitionKey(date, clientId);
-            return await _tableStorage.GetDataAsync(partitionKey);
-        }
-
         public string GeneratePartitionKey(string date, string clientId)
         {
             return $"{date}|{clientId}";
