@@ -126,6 +126,9 @@ namespace Lykke.Job.Messages.QueueConsumers
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RequestForDocumentData>>>(
                     RequestForDocumentData.QueueName, itm => HandleRequestForDocumentEmailAsync(itm.Data));
 
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RequestForExpiredDocumentData>>>(
+                    RequestForExpiredDocumentData.QueueName, itm => HandleRequestForExpiredDocumentEmailAsync(itm.Data));
+
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<SwiftCashoutProcessedData>>>(
                     SwiftCashoutProcessedData.QueueName, itm => HandleSwiftCashoutProcessedEmailAsync(itm.Data));
 
@@ -363,6 +366,14 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _log.WriteInfoAsync("EmailRequestQueueConsumer", "HandleRequestForDocumentEmailAsync", null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                                $"{Environment.NewLine}{result.ToJson()}");
             var msg = await _emailGenerator.GenerateRequestForDocumentMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+        }
+
+        private async Task HandleRequestForExpiredDocumentEmailAsync(SendEmailData<RequestForExpiredDocumentData> result)
+        {
+            await _log.WriteInfoAsync("EmailRequestQueueConsumer", "HandleRequestForExpiredDocumentEmailAsync", null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                               $"{Environment.NewLine}{result.ToJson()}");
+            var msg = await _emailGenerator.GenerateRequestForExpiredDocumentMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
 

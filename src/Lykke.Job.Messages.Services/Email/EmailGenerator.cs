@@ -438,6 +438,18 @@ namespace Lykke.Job.Messages.Services.Email
             return await _templateGenerator.GenerateAsync(partnerId, "RequestForDocument", templateVm);
         }
 
+        public async Task<EmailMessage> GenerateRequestForExpiredDocumentMsg(string partnerId, RequestForExpiredDocumentData messageData)
+        {
+            var templateVm = new RequestForExpiredDocumentTemplate
+            {
+                Text = messageData.Text,
+                FullName = messageData.FullName,
+                Year = DateTime.UtcNow.Year
+            };
+
+            return await _templateGenerator.GenerateAsync(partnerId, "RequestForDocument", templateVm);
+        }
+
         public async Task<IAsset> FindAssetByBlockchainAssetIdAsync(string partnerId, string blockchainAssetId)
         {
             if (blockchainAssetId == null)
