@@ -66,14 +66,14 @@ namespace Lykke.Job.Messages.Services.SwiftCredentials
                 // maybe a day has just been changed from yestrday to today
                 // so it is required to check yesterday's ref ids
                 DateTime d2 = d1.AddDays(-1);
-                date = d1.ToString("ddMMMyyyy", CultureInfo.InvariantCulture);
+                date = d2.ToString("ddMMMyyyy", CultureInfo.InvariantCulture);
                 refId = await _depositRefIdInUseRepository.GetRefIdAsync(personalData.Id, date, assetId);
             }
             if (refId != null) // ref id has been found
             {
                 string email = personalData.Email.Replace("@", "..");
                 clientIdentity = $"{email}_{date}_{refId.Code}";
-                await _depositRefIdRepository.AddCodeAsync(clientIdentity, refId.ClientId, date, refId.Code);
+                //await _depositRefIdRepository.AddCodeAsync(clientIdentity, refId.ClientId, date, refId.Code);
                 purposeOfPayment = string.Format(sourceCredentials.PurposeOfPayment, assetTitle, clientIdentity);
             }
             else
