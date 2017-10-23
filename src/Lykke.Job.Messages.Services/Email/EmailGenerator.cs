@@ -447,7 +447,7 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = DateTime.UtcNow.Year
             };
 
-            return await _templateGenerator.GenerateAsync(partnerId, "RequestForDocument", templateVm);
+            return await _templateGenerator.GenerateAsync(partnerId, "RequestForExpiredDocument", templateVm);
         }
 
         public async Task<IAsset> FindAssetByBlockchainAssetIdAsync(string partnerId, string blockchainAssetId)
