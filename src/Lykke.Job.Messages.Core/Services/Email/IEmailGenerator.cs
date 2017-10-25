@@ -35,5 +35,6 @@ namespace Lykke.Job.Messages.Core.Services.Email
         Task<EmailMessage> GenerateRequestForExpiredDocumentMsg(string partnerId, RequestForExpiredDocumentData messageData);
         Task<EmailMessage> GenerateSwiftCashoutProcessedMsg(string partnerId, SwiftCashoutProcessedData messageData);
         Task<EmailMessage> GenerateRegistrationVerifyEmailMsg(string partnerId, RegistrationEmailVerifyData messageData);
+        Task<EmailMessage> GenerateSwiftCashoutDeclinedMsg(string partnerId, SwiftCashoutDeclinedData messageData);
     }
 }
