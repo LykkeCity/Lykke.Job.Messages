@@ -133,7 +133,8 @@ namespace Lykke.Job.Messages.Services.Email
                 Bic = swiftCredentials.BIC,
                 PurposeOfPayment = swiftCredentials.PurposeOfPayment,
                 BankAddress = swiftCredentials.BankAddress,
-                CompanyAddress = swiftCredentials.CompanyAddress
+                CompanyAddress = swiftCredentials.CompanyAddress,
+                CorrespondentAccount = swiftCredentials.CorrespondentAccount
             };
 
             return await _templateGenerator.GenerateAsync(partnerId, "BankCashInTemplate", templateVm);

@@ -13,6 +13,7 @@ namespace Lykke.Job.Messages.AzureRepositories.SwiftCredentials
         public string PurposeOfPayment { get; set; }
         public string BankAddress { get; set; }
         public string CompanyAddress { get; set; }
+        public string CorrespondentAccount { get; set; }
 
         public static string GeneratePartitionKey(string regulatorId)
         {
@@ -37,7 +38,8 @@ namespace Lykke.Job.Messages.AzureRepositories.SwiftCredentials
                 BIC = credentials.BIC,
                 BankAddress = credentials.BankAddress,
                 CompanyAddress = credentials.CompanyAddress,
-                PurposeOfPayment = credentials.PurposeOfPayment
+                PurposeOfPayment = credentials.PurposeOfPayment,
+                CorrespondentAccount = credentials.CorrespondentAccount
             };
         }
     }
