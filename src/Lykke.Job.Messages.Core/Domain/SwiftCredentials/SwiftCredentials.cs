@@ -10,5 +10,6 @@
         public string PurposeOfPayment { get; set; }
         public string BankAddress { get; set; }
         public string CompanyAddress { get; set; }
+        public string CorrespondentAccount { get; set; }
     }
 }

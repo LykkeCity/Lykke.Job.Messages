@@ -94,7 +94,8 @@ namespace Lykke.Job.Messages.Services.SwiftCredentials
                 CompanyAddress = sourceCredentials.CompanyAddress,
                 AccountNumber = sourceCredentials.AccountNumber,
                 BankAddress = sourceCredentials.BankAddress,
-                AccountName = sourceCredentials.AccountName
+                AccountName = sourceCredentials.AccountName,
+                CorrespondentAccount = sourceCredentials.CorrespondentAccount
             };
         }
     }
