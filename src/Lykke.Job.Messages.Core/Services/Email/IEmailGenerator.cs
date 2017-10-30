@@ -33,5 +33,6 @@ namespace Lykke.Job.Messages.Core.Services.Email
         Task<EmailMessage> GenerateSwiftCashOutRequestMsg(string partnerId, SwiftCashOutRequestData messageData);
         Task<EmailMessage> GenerateRequestForDocumentMsg(string partnerId, RequestForDocumentData messageData);
         Task<EmailMessage> GenerateSwiftCashoutProcessedMsg(string partnerId, SwiftCashoutProcessedData messageData);
+        Task<EmailMessage> GenerateSwiftCashoutDeclinedMsg(string partnerId, SwiftCashoutDeclinedData messageData);
     }
 }
