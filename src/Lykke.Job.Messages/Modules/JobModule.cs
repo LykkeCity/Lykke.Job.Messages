@@ -26,17 +26,16 @@ using Lykke.Job.Messages.Services;
 using Lykke.Job.Messages.Services.Email;
 using Lykke.Job.Messages.Services.Http;
 using Lykke.Job.Messages.Services.Slack;
-using Lykke.Job.Messages.Services.Sms;
 using Lykke.Job.Messages.Services.Sms.Mocks;
 using Lykke.Job.Messages.Services.Sms.Nexmo;
 using Lykke.Job.Messages.Services.Sms.Twilio;
 using Lykke.Job.Messages.Services.SwiftCredentials;
 using Lykke.Job.Messages.Services.Templates;
 using Lykke.Service.Assets.Client.Custom;
-using Lykke.Service.EmailFormatter;
 using Lykke.Service.EmailPartnerRouter;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
+using Lykke.Service.TemplateFormatter;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -159,10 +158,10 @@ namespace Lykke.Job.Messages.Modules
 
             // Email formatting dependencies
 
-            builder.RegisterEmailFormatter(_appSettings.CurrentValue.MessagesJob.Email.EmailFormatterUrl, _log);
             builder.RegisterType<RemoteTemplateGenerator>()
                 .As<IRemoteTemplateGenerator>()
                 .SingleInstance();
+            builder.RegisterTemplateFormatter(_appSettings.CurrentValue.MessagesJob.Email.EmailFormatterUrl, _log);
             builder.RegisterType<EmailGenerator>()
                 .As<IEmailGenerator>()
                 .SingleInstance()
@@ -189,7 +188,6 @@ namespace Lykke.Job.Messages.Modules
 
             builder.Register<IQueueReader>(x => smsQueueReader).SingleInstance();
             builder.RegisterType<TemplateGenerator>().As<ITemplateGenerator>();
-            builder.RegisterType<SmsTextGenerator>().As<ISmsTextGenerator>().SingleInstance();
 
             if (_settings.CurrentValue.Sms.UseMocks)
             {
