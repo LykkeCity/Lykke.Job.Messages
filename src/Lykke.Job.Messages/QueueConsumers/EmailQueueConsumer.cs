@@ -389,7 +389,7 @@ namespace Lykke.Job.Messages.QueueConsumers
         {
             await _log.WriteInfoAsync("EmailRequestQueueConsumer", "HandleRegistrationVerifyEmailAsync", null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                                $"{Environment.NewLine}{result.ToJson()}");
-            var msg = await _emailGenerator.GenerateRegistrationVerifyEmailMsg(result.PartnerId, result.MessageData);
+            var msg = await _emailGenerator.GenerateRegistrationVerifyEmailMsgAsync(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
 

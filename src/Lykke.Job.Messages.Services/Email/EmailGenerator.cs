@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -475,16 +476,16 @@ namespace Lykke.Job.Messages.Services.Email
             return await _templateGenerator.GenerateAsync(partnerId, "SwiftCashoutDeclined", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateRegistrationVerifyEmailMsg(string partnerId, RegistrationEmailVerifyData messageData)
+        public Task<EmailMessage> GenerateRegistrationVerifyEmailMsgAsync(string partnerId, RegistrationEmailVerifyData messageData)
         {
             var templateVm = new RegistrationEmailVerifyData
             {
                 Code = messageData.Code,
                 Url = messageData.Url,
-                Year = DateTime.UtcNow.Year.ToString()
+                Year = DateTime.UtcNow.Year.ToString(CultureInfo.InvariantCulture)
             };
 
-            return await _templateGenerator.GenerateAsync(partnerId, "EmailVerificationCode", templateVm);
+            return _templateGenerator.GenerateAsync(partnerId, "EmailVerificationCode", templateVm);
         }
 
         private static string HtmlBreaks(string src)
