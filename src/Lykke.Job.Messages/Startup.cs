@@ -78,9 +78,12 @@ namespace Lykke.Job.Messages
 
             app.UseLykkeMiddleware("Messages", ex => new ErrorResponse { ErrorMessage = "Technical problem" });
 
+
             app.UseMvc();
+            app.UseStaticFiles();
             app.UseSwagger();
             app.UseSwaggerUi();
+            
 
             appLifetime.ApplicationStopped.Register(() =>
             {
