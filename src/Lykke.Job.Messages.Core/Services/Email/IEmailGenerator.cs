@@ -9,6 +9,7 @@ namespace Lykke.Job.Messages.Core.Services.Email
     {
         Task<EmailMessage> GenerateWelcomeMsg(string partnerId, RegistrationMessageData kycOkData);
         Task<EmailMessage> GenerateWelcomeFxMsg(string partnerId, KycOkData kycOkData);
+        Task<EmailMessage> GenerateKycRegReminderMsg(string partnerId, KycRegReminderData kycRegReminderData);
         Task<EmailMessage> GenerateConfirmEmailMsg(string partnerId, EmailComfirmationData registrationData);
         Task<EmailMessage> GenerateCashInMsg(string partnerId, CashInData messageData);
         Task<EmailMessage> GenerateNoRefundDepositDoneMsg(string partnerId, NoRefundDepositDoneData messageData);

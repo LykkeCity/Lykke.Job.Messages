@@ -48,6 +48,9 @@ namespace Lykke.Job.Messages.QueueConsumers
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RegistrationMessageData>>>(
                     RegistrationMessageData.QueueName, itm => HandleRegisteredEmailAsync(itm.Data));
 
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<KycRegReminderData>>>(
+                    KycRegReminderData.QueueName, itm => HandleKycRegReminderEmailAsync(itm.Data));
+
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<KycOkData>>>(
                     KycOkData.QueueName, itm => HandleKycOkEmailAsync(itm.Data));
 
@@ -160,6 +163,14 @@ namespace Lykke.Job.Messages.QueueConsumers
             };
 
             var msg = await _emailGenerator.GenerateWelcomeMsg(result.PartnerId, registerData);
+            await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+        }
+
+        private async Task HandleKycRegReminderEmailAsync(SendEmailData<KycRegReminderData> result)
+        {
+            await _log.WriteInfoAsync("EmailRequestQueueConsumer", "HandleKycRegReminderEmailAsync", null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                  $"{Environment.NewLine}{result.ToJson()}");
+            var msg = await _emailGenerator.GenerateKycRegReminderMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
 

@@ -52,6 +52,19 @@ namespace Lykke.Job.Messages.Services.Email
             return _templateGenerator.GenerateAsync(partnerId, "WelcomeTemplate", templateVm);
         }
 
+        public Task<EmailMessage> GenerateKycRegReminderMsg(string partnerId, KycRegReminderData kycRegReminderData)
+        {
+            var templateVm = new KycRegReminderTemplate
+            {
+                Year = kycRegReminderData.Year,
+                FullName = kycRegReminderData.FullName,
+                Subject = kycRegReminderData.Subject,
+                Date = kycRegReminderData.Date,
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "KycRegReminderTemplate", templateVm);
+        }
+
         public Task<EmailMessage> GenerateWelcomeFxMsg(string partnerId, KycOkData kycOkData)
         {
             var templateVm = new BaseTemplate
