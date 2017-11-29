@@ -6,6 +6,7 @@ using Lykke.Job.Messages.Core.Services.Templates;
 using Lykke.Job.Messages.Services.Http;
 using Lykke.Service.TemplateFormatter;
 using Lykke.Service.EmailSender;
+using Lykke.Service.TemplateFormatter;
 
 namespace Lykke.Job.Messages.Services.Templates
 {

@@ -12,10 +12,10 @@ using Lykke.Job.Messages.Core.Services.Templates;
 using Lykke.Job.Messages.Services.Email.Resources;
 using Lykke.Messages.Email.MessageData;
 using Lykke.Service.Assets.Client.Custom;
-using Lykke.Service.TemplateFormatter.TemplateModels;
 using Lykke.Service.EmailSender;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.PersonalData.Contract.Models;
+using Lykke.Service.TemplateFormatter.TemplateModels;
 
 namespace Lykke.Job.Messages.Services.Email
 {
@@ -42,6 +42,17 @@ namespace Lykke.Job.Messages.Services.Email
             _walletApiSettings = walletApiSettings;
             _swiftCredentialsService = swiftCredentialsService;
         }
+
+        public Task<EmailMessage> GenerateLykkeCardVisaMsg(string partnerId, LykkeCardVisaData lykkeCardVisaData)
+        {
+            var templateVm = new LykkeCardVisaTemplate
+            {
+                Year = lykkeCardVisaData.Year,
+                Url = lykkeCardVisaData.Url
+            };
+ 
+             return _templateGenerator.GenerateAsync(partnerId, "LykkeCardMessageTemplate", templateVm);
+         }
 
         public Task<EmailMessage> GenerateWelcomeMsg(string partnerId, RegistrationMessageData kycOkData)
         {
