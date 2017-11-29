@@ -33,12 +33,12 @@ using Lykke.Job.Messages.Services.Sms.Twilio;
 using Lykke.Job.Messages.Services.SwiftCredentials;
 using Lykke.Job.Messages.Services.Templates;
 using Lykke.Service.Assets.Client.Custom;
-using Lykke.Service.EmailFormatter;
 using Lykke.Service.EmailPartnerRouter;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
+using Lykke.Service.TemplateFormatter;
 
 namespace Lykke.Job.Messages.Modules
 {
@@ -159,10 +159,10 @@ namespace Lykke.Job.Messages.Modules
 
             // Email formatting dependencies
 
-            builder.RegisterEmailFormatter(_appSettings.CurrentValue.MessagesJob.Email.EmailFormatterUrl, _log);
             builder.RegisterType<RemoteTemplateGenerator>()
                 .As<IRemoteTemplateGenerator>()
                 .SingleInstance();
+            builder.RegisterTemplateFormatter(_appSettings.CurrentValue.MessagesJob.Email.EmailFormatterUrl, _log);
             builder.RegisterType<EmailGenerator>()
                 .As<IEmailGenerator>()
                 .SingleInstance()

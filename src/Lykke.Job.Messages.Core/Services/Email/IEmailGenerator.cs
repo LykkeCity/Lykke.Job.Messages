@@ -7,6 +7,7 @@ namespace Lykke.Job.Messages.Core.Services.Email
 {
     public interface IEmailGenerator
     {
+        Task<EmailMessage> GenerateLykkeCardVisaMsg(string partnerId, LykkeCardVisaData lykkeCardVisaData);
         Task<EmailMessage> GenerateWelcomeMsg(string partnerId, RegistrationMessageData kycOkData);
         Task<EmailMessage> GenerateWelcomeFxMsg(string partnerId, KycOkData kycOkData);
         Task<EmailMessage> GenerateConfirmEmailMsg(string partnerId, EmailComfirmationData registrationData);
