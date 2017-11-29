@@ -134,8 +134,25 @@ namespace Lykke.Job.Messages.QueueConsumers
                 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RegistrationEmailVerifyData>>>(
                     RegistrationEmailVerifyData.QueueName, itm => HandleRegistrationVerifyEmailAsync(itm.Data));
+
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<LykkeCardVisaData>>>(
+                    LykkeCardVisaData.QueueName, itm => HandleLykkeVisaCardEmailAsync(itm.Data));
             }
         }
+
+        private async Task HandleLykkeVisaCardEmailAsync(SendEmailData<LykkeCardVisaData> result)
+         {
+             await _log.WriteInfoAsync("EmailRequestQueueConsumer", "HandleLykkeVisaCardEmailAsync", null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                        $"{Environment.NewLine}{result.ToJson()}");
+             var lykkeVisaCardData = new LykkeCardVisaData
+             {
+                 Url = result.MessageData.Url,
+                Year = result.MessageData.Year
+             };
+ 
+             var msg = await _emailGenerator.GenerateLykkeCardVisaMsg(result.PartnerId, lykkeVisaCardData);
+             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+         }
 
         private async Task HandleRejectedEmailAsync(SendEmailData<RejectedData> result)
         {

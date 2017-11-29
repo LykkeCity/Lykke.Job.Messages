@@ -43,6 +43,17 @@ namespace Lykke.Job.Messages.Services.Email
             _swiftCredentialsService = swiftCredentialsService;
         }
 
+        public Task<EmailMessage> GenerateLykkeCardVisaMsg(string partnerId, LykkeCardVisaData lykkeCardVisaData)
+        {
+            var templateVm = new LykkeCardVisaTemplate
+            {
+                Year = lykkeCardVisaData.Year,
+                Url = lykkeCardVisaData.Url
+            };
+ 
+             return _templateGenerator.GenerateAsync(partnerId, "LykkeCardMessageTemplate", templateVm);
+         }
+
         public Task<EmailMessage> GenerateWelcomeMsg(string partnerId, RegistrationMessageData kycOkData)
         {
             var templateVm = new BaseTemplate
