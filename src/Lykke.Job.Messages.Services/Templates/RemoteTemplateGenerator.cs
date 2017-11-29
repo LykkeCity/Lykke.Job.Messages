@@ -6,21 +6,22 @@ using Lykke.Job.Messages.Core.Services.Templates;
 using Lykke.Job.Messages.Services.Http;
 using Lykke.Service.EmailFormatter;
 using Lykke.Service.EmailSender;
+using Lykke.Service.TemplateFormatter;
 
 namespace Lykke.Job.Messages.Services.Templates
 {
     public class RemoteTemplateGenerator : IRemoteTemplateGenerator
     {
-        private readonly IEmailFormatter _emailFormatter;
+        private readonly ITemplateFormatter _templateFormatter;
 
-        public RemoteTemplateGenerator(IEmailFormatter emailFormatter)
+        public RemoteTemplateGenerator(ITemplateFormatter templateFormatter)
         {
-            _emailFormatter = emailFormatter;
+            _templateFormatter = templateFormatter;
         }
 
         public Task<EmailMessage> GenerateAsync<T>(string partnerId, string templateName, T templateVm)
         {
-            return _emailFormatter.FormatAsync(templateName, partnerId, "EN", templateVm);
+            return _templateFormatter.FormatAsync(templateName, partnerId, "EN", templateVm);
         }
     }
 }
