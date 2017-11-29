@@ -4,16 +4,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Lykke.Job.Messages.Core.Services.Templates;
 using Lykke.Job.Messages.Services.Http;
-using Lykke.Service.EmailFormatter;
+using Lykke.Service.TemplateFormatter;
 using Lykke.Service.EmailSender;
 
 namespace Lykke.Job.Messages.Services.Templates
 {
     public class RemoteTemplateGenerator : IRemoteTemplateGenerator
     {
-        private readonly IEmailFormatter _emailFormatter;
+        private readonly ITemplateFormatter _emailFormatter;
 
-        public RemoteTemplateGenerator(IEmailFormatter emailFormatter)
+        public RemoteTemplateGenerator(ITemplateFormatter emailFormatter)
         {
             _emailFormatter = emailFormatter;
         }
