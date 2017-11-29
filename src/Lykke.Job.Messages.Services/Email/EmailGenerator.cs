@@ -12,10 +12,10 @@ using Lykke.Job.Messages.Core.Services.Templates;
 using Lykke.Job.Messages.Services.Email.Resources;
 using Lykke.Messages.Email.MessageData;
 using Lykke.Service.Assets.Client.Custom;
-using Lykke.Service.EmailFormatter.TemplateModels;
 using Lykke.Service.EmailSender;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.PersonalData.Contract.Models;
+using Lykke.Service.TemplateFormatter.TemplateModels;
 
 namespace Lykke.Job.Messages.Services.Email
 {
