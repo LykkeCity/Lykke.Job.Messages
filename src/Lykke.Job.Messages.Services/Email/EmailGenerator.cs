@@ -106,7 +106,7 @@ namespace Lykke.Job.Messages.Services.Email
             var asset = await FindAssetByBlockchainAssetIdAsync(partnerId, messageData.AssetBcnId);
             var templateVm = new BtcDepositDoneTempate
             {
-                AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.Name,
+                AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId,
                 Amount = messageData.Amount,
                 Year = DateTime.UtcNow.Year
             };
