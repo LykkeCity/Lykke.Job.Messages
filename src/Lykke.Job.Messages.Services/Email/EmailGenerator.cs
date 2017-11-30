@@ -95,7 +95,7 @@ namespace Lykke.Job.Messages.Services.Email
             {
                 Multisig = cashInData.Multisig,
                 Year = DateTime.UtcNow.Year.ToString(),
-                AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.Name
+                AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId
             };
 
             return await _templateGenerator.GenerateAsync(partnerId, "CashInTemplate", templateVm);
