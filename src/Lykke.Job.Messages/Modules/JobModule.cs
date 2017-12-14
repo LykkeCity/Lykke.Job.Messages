@@ -26,7 +26,6 @@ using Lykke.Job.Messages.Services;
 using Lykke.Job.Messages.Services.Email;
 using Lykke.Job.Messages.Services.Http;
 using Lykke.Job.Messages.Services.Slack;
-using Lykke.Job.Messages.Services.Sms;
 using Lykke.Job.Messages.Services.Sms.Mocks;
 using Lykke.Job.Messages.Services.Sms.Nexmo;
 using Lykke.Job.Messages.Services.Sms.Twilio;
@@ -189,7 +188,6 @@ namespace Lykke.Job.Messages.Modules
 
             builder.Register<IQueueReader>(x => smsQueueReader).SingleInstance();
             builder.RegisterType<TemplateGenerator>().As<ITemplateGenerator>();
-            builder.RegisterType<SmsTextGenerator>().As<ISmsTextGenerator>().SingleInstance();
 
             if (_settings.CurrentValue.Sms.UseMocks)
             {
