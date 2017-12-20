@@ -182,8 +182,10 @@ namespace Lykke.Job.Messages.Modules
 
         private void RegistermSmsServices(ContainerBuilder builder)
         {
-            var smsQueue = AzureQueueExt.Create(_settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString),
-                "smsqueue");
+            IQueueExt smsQueue = AzureQueueExt.Create(
+                _appSettings.ConnectionString(o => o.SmsNotifications.AzureQueue.ConnectionString),
+                _appSettings.CurrentValue.SmsNotifications.AzureQueue.QueueName);
+
             var smsQueueReader = new QueueReader(smsQueue, "SmsQueueReader", 3000, _log);
 
             builder.Register<IQueueReader>(x => smsQueueReader).SingleInstance();
