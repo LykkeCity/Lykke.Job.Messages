@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Common.Log;
 using AzureStorage.Queue;
+using Common;
 using Common.PasswordTools;
 using Lykke.Job.Messages.Contract.Sms;
 using Lykke.Job.Messages.Core.Domain.Sms;
@@ -70,7 +71,7 @@ namespace Lykke.Job.Messages.QueueConsumers
                 nameof(Messages),
                 nameof(SmsQueueConsumer),
                 nameof(HandleSimpleSmsRequestAsync),
-                $"SMS: {request.MessageData}. Receiver: {PasswordKeepingUtils.GetClientHashedPwd(request.PhoneNumber)}, UTC: {DateTime.UtcNow}");
+                $"SMS: {request.MessageData}. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}");
 
             var sender = GetSender(request.UseAlternativeProvider);
 
@@ -83,7 +84,7 @@ namespace Lykke.Job.Messages.QueueConsumers
                 nameof(Messages),
                 nameof(SmsQueueConsumer),
                 nameof(HandleSmsRequestAsync),
-                $"SMS: Phone confirmation. Receiver: {PasswordKeepingUtils.GetClientHashedPwd(request.PhoneNumber)}, UTC: {DateTime.UtcNow}");
+                $"SMS: Phone confirmation. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}");
 
             var msgText = await _templateFormatter.FormatAsync(nameof(SmsConfirmationTemplate), request.PartnerId, "EN",
                 new SmsConfirmationTemplate

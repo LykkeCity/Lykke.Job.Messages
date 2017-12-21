@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Common;
 using Common.Log;
-using Common.PasswordTools;
 using Lykke.Job.Messages.Core;
 using Lykke.Job.Messages.Core.Domain.Sms;
 using Lykke.Job.Messages.Core.Services.Sms;
@@ -31,7 +30,7 @@ namespace Lykke.Job.Messages.Services.Sms.Twilio
             var msg = await _twilioRestClient.SendMessage(message.From, phoneNumber, message.Text);
 
             if (!msg.Success)
-                await _log.WriteWarningAsync("TwilioSmsSender", "ProcessSmsAsync", PasswordKeepingUtils.GetClientHashedPwd(phoneNumber), msg.ErrorMesssage);
+                await _log.WriteWarningAsync("TwilioSmsSender", "ProcessSmsAsync", phoneNumber.SanitizePhone(), msg.ErrorMesssage);
         }
     }
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using Common;
 using Common.Log;
-using Common.PasswordTools;
 using Lykke.Job.Messages.Core.Domain.Email;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Messages.Email;
@@ -33,7 +33,7 @@ namespace Lykke.Job.Messages.Services.Email
             catch (Exception ex)
             {
                 if (_log != null)
-                    await _log.WriteWarningAsync("Mail sender", "Send mail", PasswordKeepingUtils.GetClientHashedPwd(emailAddress), ex.Message);
+                    await _log.WriteWarningAsync("Mail sender", "Send mail", emailAddress.SanitizeEmail(), ex.Message);
             }
         }
 
