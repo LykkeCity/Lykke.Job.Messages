@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
@@ -35,14 +33,14 @@ namespace Lykke.Job.Messages.Services.Email
             catch (Exception ex)
             {
                 if (_log != null)
-                    await _log.WriteWarningAsync("Mail sender", "Send mail", emailAddress, ex.Message);
+                    await _log.WriteWarningAsync("Mail sender", "Send mail", emailAddress.SanitizeEmail(), ex.Message);
             }
-
         }
 
         public async Task SendBroadcastAsync(string partnerId, BroadcastGroup broadcastGroup, EmailMessage message)
         {
             var emails = await _broadcastMailsRepository.GetEmailsByGroup(broadcastGroup);
+
             foreach (var email in emails)
             {
                 await SendEmailAsync(partnerId, email.Email, message);

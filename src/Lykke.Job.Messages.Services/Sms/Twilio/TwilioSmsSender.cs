@@ -30,7 +30,7 @@ namespace Lykke.Job.Messages.Services.Sms.Twilio
             var msg = await _twilioRestClient.SendMessage(message.From, phoneNumber, message.Text);
 
             if (!msg.Success)
-                await _log.WriteWarningAsync("TwilioSmsSender", "ProcessSmsAsync", phoneNumber, msg.ErrorMesssage);
+                await _log.WriteWarningAsync("TwilioSmsSender", "ProcessSmsAsync", phoneNumber.SanitizePhone(), msg.ErrorMesssage);
         }
     }
 }
