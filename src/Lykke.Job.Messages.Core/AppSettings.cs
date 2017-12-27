@@ -9,6 +9,7 @@ namespace Lykke.Job.Messages.Core
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public AssetsSettings Assets { get; set; }
         public PersonalDataServiceSettings PersonalDataServiceSettings { get; set; }
+        public SmsNotificationsSettings SmsNotifications { get; set; }
 
         public class MessagesSettings
         {
@@ -104,6 +105,11 @@ namespace Lykke.Job.Messages.Core
             public string ConnectionString { get; set; }
 
             public string QueueName { get; set; }
+        }
+
+        public class SmsNotificationsSettings
+        {
+            public AzureQueueSettings AzureQueue { get; set; }
         }
     }
 }
