@@ -1,5 +1,6 @@
 ﻿using System;
 using Lykke.Service.PersonalData.Settings;
+using Lykke.SettingsReader.Attributes;
 
 namespace Lykke.Job.Messages.Core
 {
@@ -51,6 +52,7 @@ namespace Lykke.Job.Messages.Core
 
         public class WalletApiSettings
         {
+            [HttpCheck("/api/isalive")]
             public string Host { get; set; }
         }
 
@@ -61,7 +63,9 @@ namespace Lykke.Job.Messages.Core
 
         public class EmailSettings
         {
+            [HttpCheck("/api/isalive")]
             public string EmailFormatterUrl { get; set; }
+            [HttpCheck("/api/isalive")]
             public string EmailPartnerRouterUrl { get; set; }
             public int RefundTimeoutInDays { get; set; }
         }
@@ -73,11 +77,13 @@ namespace Lykke.Job.Messages.Core
         
         public class SmsSenderSettings
         {
+            [HttpCheck("/api/isalive")]
             public string ServiceUrl { get; set; }
         }
 
         public class AssetsSettings
         {
+            [HttpCheck("/api/isalive")]
             public string ServiceUrl { get; set; }
         }
 
