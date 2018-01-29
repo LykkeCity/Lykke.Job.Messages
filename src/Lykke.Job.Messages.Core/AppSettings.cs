@@ -10,6 +10,7 @@ namespace Lykke.Job.Messages.Core
         public AssetsSettings Assets { get; set; }
         public PersonalDataServiceSettings PersonalDataServiceSettings { get; set; }
         public SmsNotificationsSettings SmsNotifications { get; set; }
+        public SmsSenderSettings SmsSenderServiceClient { get; set; }
 
         public class MessagesSettings
         {
@@ -67,25 +68,12 @@ namespace Lykke.Job.Messages.Core
 
         public class SmsSettings
         {
-            public TwilioSettings Twilio { get; set; }
-            public NexmoSettings Nexmo { get; set; }
             public bool UseMocks { get; set; }
         }
-
-        public class TwilioSettings
+        
+        public class SmsSenderSettings
         {
-            public string AccountSid { get; set; }
-            public string AuthToken { get; set; }
-            public string SwissSender { get; set; }
-            public string UsSender { get; set; }
-        }
-
-        public class NexmoSettings
-        {
-            public string NexmoAppKey { get; set; }
-            public string NexmoAppSecret { get; set; }
-            public string UsCanadaSender { get; set; }
-            public string DefaultSender { get; set; }
+            public string ServiceUrl { get; set; }
         }
 
         public class AssetsSettings

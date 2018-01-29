@@ -81,9 +81,15 @@ namespace Lykke.Job.Messages
 
             app.UseMvc();
             app.UseStaticFiles();
-            app.UseSwagger();
-            app.UseSwaggerUi();
-            
+            app.UseSwagger(c =>
+            {
+                c.PreSerializeFilters.Add((swagger, httpReq) => swagger.Host = httpReq.Host.Value);
+            });
+            app.UseSwaggerUI(x =>
+            {
+                x.RoutePrefix = "swagger/ui";
+                x.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+            });
 
             appLifetime.ApplicationStopped.Register(() =>
             {

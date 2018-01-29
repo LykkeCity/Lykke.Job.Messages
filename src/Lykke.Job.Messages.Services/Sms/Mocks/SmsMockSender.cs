@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Lykke.Job.Messages.Core.Domain.Sms;
-using Lykke.Job.Messages.Core.Services.Sms;
+using Lykke.Service.SmsSender.Client;
 
 namespace Lykke.Job.Messages.Services.Sms.Mocks
 {
-    public class SmsMockSender : ISmsSender
+    public class SmsMockSender : ISmsSenderClient
     {
         private readonly ISmsMockRepository _smsMockRepository;
 
@@ -13,14 +13,9 @@ namespace Lykke.Job.Messages.Services.Sms.Mocks
             _smsMockRepository = smsMockRepository;
         }
 
-        public string GetSenderNumber(string recipientNumber)
+        public async Task SendSmsAsync(string phone, string message)
         {
-            return "SmsMockSender";
-        }
-
-        public Task ProcessSmsAsync(string phoneNumber, SmsMessage message)
-        {
-            return _smsMockRepository.InsertAsync(phoneNumber, message);
+            await _smsMockRepository.InsertAsync(phone, new SmsMessage{Text = message, From = "SMS mock sender"});
         }
     }
 }

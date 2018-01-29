@@ -18,7 +18,6 @@ using Lykke.Job.Messages.Core.Domain.SwiftCredentials;
 using Lykke.Job.Messages.Core.Regulator;
 using Lykke.Job.Messages.Core.Services;
 using Lykke.Job.Messages.Core.Services.Email;
-using Lykke.Job.Messages.Core.Services.Sms;
 using Lykke.Job.Messages.Core.Services.SwiftCredentials;
 using Lykke.Job.Messages.Core.Services.Templates;
 using Lykke.Job.Messages.QueueConsumers;
@@ -27,14 +26,13 @@ using Lykke.Job.Messages.Services.Email;
 using Lykke.Job.Messages.Services.Http;
 using Lykke.Job.Messages.Services.Slack;
 using Lykke.Job.Messages.Services.Sms.Mocks;
-using Lykke.Job.Messages.Services.Sms.Nexmo;
-using Lykke.Job.Messages.Services.Sms.Twilio;
 using Lykke.Job.Messages.Services.SwiftCredentials;
 using Lykke.Job.Messages.Services.Templates;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.EmailPartnerRouter;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
+using Lykke.Service.SmsSender.Client;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Lykke.Service.TemplateFormatter;
@@ -193,18 +191,11 @@ namespace Lykke.Job.Messages.Modules
 
             if (_settings.CurrentValue.Sms.UseMocks)
             {
-                builder.RegisterType<SmsMockSender>().As<ISmsSender>().SingleInstance();
-                builder.RegisterType<AlternativeSmsMockSender>().As<IAlternativeSmsSender>().SingleInstance();
+                builder.RegisterType<SmsMockSender>().As<ISmsSenderClient>().SingleInstance();
             }
             else
             {
-                builder.RegisterInstance(_settings.CurrentValue.Sms.Nexmo)
-                    .SingleInstance();
-                builder.RegisterType<NexmoSmsSender>().As<ISmsSender>().SingleInstance();
-
-                builder.RegisterInstance(_settings.CurrentValue.Sms.Twilio)
-                    .SingleInstance();
-                builder.RegisterType<TwilioSmsSender>().As<IAlternativeSmsSender>().SingleInstance();
+                builder.RegisterSmsSenderClient(_appSettings.CurrentValue.SmsSenderServiceClient.ServiceUrl, _log);
             }
         }
     }
