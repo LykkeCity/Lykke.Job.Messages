@@ -3,10 +3,8 @@ using System.Threading.Tasks;
 using Common.Log;
 using AzureStorage.Queue;
 using Common;
-using Common.PasswordTools;
 using Lykke.Job.Messages.Contract.Sms;
-using Lykke.Job.Messages.Core.Domain.Sms;
-using Lykke.Job.Messages.Core.Services.Sms;
+using Lykke.Service.SmsSender.Client;
 using Lykke.Service.TemplateFormatter;
 using Lykke.Service.TemplateFormatter.TemplateModels;
 
@@ -15,21 +13,18 @@ namespace Lykke.Job.Messages.QueueConsumers
     public class SmsQueueConsumer
     {
         private readonly IQueueReader _queueReader;
-        private readonly ISmsSender _smsSender;
-        private readonly IAlternativeSmsSender _alternativeSmsSender;
+        private readonly ISmsSenderClient _smsSenderClient;
         private readonly ITemplateFormatter _templateFormatter;
         private readonly ILog _log;
 
         public SmsQueueConsumer(
             IQueueReader queueReader,
-            ISmsSender emailSender,
-            IAlternativeSmsSender alternativeSmsSender,
+            ISmsSenderClient smsSenderClient,
             ITemplateFormatter templateFormatter,
             ILog log)
         {
             _queueReader = queueReader;
-            _smsSender = emailSender;
-            _alternativeSmsSender = alternativeSmsSender;
+            _smsSenderClient = smsSenderClient;
             _templateFormatter = templateFormatter;
             _log = log;
 
@@ -73,9 +68,7 @@ namespace Lykke.Job.Messages.QueueConsumers
                 nameof(HandleSimpleSmsRequestAsync),
                 $"SMS: {request.MessageData}. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}");
 
-            var sender = GetSender(request.UseAlternativeProvider);
-
-            await sender.ProcessSmsAsync(request.PhoneNumber, SmsMessage.Create(sender.GetSenderNumber(request.PhoneNumber), request.MessageData));
+            await _smsSenderClient.SendSmsAsync(request.PhoneNumber, request.MessageData);
         }
 
         private async Task HandleSmsRequestAsync(SendSmsData<SmsConfirmationData> request)
@@ -91,9 +84,8 @@ namespace Lykke.Job.Messages.QueueConsumers
                 {
                     ConfirmationCode = request.MessageData.ConfirmationCode
                 });
-            var sender = GetSender(request.UseAlternativeProvider);
 
-            await sender.ProcessSmsAsync(request.PhoneNumber, SmsMessage.Create(sender.GetSenderNumber(request.PhoneNumber), msgText.Subject));
+            await _smsSenderClient.SendSmsAsync(request.PhoneNumber, msgText.Subject);
         }
 
         public void Start()
@@ -105,11 +97,6 @@ namespace Lykke.Job.Messages.QueueConsumers
                 nameof(Start),
                 $"Started:{_queueReader.GetComponentName()}")
                 .Wait();
-        }
-
-        private ISmsSender GetSender(bool useAlternative)
-        {
-            return useAlternative ? _alternativeSmsSender : _smsSender;
         }
     }
 }

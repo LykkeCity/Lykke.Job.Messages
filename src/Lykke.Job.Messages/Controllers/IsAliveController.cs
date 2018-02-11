@@ -3,7 +3,7 @@ using System.Net;
 using Lykke.Job.Messages.Core.Services;
 using Lykke.Job.Messages.Models;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.SwaggerGen.Annotations;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.Job.Messages.Controllers
 {
