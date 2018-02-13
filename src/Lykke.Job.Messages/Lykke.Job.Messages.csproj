@@ -28,7 +28,7 @@
     <PackageReference Include="Lykke.Service.Assets.Client" Version="1.0.17" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
     <PackageReference Include="Lykke.Service.PersonalData" Version="1.0.28" />
-    <PackageReference Include="Lykke.Service.TemplateFormatter.Client" Version="1.0.44" />
+    <PackageReference Include="Lykke.Service.TemplateFormatter.Client" Version="1.0.45" />
     <PackageReference Include="Lykke.SettingsReader" Version="1.0.45" />
     <PackageReference Include="Lykke.SlackNotification.AzureQueue" Version="1.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.0.0" />
