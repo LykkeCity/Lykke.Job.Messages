@@ -265,6 +265,18 @@ namespace Lykke.Job.Messages.Services.Email
             return _templateGenerator.GenerateAsync(partnerId, "PrivateWalletAddressTemplate", templateVm);
         }
 
+        public Task<EmailMessage> GenerateRestrictedAreaMsg(string partnerId, RestrictedAreaData messageData)
+        {
+            var templateVm = new RestrictedAreaTemplate
+            {
+                FirstName = messageData.FirstName,
+                LastName = messageData.LastName,
+                Year = DateTime.UtcNow.Year
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "RestrictedAreaTemplate", templateVm);
+        }
+
         public Task<EmailMessage> GeneratSolarCashOutMsg(string partnerId, SolarCashOutData messageData)
         {
             var templateVm = new SolarCashOutTemplate

@@ -12,11 +12,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="3.1.0" />
-    <PackageReference Include="Lykke.Messages" Version="1.0.21" />
+    <PackageReference Include="Lykke.Common" Version="4.2.0" />
+    <PackageReference Include="Lykke.Messages" Version="1.0.25" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="1.0.17" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
-    <PackageReference Include="Lykke.Service.TemplateFormatter" Version="1.0.29" />
+    <PackageReference Include="Lykke.Service.TemplateFormatter.Client" Version="1.0.44" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="2.0.0" />
     <PackageReference Include="RazorLight2" Version="2.0.0" />
   </ItemGroup>

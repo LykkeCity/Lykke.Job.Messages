@@ -1,5 +1,5 @@
-using System.Threading.Tasks;
 using Lykke.Service.EmailSender;
+using System.Threading.Tasks;
 
 namespace Lykke.Job.Messages.Core.Services.Templates
 {
