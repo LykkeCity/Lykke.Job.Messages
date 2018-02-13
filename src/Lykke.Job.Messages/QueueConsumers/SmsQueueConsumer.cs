@@ -7,6 +7,7 @@ using Lykke.Job.Messages.Contract.Sms;
 using Lykke.Service.SmsSender.Client;
 using Lykke.Service.TemplateFormatter;
 using Lykke.Service.TemplateFormatter.TemplateModels;
+using Lykke.Service.TemplateFormatter.Client;
 
 namespace Lykke.Job.Messages.QueueConsumers
 {

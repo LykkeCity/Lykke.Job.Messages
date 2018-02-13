@@ -112,6 +112,9 @@ namespace Lykke.Job.Messages.QueueConsumers
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<PrivateWalletAddressData>>>(
                     PrivateWalletAddressData.QueueName, itm => HandlePrivateWalletAddressEmailAsync(itm.Data));
 
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RestrictedAreaData>>>(
+                    RestrictedAreaData.QueueName, itm => HandleRestrictedAreaEmailAsync(itm.Data));
+
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<SolarCashOutData>>>(
                     SolarCashOutData.QueueName, itm => HandleSolarCashOutCompletedEmailAsync(itm.Data));
 
@@ -344,6 +347,14 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandlePrivateWalletAddressEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                                  $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GeneratPrivateWalletAddressMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+        }
+
+        private async Task HandleRestrictedAreaEmailAsync(SendEmailData<RestrictedAreaData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleRestrictedAreaEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                                 $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            var msg = await _emailGenerator.GenerateRestrictedAreaMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
 
