@@ -1,5 +1,6 @@
 ﻿using System;
 using Lykke.Service.PersonalData.Settings;
+using Lykke.Service.SwiftCredentials.Client;
 using Lykke.SettingsReader.Attributes;
 
 namespace Lykke.Job.Messages.Core
@@ -9,9 +10,10 @@ namespace Lykke.Job.Messages.Core
         public MessagesSettings MessagesJob { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public AssetsSettings Assets { get; set; }
-        public PersonalDataServiceSettings PersonalDataServiceSettings { get; set; }
+        public PersonalDataServiceClientSettings PersonalDataServiceSettings { get; set; }
         public SmsNotificationsSettings SmsNotifications { get; set; }
         public SmsSenderSettings SmsSenderServiceClient { get; set; }
+        public SwiftCredentialsServiceClientSettings SwiftCredentialsServiceClient { get; set; }
 
         public class MessagesSettings
         {

@@ -1,56 +1,83 @@
 ﻿using System.Threading.Tasks;
 using Lykke.Job.Messages.Core.Domain.SwiftCredentials;
-using Lykke.Job.Messages.Core.Regulator;
 using Lykke.Job.Messages.Core.Services.SwiftCredentials;
-using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Assets.Client;
 using Lykke.Job.Messages.Core.Domain.DepositRefId;
 using System;
 using System.Globalization;
+using System.Linq;
+using Common;
+using Common.Log;
 using Lykke.Service.PersonalData.Contract.Models;
+using Lykke.Service.SwiftCredentials.Client;
+using Lykke.Service.SwiftCredentials.Client.Models;
 
 namespace Lykke.Job.Messages.Services.SwiftCredentials
 {
     public class SwiftCredentialsService : ISwiftCredentialsService
     {
-        private readonly IRegulatorRepository _regulatorRepository;
-        private readonly ISwiftCredentialsRepository _swiftCredentialsRepository;
-        private readonly ICachedAssetsService _assetsService;
+        private readonly IAssetsServiceWithCache _assetsServiceWithCache;
+        private readonly IAssetsService _assetsService;
+        private readonly ILog _log;
+        private readonly ISwiftCredentialsClient _swiftCredentialsClient;
         private readonly IDepositRefIdInUseRepository _depositRefIdInUseRepository;
         private readonly IDepositRefIdRepository _depositRefIdRepository;
 
         public SwiftCredentialsService(
-            IRegulatorRepository regulatorRepository,
-            ISwiftCredentialsRepository swiftCredentialsRepository,
+            ISwiftCredentialsClient swiftCredentialsClient,
             IDepositRefIdInUseRepository depositRefIdInUseRepository,
             IDepositRefIdRepository depositRefIdRepository,
-            ICachedAssetsService assetsService)
+            IAssetsServiceWithCache assetsServiceWithCache,
+            IAssetsService assetsService,
+            ILog log)
         {
-            _regulatorRepository = regulatorRepository;
-            _swiftCredentialsRepository = swiftCredentialsRepository;
+            _swiftCredentialsClient = swiftCredentialsClient;
             _depositRefIdInUseRepository = depositRefIdInUseRepository;
             _depositRefIdRepository = depositRefIdRepository;
+            _assetsServiceWithCache = assetsServiceWithCache;
             _assetsService = assetsService;
+            _log = log;
         }
 
         public async Task<ISwiftCredentials> GetCredentialsAsync(string assetId, IPersonalData personalData)
         {
-            var regulatorId = personalData.SpotRegulator ??
-                              (await _regulatorRepository.GetByIdOrDefaultAsync(null)).InternalId;
+            var assetConditions = await _assetsService.ClientGetAssetConditionsAsync(personalData.Id);
 
-            //if no credentials, try to get default for regulator
-            var credentials = await _swiftCredentialsRepository.GetCredentialsAsync(regulatorId, assetId) ??
-                              await _swiftCredentialsRepository.GetCredentialsAsync(regulatorId);
+            var regulationId = assetConditions.FirstOrDefault(o => o.Asset == assetId)?.Regulation;
 
-            return await BuildCredentials(assetId, credentials, personalData);
+            if (string.IsNullOrEmpty(regulationId))
+            {
+                await _log.WriteWarningAsync(nameof(SwiftCredentialsService), nameof(GetCredentialsAsync),
+                    new {AssetId = assetId, ClientId = personalData.Id}.ToJson(),
+                    "Regulation is undefined");
+
+                return null;
+            }
+
+            SwiftCredentialsModel swiftCredentials;
+            
+            try
+            {
+                swiftCredentials = await _swiftCredentialsClient.GetAsync(regulationId, assetId);
+            }
+            catch (Service.SwiftCredentials.Client.Exceptions.ErrorResponseException exception)
+            {
+                await _log.WriteErrorAsync(nameof(SwiftCredentialsService), nameof(GetCredentialsAsync), exception);
+                return null;
+            }
+
+            return await BuildCredentialsAsync(assetId, swiftCredentials, personalData);
         }
 
-        private async Task<ISwiftCredentials> BuildCredentials(string assetId, ISwiftCredentials sourceCredentials,
+        private async Task<ISwiftCredentials> BuildCredentialsAsync(
+            string assetId,
+            SwiftCredentialsModel swiftCredentials,
             IPersonalData personalData)
         {
-            if (sourceCredentials == null)
+            if (swiftCredentials == null)
                 return null;
 
-            var asset = await _assetsService.TryGetAssetAsync(assetId);
+            var asset = await _assetsServiceWithCache.TryGetAssetAsync(assetId);
             var assetTitle = asset?.DisplayId ?? assetId;
 
             string clientIdentity;
@@ -71,12 +98,12 @@ namespace Lykke.Job.Messages.Services.SwiftCredentials
                 string email = personalData.Email.Replace("@", "..");
                 clientIdentity = $"{email}_{date}_{refId.Code}";
                 _depositRefIdRepository.AddCodeAsync(clientIdentity, refId.ClientId, date, refId.Code);
-                purposeOfPayment = string.Format(sourceCredentials.PurposeOfPayment, assetTitle, clientIdentity);
+                purposeOfPayment = string.Format(swiftCredentials.PurposeOfPayment, assetTitle, clientIdentity);
             }
             else
             {
                 clientIdentity = personalData != null ? personalData.Email.Replace("@", ".") : "{1}";
-                purposeOfPayment = string.Format(sourceCredentials.PurposeOfPayment, assetTitle, clientIdentity);
+                purposeOfPayment = string.Format(swiftCredentials.PurposeOfPayment, assetTitle, clientIdentity);
 
                 if (!purposeOfPayment.Contains(assetId) && !purposeOfPayment.Contains(assetTitle))
                     purposeOfPayment += assetTitle;
@@ -88,14 +115,14 @@ namespace Lykke.Job.Messages.Services.SwiftCredentials
             return new Core.Domain.SwiftCredentials.SwiftCredentials
             {
                 AssetId = assetId,
-                RegulatorId = sourceCredentials.RegulatorId,
-                BIC = sourceCredentials.BIC,
+                RegulatorId = swiftCredentials.RegulationId,
+                BIC = swiftCredentials.Bic,
                 PurposeOfPayment = purposeOfPayment,
-                CompanyAddress = sourceCredentials.CompanyAddress,
-                AccountNumber = sourceCredentials.AccountNumber,
-                BankAddress = sourceCredentials.BankAddress,
-                AccountName = sourceCredentials.AccountName,
-                CorrespondentAccount = sourceCredentials.CorrespondentAccount
+                CompanyAddress = swiftCredentials.CompanyAddress,
+                AccountNumber = swiftCredentials.AccountNumber,
+                BankAddress = swiftCredentials.BankAddress,
+                AccountName = swiftCredentials.AccountName,
+                CorrespondentAccount = swiftCredentials.CorrespondentAccount
             };
         }
     }

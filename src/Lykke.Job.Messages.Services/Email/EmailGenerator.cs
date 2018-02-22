@@ -11,7 +11,8 @@ using Lykke.Job.Messages.Core.Services.SwiftCredentials;
 using Lykke.Job.Messages.Core.Services.Templates;
 using Lykke.Job.Messages.Services.Email.Resources;
 using Lykke.Messages.Email.MessageData;
-using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Assets.Client;
+using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.EmailSender;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.PersonalData.Contract.Models;
@@ -21,7 +22,7 @@ namespace Lykke.Job.Messages.Services.Email
 {
     public class EmailGenerator : IEmailGenerator
     {
-        private readonly ICachedAssetsService _assetsService;
+        private readonly IAssetsServiceWithCache _assetsService;
         private readonly IPersonalDataService _personalDataService;
         private readonly IRemoteTemplateGenerator _templateGenerator;
         private readonly AppSettings.EmailSettings _emailSettings;
@@ -30,9 +31,13 @@ namespace Lykke.Job.Messages.Services.Email
         private readonly ISwiftCredentialsService _swiftCredentialsService;
 
         public EmailGenerator(
-            ICachedAssetsService assetsService, IPersonalDataService personalDataService,
-            AppSettings.EmailSettings emailSettings, AppSettings.BlockchainSettings blockchainSettings, AppSettings.WalletApiSettings walletApiSettings,
-            IRemoteTemplateGenerator templateGenerator, ISwiftCredentialsService swiftCredentialsService)
+            IAssetsServiceWithCache assetsService,
+            IPersonalDataService personalDataService,
+            AppSettings.EmailSettings emailSettings,
+            AppSettings.BlockchainSettings blockchainSettings,
+            AppSettings.WalletApiSettings walletApiSettings,
+            IRemoteTemplateGenerator templateGenerator,
+            ISwiftCredentialsService swiftCredentialsService)
         {
             _assetsService = assetsService;
             _personalDataService = personalDataService;
@@ -451,7 +456,7 @@ namespace Lykke.Job.Messages.Services.Email
             return await _templateGenerator.GenerateAsync(partnerId, "RequestForDocument", templateVm);
         }
 
-        public async Task<IAsset> FindAssetByBlockchainAssetIdAsync(string partnerId, string blockchainAssetId)
+        public async Task<Asset> FindAssetByBlockchainAssetIdAsync(string partnerId, string blockchainAssetId)
         {
             if (blockchainAssetId == null)
             {
