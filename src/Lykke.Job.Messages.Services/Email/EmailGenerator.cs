@@ -511,6 +511,26 @@ namespace Lykke.Job.Messages.Services.Email
             return _templateGenerator.GenerateAsync(partnerId, "EmailVerificationCode", templateVm);
         }
 
+        public Task<EmailMessage> GenerateWelcomeCypMsg(string partnerId, RegistrationCypMessageData kycOkData)
+        {
+            var templateVm = new BaseTemplate
+            {
+                Year = kycOkData.Year
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "WelcomeCypTemplate", templateVm);
+        }
+
+        public Task<EmailMessage> GenerateWelcomeFxCypMsg(string partnerId, KycOkCypData kycOkData)
+        {
+            var templateVm = new BaseTemplate
+            {
+                Year = kycOkData.Year
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "WelcomeFxCypTemplate", templateVm);
+        }
+
         private static string HtmlBreaks(string src)
         {
             return src.Replace("\r\n", "<br>");

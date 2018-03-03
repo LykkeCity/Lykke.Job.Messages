@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using AzureStorage.Queue;
 using Common;
 using Common.Log;
-using Common.PasswordTools;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Messages.Email.MessageData;
 using Lykke.Service.EmailSender;
@@ -141,6 +140,12 @@ namespace Lykke.Job.Messages.QueueConsumers
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<LykkeCardVisaData>>>(
                     LykkeCardVisaData.QueueName, itm => HandleLykkeVisaCardEmailAsync(itm.Data));
+
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RegistrationCypMessageData>>>(
+                    RegistrationCypMessageData.QueueName, itm => HandleRegisteredCypEmailAsync(itm.Data));
+
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<KycOkCypData>>>(
+                    KycOkCypData.QueueName, itm => HandleKycOkCypEmailAsync(itm.Data));
             }
         }
 
@@ -419,6 +424,23 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleRegistrationVerifyEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                                $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateRegistrationVerifyEmailMsgAsync(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+        }
+
+        private async Task HandleRegisteredCypEmailAsync(SendEmailData<RegistrationCypMessageData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleRegisteredCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                            $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+
+            var msg = await _emailGenerator.GenerateWelcomeCypMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+        }
+
+        private async Task HandleKycOkCypEmailAsync(SendEmailData<KycOkCypData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleKycOkCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                       $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            var msg = await _emailGenerator.GenerateWelcomeFxCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
 
