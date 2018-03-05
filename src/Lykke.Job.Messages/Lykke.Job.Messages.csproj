@@ -15,7 +15,7 @@
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.3.1" />
     <PackageReference Include="Lykke.JobTriggers" Version="1.1.19" />
     <PackageReference Include="Lykke.Logs" Version="3.6.0" />
-    <PackageReference Include="lykke.Messages" Version="1.0.25" />
+    <PackageReference Include="Lykke.Messages" Version="1.0.25" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="1.0.17" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
     <PackageReference Include="Lykke.Service.PersonalData" Version="1.0.28" />
