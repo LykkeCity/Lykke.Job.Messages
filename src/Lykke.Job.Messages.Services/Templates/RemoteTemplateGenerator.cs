@@ -1,11 +1,7 @@
-using System;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Lykke.Job.Messages.Core.Services.Templates;
-using Lykke.Job.Messages.Services.Http;
-using Lykke.Service.TemplateFormatter;
 using Lykke.Service.EmailSender;
+using Lykke.Service.TemplateFormatter.Client;
 
 namespace Lykke.Job.Messages.Services.Templates
 {
