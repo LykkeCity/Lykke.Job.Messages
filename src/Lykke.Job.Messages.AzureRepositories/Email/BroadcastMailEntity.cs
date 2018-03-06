@@ -1,5 +1,5 @@
-﻿using Lykke.Job.Messages.Core.Domain.Email;
-using Lykke.Messages.Email;
+﻿using Lykke.Job.Messages.Contract.Emails;
+using Lykke.Job.Messages.Core.Domain.Email;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Lykke.Job.Messages.AzureRepositories.Email

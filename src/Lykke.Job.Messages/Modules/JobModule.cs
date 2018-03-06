@@ -36,6 +36,7 @@ using Lykke.Service.SmsSender.Client;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Lykke.Service.TemplateFormatter;
+using BlobSpace = AzureStorage.Blob;
 
 namespace Lykke.Job.Messages.Modules
 {
@@ -119,6 +120,9 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterInstance<ISwiftCredentialsRepository>(new SwiftCredentialsRepository(
                 AzureTableStorage<SwiftCredentialsEntity>.Create(
                     _settings.ConnectionString(s => s.Db.DictsConnString), "SwiftCredentials", _log)));
+
+            builder.RegisterInstance<ITemplateBlobRepository>(new TemplateBlobRepository(
+                BlobSpace.AzureBlobStorage.Create(_settings.ConnectionString(s => s.Db.EmailTemplatesConnString)), "templates"));
         }
 
         private void RegisterSlackServices(ContainerBuilder builder)
@@ -169,6 +173,14 @@ namespace Lykke.Job.Messages.Modules
                     TypedParameter.From(_settings.CurrentValue.Blockchain),
                     TypedParameter.From(_settings.CurrentValue.WalletApi)
                 });
+
+            builder.RegisterType<EmailTemplateProvider>()
+                .As<IEmailTemplateProvide>()
+                .SingleInstance();
+
+            //builder.RegisterType<EmailMessageProcessor>()
+            //   .As<IEmailMessageProcessor>()
+            //   .SingleInstance();
 
             // Email sending dependencies
 

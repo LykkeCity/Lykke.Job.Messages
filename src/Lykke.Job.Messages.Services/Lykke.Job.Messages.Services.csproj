@@ -9,7 +9,9 @@
     <None Remove="Email\TemplateModels\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="4.4.2" />
+    <PackageReference Include="Lykke.AzureStorage" Version="7.0.2" />
+    <PackageReference Include="Lykke.Common" Version="4.5.0" />
+    <PackageReference Include="Lykke.Messages" Version="1.0.27" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="1.0.17" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
     <PackageReference Include="Lykke.Service.TemplateFormatter.Client" Version="1.0.45" />
@@ -18,7 +20,22 @@
     <PackageReference Include="RazorLight2" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Lykke.Job.Messages.Contract\Lykke.Job.Messages.Contract\Lykke.Job.Messages.Contract.csproj" />
     <ProjectReference Include="..\Lykke.Job.Messages.Core\Lykke.Job.Messages.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <HintPath>System</HintPath>
+    </Reference>
+    <Reference Include="System.Data">
+      <HintPath>System.Data</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <HintPath>System.Drawing</HintPath>
+    </Reference>
+    <Reference Include="System.Xml">
+      <HintPath>System.Xml</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Email\Resources\EmailResources.Designer.cs">

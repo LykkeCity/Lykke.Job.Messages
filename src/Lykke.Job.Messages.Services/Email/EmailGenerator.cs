@@ -19,6 +19,9 @@ using Lykke.Service.TemplateFormatter.TemplateModels;
 
 namespace Lykke.Job.Messages.Services.Email
 {
+    //Exists for back compatibility
+    //Do not use it for new emais. Instead, go with events subscription!
+    [Obsolete]
     public class EmailGenerator : IEmailGenerator
     {
         private readonly ICachedAssetsService _assetsService;
@@ -50,9 +53,9 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = lykkeCardVisaData.Year,
                 Url = lykkeCardVisaData.Url
             };
- 
-             return _templateGenerator.GenerateAsync(partnerId, "LykkeCardMessageTemplate", templateVm);
-         }
+
+            return _templateGenerator.GenerateAsync(partnerId, "LykkeCardMessageTemplate", templateVm);
+        }
 
         public Task<EmailMessage> GenerateWelcomeMsg(string partnerId, RegistrationMessageData kycOkData)
         {
@@ -482,7 +485,7 @@ namespace Lykke.Job.Messages.Services.Email
                 FullName = messageData.FullName,
                 Year = DateTime.UtcNow.Year.ToString()
             };
-            
+
             return await _templateGenerator.GenerateAsync(partnerId, "SwiftCashoutProcessed", templateVm);
         }
 
@@ -495,7 +498,7 @@ namespace Lykke.Job.Messages.Services.Email
                 Text = messageData.Text,
                 Year = DateTime.UtcNow.Year.ToString()
             };
-            
+
             return await _templateGenerator.GenerateAsync(partnerId, "SwiftCashoutDeclined", templateVm);
         }
 

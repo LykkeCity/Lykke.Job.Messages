@@ -56,10 +56,11 @@ namespace Lykke.Job.Messages
             var log = CreateLogWithSlack(services, appSettings);
 
             builder.RegisterModule(new JobModule(appSettings, log));
+            builder.RegisterModule(new CqrsModule(appSettings, log));
 
             builder.AddTriggers(pool =>
             {
-                pool.AddDefaultConnection(appSettings.CurrentValue.MessagesJob.Db.SharedStorageConnString);
+                pool.AddDefaultConnection(appSettings.Nested(x => x.MessagesJob.Db.SharedStorageConnString));
             });
 
             builder.Populate(services);

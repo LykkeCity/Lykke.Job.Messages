@@ -1,10 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Lykke.Messages.Email.MessageData;
 using Lykke.Service.EmailSender;
 using Lykke.Service.PersonalData.Contract.Models;
 
 namespace Lykke.Job.Messages.Core.Services.Email
 {
+    [Obsolete]
     public interface IEmailGenerator
     {
         Task<EmailMessage> GenerateLykkeCardVisaMsg(string partnerId, LykkeCardVisaData lykkeCardVisaData);
