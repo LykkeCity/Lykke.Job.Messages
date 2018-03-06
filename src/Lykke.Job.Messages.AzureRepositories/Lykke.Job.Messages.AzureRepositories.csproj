@@ -7,6 +7,7 @@
     <PackageReference Include="Lykke.AzureStorage" Version="7.0.2" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Lykke.Job.Messages.Contract\Lykke.Job.Messages.Contract\Lykke.Job.Messages.Contract.csproj" />
     <ProjectReference Include="..\Lykke.Job.Messages.Core\Lykke.Job.Messages.Core.csproj" />
   </ItemGroup>
 </Project>

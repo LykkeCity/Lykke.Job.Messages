@@ -164,8 +164,8 @@ namespace Lykke.Job.Messages.Modules
                 .As<IRemoteTemplateGenerator>()
                 .SingleInstance();
             builder.RegisterTemplateFormatter(_appSettings.CurrentValue.MessagesJob.Email.EmailFormatterUrl, _log);
-            builder.RegisterType<EmailGenerator>()
-                .As<IEmailGenerator>()
+            builder.RegisterType<EmailGeneratorOld>()
+                .As<IEmailGeneratorOld>()
                 .SingleInstance()
                 .WithParameters(new[]
                 {
@@ -173,6 +173,20 @@ namespace Lykke.Job.Messages.Modules
                     TypedParameter.From(_settings.CurrentValue.Blockchain),
                     TypedParameter.From(_settings.CurrentValue.WalletApi)
                 });
+
+            builder.RegisterType<EmailGenerator>()
+               .As<IEmailGeneratorNew>()
+               .SingleInstance()
+               .WithParameters(new[]
+               {
+                    TypedParameter.From(_settings.CurrentValue.Email),
+                    TypedParameter.From(_settings.CurrentValue.Blockchain),
+                    TypedParameter.From(_settings.CurrentValue.WalletApi)
+               });
+
+            builder.RegisterType<EmailMessageProcessor>()
+               .As<IEmailMessageProcessor>()
+               .SingleInstance();
 
             // Email sending dependencies
 

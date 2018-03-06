@@ -5,6 +5,7 @@ using AzureStorage.Queue;
 using Common;
 using Common.Log;
 using Common.PasswordTools;
+using Lykke.Job.Messages.Contract.Emails;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Messages.Email.MessageData;
 using Lykke.Service.EmailSender;
@@ -16,12 +17,12 @@ namespace Lykke.Job.Messages.QueueConsumers
     {
         private readonly IEnumerable<IQueueReader> _queueReadersList;
         private readonly ISmtpEmailSender _smtpEmailSender;
-        private readonly IEmailGenerator _emailGenerator;
+        private readonly IEmailGeneratorOld _emailGenerator;
         private readonly IPersonalDataService _personalDataService;
         private readonly ILog _log;
 
         public EmailQueueConsumer(IEnumerable<IQueueReader> queueReadersList, ISmtpEmailSender smtpEmailSender,
-            IEmailGenerator emailGenerator, IPersonalDataService personalDataService, ILog log)
+            IEmailGeneratorOld emailGenerator, IPersonalDataService personalDataService, ILog log)
         {
             _queueReadersList = queueReadersList;
             _smtpEmailSender = smtpEmailSender;
@@ -166,7 +167,6 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
 
-
         private async Task HandleRegisteredEmailAsync(SendEmailData<RegistrationMessageData> result)
         {
             await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleRegisteredEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
@@ -246,7 +246,7 @@ namespace Lykke.Job.Messages.QueueConsumers
                 TextBody = result.MessageData.Text,
                 Subject = $"[{result.BroadcastGroup}] {result.MessageData.Subject}"
             };
-            await _smtpEmailSender.SendBroadcastAsync(result.PartnerId, result.BroadcastGroup, msg);
+            await _smtpEmailSender.SendBroadcastAsync(result.PartnerId, (BroadcastGroup)result.BroadcastGroup, msg);
         }
 
         private async Task HandleUserRegisteredBroadcastAsync(SendBroadcastData<UserRegisteredData> result)
@@ -255,7 +255,7 @@ namespace Lykke.Job.Messages.QueueConsumers
                                                                                                                $"{Environment.NewLine}Broadcast group: {result.BroadcastGroup}");
             var personalData = await _personalDataService.GetAsync(result.MessageData.ClientId);
             var msg = await _emailGenerator.GenerateUserRegisteredMsg(result.PartnerId, personalData);
-            await _smtpEmailSender.SendBroadcastAsync(result.PartnerId, result.BroadcastGroup, msg);
+            await _smtpEmailSender.SendBroadcastAsync(result.PartnerId, (BroadcastGroup)result.BroadcastGroup, msg);
         }
 
         private async Task HandleSwiftConfirmedBroadcastAsync(SendBroadcastData<SwiftConfirmedData> result)
@@ -263,7 +263,7 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleSwiftConfirmedBroadcastAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                                $"{Environment.NewLine}Broadcast group: {result.BroadcastGroup}");
             var msg = await _emailGenerator.GenerateSwiftConfirmedMsg(result.PartnerId, result.MessageData);
-            await _smtpEmailSender.SendBroadcastAsync(result.PartnerId, result.BroadcastGroup, msg);
+            await _smtpEmailSender.SendBroadcastAsync(result.PartnerId, (BroadcastGroup)result.BroadcastGroup, msg);
         }
 
         private async Task HandleCashInRefundEmailAsync(SendEmailData<CashInRefundData> result)
@@ -295,7 +295,7 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleFailedTransactionBroadcastAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                                   $"{Environment.NewLine}Broadcast group: {result.BroadcastGroup}");
             var msg = _emailGenerator.GenerateFailedTransactionMsg(result.PartnerId, result.MessageData.TransactionId, result.MessageData.AffectedClientIds);
-            await _smtpEmailSender.SendBroadcastAsync(result.PartnerId, result.BroadcastGroup, msg);
+            await _smtpEmailSender.SendBroadcastAsync(result.PartnerId, (BroadcastGroup)result.BroadcastGroup, msg);
         }
 
         private async Task HandleTransferCompletedEmailAsync(SendEmailData<TransferCompletedData> result)

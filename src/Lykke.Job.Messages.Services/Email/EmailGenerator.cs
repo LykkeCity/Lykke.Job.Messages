@@ -1,25 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Common;
+﻿using Common;
+using Lykke.Job.Messages.Contract.Emails.MessageData;
 using Lykke.Job.Messages.Core;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Job.Messages.Core.Services.SwiftCredentials;
 using Lykke.Job.Messages.Core.Services.Templates;
 using Lykke.Job.Messages.Services.Email.Resources;
-using Lykke.Messages.Email.MessageData;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.EmailSender;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.PersonalData.Contract.Models;
 using Lykke.Service.TemplateFormatter.TemplateModels;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Lykke.Job.Messages.Services.Email
 {
-    public class EmailGenerator : IEmailGenerator
+    [Obsolete]
+    public class EmailGenerator : IEmailGeneratorNew
     {
         private readonly ICachedAssetsService _assetsService;
         private readonly IPersonalDataService _personalDataService;
@@ -50,9 +51,9 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = lykkeCardVisaData.Year,
                 Url = lykkeCardVisaData.Url
             };
- 
-             return _templateGenerator.GenerateAsync(partnerId, "LykkeCardMessageTemplate", templateVm);
-         }
+
+            return _templateGenerator.GenerateAsync(partnerId, "LykkeCardMessageTemplate", templateVm);
+        }
 
         public Task<EmailMessage> GenerateWelcomeMsg(string partnerId, RegistrationMessageData kycOkData)
         {
@@ -482,7 +483,7 @@ namespace Lykke.Job.Messages.Services.Email
                 FullName = messageData.FullName,
                 Year = DateTime.UtcNow.Year.ToString()
             };
-            
+
             return await _templateGenerator.GenerateAsync(partnerId, "SwiftCashoutProcessed", templateVm);
         }
 
@@ -495,7 +496,7 @@ namespace Lykke.Job.Messages.Services.Email
                 Text = messageData.Text,
                 Year = DateTime.UtcNow.Year.ToString()
             };
-            
+
             return await _templateGenerator.GenerateAsync(partnerId, "SwiftCashoutDeclined", templateVm);
         }
 

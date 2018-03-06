@@ -11,4 +11,7 @@
     <PackageReference Include="Lykke.Service.PersonalData" Version="1.0.28" />
     <PackageReference Include="Lykke.SettingsReader" Version="2.0.1" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Lykke.Job.Messages.Contract\Lykke.Job.Messages.Contract\Lykke.Job.Messages.Contract.csproj" />
+  </ItemGroup>
 </Project>

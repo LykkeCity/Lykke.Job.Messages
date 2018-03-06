@@ -1,8 +1,5 @@
-﻿using Lykke.Job.Messages.Contract.Emails;
+﻿using Lykke.Job.Messages.Contract.Emails.MessageData;
 using MessagePack;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Lykke.Job.Messages.Workflow.Commands
 {

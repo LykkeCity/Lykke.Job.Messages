@@ -2,9 +2,9 @@ using System;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
+using Lykke.Job.Messages.Contract.Emails;
 using Lykke.Job.Messages.Core.Domain.Email;
 using Lykke.Job.Messages.Core.Services.Email;
-using Lykke.Messages.Email;
 using Lykke.Service.EmailPartnerRouter;
 using Lykke.Service.EmailSender;
 

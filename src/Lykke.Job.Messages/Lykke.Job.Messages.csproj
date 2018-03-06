@@ -47,7 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Workflow\Events\" />
-    <Folder Include="Workflow\Sagas\" />
     <Folder Include="Workflow\Projections\" />
   </ItemGroup>
 </Project>

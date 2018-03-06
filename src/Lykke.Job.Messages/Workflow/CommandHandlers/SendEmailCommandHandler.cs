@@ -2,7 +2,7 @@
 using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
-using Lykke.Job.Messages.Contract.Emails;
+using Lykke.Job.Messages.Contract.Emails.MessageData;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Job.Messages.Workflow.Commands;
 using System;
@@ -15,13 +15,14 @@ namespace Lykke.Job.Messages.Workflow.CommandHandlers
     public class SendEmailCommandHandler
     {
         private readonly ILog _log;
-        private readonly ISmtpEmailSender _smtpEmailSender;
+        private readonly IEmailMessageProcessor _emailMessageProcessor;
 
         public SendEmailCommandHandler(ILog log,
-            ISmtpEmailSender smtpEmailSender)
+           IEmailMessageProcessor emailMessageProcessor
+            )
         {
             _log = log;
-            _smtpEmailSender = smtpEmailSender;
+            _emailMessageProcessor = emailMessageProcessor;
         }
 
         [UsedImplicitly]
@@ -30,8 +31,12 @@ namespace Lykke.Job.Messages.Workflow.CommandHandlers
             _log.WriteInfo(nameof(SendEmailCommandHandler), command, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" + 
                 $"{Environment.NewLine}Email to: {command.EmailAddress.SanitizeEmail()}");
 
-            var msg = await _emailGenerator.GenerateRegistrationVerifyEmailMsgAsync(command.PartnerId, command.MessageData);
-            await _smtpEmailSender.SendEmailAsync(command.PartnerId, command.EmailAddress, msg);
+            await _emailMessageProcessor.SendAsync(new Core.Domain.Email.Models.SendEmailRequest<T>()
+            {
+                EmailAddress = command.EmailAddress,
+                MessageData = command.MessageData,
+                PartnerId = command.PartnerId
+            });
 
             return CommandHandlingResult.Ok();
         }

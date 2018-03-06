@@ -1,4 +1,4 @@
-using Lykke.Messages.Email;
+using Lykke.Job.Messages.Contract.Emails;
 
 namespace Lykke.Job.Messages.Core.Domain.Email
 {
