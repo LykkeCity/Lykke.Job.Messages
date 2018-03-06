@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 using Lykke.Service.PersonalData.Settings;
 using Lykke.SettingsReader.Attributes;
 
@@ -22,12 +23,14 @@ namespace Lykke.Job.Messages.Core
             public BlockchainSettings Blockchain { get; set; }
             public WalletApiSettings WalletApi { get; set; }
             public AssetsCacheSettings AssetsCache { get; set; }
+            public CqrsSettings Cqrs { get; set; }
         }
 
         public class DbSettings
         {
             public string LogsConnString { get; set; }
             public string ClientPersonalInfoConnString { get; set; }
+            public string EmailTemplatesConnString { get; set; }
             public string BitCoinQueueConnectionString { get; set; }
             public string SharedStorageConnString { get; set; }
             public string DictsConnString { get; set; }
@@ -104,6 +107,16 @@ namespace Lykke.Job.Messages.Core
         public class SmsNotificationsSettings
         {
             public AzureQueueSettings AzureQueue { get; set; }
+        }
+
+        public class CqrsSettings
+        {
+            [AmqpCheck]
+            [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+            public string RabbitConnectionString { get; set; }
+
+            [UsedImplicitly(ImplicitUseKindFlags.Assign)]
+            public TimeSpan RetryDelay { get; set; }
         }
     }
 }

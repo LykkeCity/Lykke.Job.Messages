@@ -4,9 +4,9 @@
     <Version>1.0.1</Version>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Lykke.Job.Messages.Core\Lykke.Job.Messages.Core.csproj" />
+    <PackageReference Include="Lykke.AzureStorage" Version="7.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Lykke.AzureStorage" Version="5.0.1" />
+    <ProjectReference Include="..\Lykke.Job.Messages.Core\Lykke.Job.Messages.Core.csproj" />
   </ItemGroup>
 </Project>

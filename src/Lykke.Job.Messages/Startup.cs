@@ -59,7 +59,7 @@ namespace Lykke.Job.Messages
 
             builder.AddTriggers(pool =>
             {
-                pool.AddDefaultConnection(appSettings.CurrentValue.MessagesJob.Db.SharedStorageConnString);
+                pool.AddDefaultConnection(appSettings.Nested(x => x.MessagesJob.Db.SharedStorageConnString));
             });
 
             builder.Populate(services);
