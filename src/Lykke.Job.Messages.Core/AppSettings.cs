@@ -16,6 +16,7 @@ namespace Lykke.Job.Messages.Core
 
         public class MessagesSettings
         {
+            public Transports Transports { get; set; }
             public DbSettings Db { get; set; }
             public SmsSettings Sms { get; set; }
             public EmailSettings Email { get; set; }
@@ -34,6 +35,7 @@ namespace Lykke.Job.Messages.Core
             public string BitCoinQueueConnectionString { get; set; }
             public string SharedStorageConnString { get; set; }
             public string DictsConnString { get; set; }
+            public string PartnerEmailTemplatesConnectionString { get; set; }
         }
 
         public class AssetsCacheSettings
@@ -118,5 +120,10 @@ namespace Lykke.Job.Messages.Core
             [UsedImplicitly(ImplicitUseKindFlags.Assign)]
             public TimeSpan RetryDelay { get; set; }
         }
+    }
+
+    public class Transports
+    {
+        public string ClientRabbitMqConnectionString { get; set; }
     }
 }

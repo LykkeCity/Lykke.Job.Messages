@@ -80,6 +80,7 @@ namespace Lykke.Job.Messages.Modules
                 AssetsCacheExpirationPeriod = _settings.CurrentValue.AssetsCache.ExpirationPeriod
             });
 
+            builder.RegisterType<TemplateFormatter>().As<ITemplateFormatter>().SingleInstance();
             builder.RegisterType<SmsQueueConsumer>().SingleInstance();
             builder.RegisterType<EmailQueueConsumer>().SingleInstance();
 
@@ -100,6 +101,9 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterInstance<IBroadcastMailsRepository>(new BroadcastMailsRepository(
                 AzureTableStorage<BroadcastMailEntity>.Create(
                     _settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString), "BroadcastMails", _log)));
+
+            builder.Register(ctx => AzureTableStorage<PartnerTemplateSettings>.Create(
+                    _settings.ConnectionString(x => x.Db.PartnerEmailTemplatesConnectionString), "PartnerEmailTemplates", _log));
 
             builder.RegisterInstance<IRegulatorRepository>(new RegulatorRepository(
                 AzureTableStorage<RegulatorEntity>.Create(
