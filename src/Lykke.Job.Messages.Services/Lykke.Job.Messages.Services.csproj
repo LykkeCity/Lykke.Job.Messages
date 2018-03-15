@@ -19,6 +19,7 @@
     <PackageReference Include="RazorLight2" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Lykke.Job.Messages.AzureRepositories\Lykke.Job.Messages.AzureRepositories.csproj" />
     <ProjectReference Include="..\Lykke.Job.Messages.Core\Lykke.Job.Messages.Core.csproj" />
   </ItemGroup>
   <ItemGroup>

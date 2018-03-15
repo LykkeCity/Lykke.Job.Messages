@@ -28,9 +28,7 @@ namespace Lykke.Job.Messages
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .SetBasePath(env.ContentRootPath)                
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
@@ -56,6 +54,7 @@ namespace Lykke.Job.Messages
             var log = CreateLogWithSlack(services, appSettings);
 
             builder.RegisterModule(new JobModule(appSettings, log));
+            builder.RegisterModule(new CqrsModule(appSettings.Nested(a => a.MessagesJob), log));
 
             builder.AddTriggers(pool =>
             {
