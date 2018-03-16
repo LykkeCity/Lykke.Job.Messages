@@ -17,12 +17,12 @@ namespace Lykke.Job.Messages.QueueConsumers
     {
         private readonly IEnumerable<IQueueReader> _queueReadersList;
         private readonly ISmtpEmailSender _smtpEmailSender;
-        private readonly IEmailGeneratorOld _emailGenerator;
+        private readonly IEmailGenerator _emailGenerator;
         private readonly IPersonalDataService _personalDataService;
         private readonly ILog _log;
 
         public EmailQueueConsumer(IEnumerable<IQueueReader> queueReadersList, ISmtpEmailSender smtpEmailSender,
-            IEmailGeneratorOld emailGenerator, IPersonalDataService personalDataService, ILog log)
+            IEmailGenerator emailGenerator, IPersonalDataService personalDataService, ILog log)
         {
             _queueReadersList = queueReadersList;
             _smtpEmailSender = smtpEmailSender;

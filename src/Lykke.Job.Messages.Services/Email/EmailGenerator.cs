@@ -1,25 +1,28 @@
-﻿using Common;
-using Lykke.Job.Messages.Contract.Emails.MessageData;
-using Lykke.Job.Messages.Core;
-using Lykke.Job.Messages.Core.Services.Email;
-using Lykke.Job.Messages.Core.Services.SwiftCredentials;
-using Lykke.Job.Messages.Core.Services.Templates;
-using Lykke.Job.Messages.Services.Email.Resources;
-using Lykke.Service.Assets.Client.Custom;
-using Lykke.Service.EmailSender;
-using Lykke.Service.PersonalData.Contract;
-using Lykke.Service.PersonalData.Contract.Models;
-using Lykke.Service.TemplateFormatter.TemplateModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Common;
+using Lykke.Job.Messages.Core;
+using Lykke.Job.Messages.Core.Services.Email;
+using Lykke.Job.Messages.Core.Services.SwiftCredentials;
+using Lykke.Job.Messages.Core.Services.Templates;
+using Lykke.Job.Messages.Services.Email.Resources;
+using Lykke.Messages.Email.MessageData;
+using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.EmailSender;
+using Lykke.Service.PersonalData.Contract;
+using Lykke.Service.PersonalData.Contract.Models;
+using Lykke.Service.TemplateFormatter.TemplateModels;
 
 namespace Lykke.Job.Messages.Services.Email
 {
-    public class EmailGenerator : IEmailGeneratorNew
+    //Exists for back compatibility
+    //Do not use it for new emais. Instead, go with events subscription!
+    [Obsolete]
+    public class EmailGenerator : IEmailGenerator
     {
         private readonly ICachedAssetsService _assetsService;
         private readonly IPersonalDataService _personalDataService;

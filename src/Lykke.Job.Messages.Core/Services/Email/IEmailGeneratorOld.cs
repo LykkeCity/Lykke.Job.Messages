@@ -7,7 +7,7 @@ using Lykke.Service.PersonalData.Contract.Models;
 namespace Lykke.Job.Messages.Core.Services.Email
 {
     [Obsolete]
-    public interface IEmailGeneratorOld
+    public interface IEmailGenerator
     {
         Task<EmailMessage> GenerateLykkeCardVisaMsg(string partnerId, LykkeCardVisaData lykkeCardVisaData);
         Task<EmailMessage> GenerateWelcomeMsg(string partnerId, RegistrationMessageData kycOkData);

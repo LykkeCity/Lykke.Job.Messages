@@ -16,7 +16,7 @@
     <PackageReference Include="Lykke.Cqrs" Version="4.4.0" />
     <PackageReference Include="Lykke.JobTriggers" Version="1.2.0" />
     <PackageReference Include="Lykke.Logs" Version="3.6.0" />
-    <PackageReference Include="Lykke.Messages" Version="1.0.25" />
+    <PackageReference Include="Lykke.Messages" Version="1.0.27" />
     <PackageReference Include="Lykke.Messaging" Version="5.0.0" />
     <PackageReference Include="Lykke.Messaging.RabbitMq" Version="2.0.0" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="1.0.17" />
