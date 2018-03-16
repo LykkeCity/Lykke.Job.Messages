@@ -2,6 +2,6 @@
 {
     public class RejectedData : IEmailMessageData
     {
-        public const string QueueName = "RejectedEmail";
+        public const string EmailTemplateId = "RejectedEmail";
     }
 }

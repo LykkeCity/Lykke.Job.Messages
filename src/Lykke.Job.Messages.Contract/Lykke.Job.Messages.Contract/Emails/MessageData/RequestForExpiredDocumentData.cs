@@ -2,7 +2,7 @@
 {
     public class RequestForExpiredDocumentData : IEmailMessageData
     {
-        public const string QueueName = "RequestForExpiredDocument";
+        public const string EmailTemplateId = "RequestForExpiredDocument";
 
 
         public string FullName { get; set; }

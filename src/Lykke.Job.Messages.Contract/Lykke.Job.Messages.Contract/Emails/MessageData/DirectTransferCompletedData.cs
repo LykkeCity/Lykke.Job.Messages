@@ -2,7 +2,7 @@
 {
     public class DirectTransferCompletedData : IEmailMessageData
     {
-        public const string QueueName = "DirectTransferCompletedData";
+        public const string EmailTemplateId = "DirectTransferCompletedData";
 
         public string ClientName { get; set; }
         public double Amount { get; set; }

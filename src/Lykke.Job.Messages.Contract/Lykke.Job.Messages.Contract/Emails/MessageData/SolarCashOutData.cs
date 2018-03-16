@@ -2,7 +2,7 @@
 {
     public class SolarCashOutData : IEmailMessageData
     {
-        public const string QueueName = "SolarCashOut";
+        public const string EmailTemplateId = "SolarCashOut";
 
         public string AddressTo { get; set; }
         public double Amount { get; set; }

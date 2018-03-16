@@ -2,7 +2,7 @@
 {
     public class TransferCompletedData : IEmailMessageData
     {
-        public const string QueueName = "TransferCompletedEmail";
+        public const string EmailTemplateId = "TransferCompletedEmail";
 
         public string ClientName { get; set; }
         public double AmountFiat { get; set; }

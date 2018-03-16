@@ -2,7 +2,7 @@
 {
     public class EmailComfirmationData : IEmailMessageData
     {
-        public const string QueueName = "ConfirmationEmail";
+        public const string EmailTemplateId = "ConfirmationEmail";
 
         public string ConfirmationCode { get; set; }
         public string Year { get; set; }

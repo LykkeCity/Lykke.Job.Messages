@@ -8,4 +8,9 @@
     <Folder Include="Emails\MessageData\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Lykke.Cqrs" Version="4.4.0" />
+    <PackageReference Include="Lykke.Messaging" Version="5.0.0" />
+  </ItemGroup>
+
 </Project>

@@ -2,7 +2,7 @@
 {
     public class FailedTransactionData : IEmailMessageData
     {
-        public const string QueueName = "FailedTransactionBroadcast";
+        public const string EmailTemplateId = "FailedTransactionBroadcast";
 
         public string TransactionId { get; set; }
         public string[] AffectedClientIds { get; set; }

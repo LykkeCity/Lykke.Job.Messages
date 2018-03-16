@@ -2,7 +2,7 @@
 {
     public class OrdinaryCashOutRefundData : BaseRefundData, IEmailMessageData
     {
-        public const string QueueName = "OCashOutRefundEmail";
+        public const string EmailTemplateId = "OCashOutRefundEmail";
 
         public string AssetId { get; set; }
     }

@@ -19,7 +19,6 @@ using System.Threading.Tasks;
 
 namespace Lykke.Job.Messages.Services.Email
 {
-    [Obsolete]
     public class EmailGenerator : IEmailGeneratorNew
     {
         private readonly ICachedAssetsService _assetsService;

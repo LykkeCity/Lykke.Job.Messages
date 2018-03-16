@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Lykke.Job.Messages.Contract\Lykke.Job.Messages.Contract\Lykke.Job.Messages.Contract.csproj" />
     <ProjectReference Include="..\..\..\src\Lykke.Job.Messages\Lykke.Job.Messages.csproj" />
   </ItemGroup>
 

@@ -2,7 +2,7 @@
 {
     public class SwiftCashoutDeclinedData : IEmailMessageData
     {
-        public const string QueueName = "SwiftCashoutDeclined";
+        public const string EmailTemplateId = "SwiftCashoutDeclined";
 
         public string FullName { get; set; }
         public string Text { get; set; }

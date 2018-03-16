@@ -2,7 +2,7 @@
 {
     public class RegistrationCypMessageData : IEmailMessageData
     {
-        public const string QueueName = "WelcomeCypEmail";
+        public const string EmailTemplateId = "WelcomeCypEmail";
 
         public string ClientId { get; set; }
         public string Year { get; set; }

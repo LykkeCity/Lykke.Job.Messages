@@ -1,13 +1,17 @@
 ﻿using Common;
 using Common.Log;
 using Lykke.Job.Messages.Contract.Emails.MessageData;
+using Lykke.Job.Messages.Contract.Utils;
 using Lykke.Job.Messages.Core.Domain.Email.Models;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Service.EmailSender;
 using Lykke.Service.PersonalData.Contract;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,7 +19,8 @@ namespace Lykke.Job.Messages.Services.Email
 {
     public class EmailMessageProcessor : IEmailMessageProcessor
     {
-        private Dictionary<Type, Func<SendEmailRequest<IEmailMessageData>, Task>> _registeredMethods;
+        private Dictionary<string, Type> _emailTemplateTypeDict;
+        private Dictionary<Type, object> _registeredMethods;
         private readonly IPersonalDataService _personalDataService;
         private readonly ISmtpEmailSender _smtpEmailSender;
         private readonly ILog _log;
@@ -30,64 +35,100 @@ namespace Lykke.Job.Messages.Services.Email
             _smtpEmailSender = smtpEmailSender;
             _log = log;
             _emailGenerator = emailGenerator;
+
             RegisteredMethods();
+            RegisterTemplates();
         }
 
         public async Task SendAsync<T>(SendEmailRequest<T> emailRequest) where T : IEmailMessageData
         {
-            Func<SendEmailRequest<IEmailMessageData>, Task> func = null;
-            var type = typeof(T);
+            var type = emailRequest.MessageData.GetType();
 
-            if (!_registeredMethods.TryGetValue(type, out func))
+            if (!_registeredMethods.TryGetValue(type, out var func))
                 throw new Exception("Email is not registered for sending");
 
-            var converted = Convert.ChangeType(emailRequest, typeof(SendEmailRequest<IEmailMessageData>));
-            await func((SendEmailRequest<IEmailMessageData>)converted);
+            var converted = new SendEmailData<T>()
+            {
+                EmailAddress = emailRequest.EmailAddress,
+                MessageData = emailRequest.MessageData,
+                PartnerId = emailRequest.PartnerId
+            };
+
+            await ((Func<SendEmailData<T>, Task>)func)((dynamic)converted);
         }
 
-        /*
-         new SendEmailRequest<IEmailMessageData>()
-         {
-             EmailAddress = emailRequest.EmailAddress,
-             MessageData = emailRequest.MessageData,
-             PartnerId = emailRequest.PartnerId
-         }
-         */
+        public Type GetTypeForTemplateId(string templateId)
+        {
+            _emailTemplateTypeDict.TryGetValue(templateId, out var type);
+
+            return type;
+        }
+
+        private void RegisterTemplates()
+        {
+            _emailTemplateTypeDict = new Dictionary<string, Type>();
+            var emailMessageDataType = typeof(IEmailMessageData);
+            var emailTypes = ReflectionUtil.GetImplTypesAssignableToMarkerTypeFromAsssembly(
+                                            emailMessageDataType.Assembly,
+                                            emailMessageDataType);
+
+            emailTypes.ForEach(type =>
+            {
+                var templateIdValue = (string)ReflectionUtil.ExtractConstValueFromType(type, "EmailTemplateId");
+
+                if (string.IsNullOrEmpty(templateIdValue))
+                {
+                    throw new Exception($"All MessageData classes should contain EmailTemplateId const field. Error in {type}");
+                }
+
+                if (_emailTemplateTypeDict.TryGetValue(templateIdValue, out var temp))
+                {
+                    throw new Exception($"Type with EmailTemplateId == {templateIdValue} has been already registered. Error in {type}");
+                }
+
+                _emailTemplateTypeDict[templateIdValue] = type;
+            });
+        }
 
         //Register methods via reflection
         private void RegisteredMethods()
         {
-            _registeredMethods = new Dictionary<Type, Func<SendEmailRequest<IEmailMessageData>, Task>>();
-            this.GetType()
-                .GetMethods(System.Reflection.BindingFlags.Instance & System.Reflection.BindingFlags.NonPublic)
-                .Where(x =>
+            _registeredMethods = new Dictionary<Type, object>();
+            var methods = this.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance);
+
+            methods.Where(x =>
+            {
+                var parameters = x.GetParameters();
+                var parameter1 = parameters.FirstOrDefault();
+
+                if (parameter1 == null)
+                    return false;
+
+                if (!parameter1.ParameterType.IsGenericType)
+                    return false;
+
+                if (!typeof(Task).IsAssignableFrom(x.ReturnType))
+                    return false;
+
+                Type[] typeArguments = parameter1.ParameterType.GetGenericArguments();
+                var genericArgument = typeArguments.FirstOrDefault();
+
+                if (genericArgument == null)
+                    return false;
+
+                var typeToRegister = typeArguments.FirstOrDefault();
+
+                ParameterExpression parameter = Expression.Parameter(parameter1.ParameterType, "i");
+                var delegateType = typeof(Func<,>).MakeGenericType(parameter1.ParameterType, x.ReturnType);
+                var yourExpression = Expression.Lambda(delegateType, property, parameter);
+
+                _registeredMethods[typeToRegister] = (Func<SendEmailData<IEmailMessageData>, Task>)(async (y) =>
                 {
-                    var parameters = x.GetParameters();
-                    var parameter1 = parameters.FirstOrDefault();
-
-                    if (parameter1 == null)
-                        return false;
-
-                    if (!parameter1.ParameterType.IsGenericType)
-                        return false;
-
-                    if (!x.ReturnType.IsAssignableFrom(typeof(Task)))
-                        return false;
-
-                    Type[] typeArguments = parameter1.ParameterType.GetGenericArguments();
-                    var genericArgument = typeArguments.FirstOrDefault();
-
-                    if (genericArgument == null)
-                        return false;
-
-                    var typeToRegister = typeArguments.FirstOrDefault();
-                    _registeredMethods[typeToRegister] = async (y) =>
-                    {
-                        await (Task)x.Invoke(this, new[] { y });
-                    };
-
-                    return true;
+                    await (Task)x.Invoke(this, new[] { y });
                 });
+
+                return true;
+            }).ToArray();
         }
 
         #region EMailGeneration Methods

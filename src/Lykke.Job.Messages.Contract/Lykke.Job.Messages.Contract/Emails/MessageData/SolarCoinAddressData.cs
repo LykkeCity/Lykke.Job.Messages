@@ -2,7 +2,7 @@
 {
     public class SolarCoinAddressData : IEmailMessageData
     {
-        public const string QueueName = "SolarCoinAddress";
+        public const string EmailTemplateId = "SolarCoinAddress";
 
         public string Address { get; set; }
     }

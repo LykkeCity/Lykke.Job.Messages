@@ -1,41 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Autofac;
-using Autofac.Extensions.DependencyInjection;
-using AzureStorage.Queue;
-using AzureStorage.Tables;
 using Common.Log;
-using Lykke.Job.Messages.AzureRepositories.DepositRefId;
-using Lykke.Job.Messages.AzureRepositories.Email;
-using Lykke.Job.Messages.AzureRepositories.Regulator;
-using Lykke.Job.Messages.AzureRepositories.Sms;
-using Lykke.Job.Messages.AzureRepositories.SwiftCredentials;
 using Lykke.Job.Messages.Core;
-using Lykke.Job.Messages.Core.Domain.DepositRefId;
-using Lykke.Job.Messages.Core.Domain.Email;
-using Lykke.Job.Messages.Core.Domain.Sms;
-using Lykke.Job.Messages.Core.Domain.SwiftCredentials;
-using Lykke.Job.Messages.Core.Regulator;
-using Lykke.Job.Messages.Core.Services;
-using Lykke.Job.Messages.Core.Services.Email;
-using Lykke.Job.Messages.Core.Services.SwiftCredentials;
-using Lykke.Job.Messages.Core.Services.Templates;
-using Lykke.Job.Messages.QueueConsumers;
-using Lykke.Job.Messages.Services;
-using Lykke.Job.Messages.Services.Email;
-using Lykke.Job.Messages.Services.Http;
-using Lykke.Job.Messages.Services.Slack;
-using Lykke.Job.Messages.Services.Sms.Mocks;
-using Lykke.Job.Messages.Services.SwiftCredentials;
-using Lykke.Job.Messages.Services.Templates;
-using Lykke.Service.Assets.Client.Custom;
-using Lykke.Service.EmailPartnerRouter;
-using Lykke.Service.PersonalData.Client;
-using Lykke.Service.PersonalData.Contract;
-using Lykke.Service.SmsSender.Client;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
-using Lykke.Service.TemplateFormatter;
 using static Lykke.Job.Messages.Core.AppSettings;
 using Lykke.Job.Messages.Utils;
 using Lykke.Cqrs;
@@ -44,6 +12,8 @@ using Lykke.Messaging.RabbitMq;
 using Lykke.Messaging.Contract;
 using Lykke.Cqrs.Configuration;
 using Lykke.Job.Messages.Contract;
+using Lykke.Job.Messages.Workflow.CommandHandlers;
+using Lykke.Job.Messages.Contract.Commands;
 
 namespace Lykke.Job.Messages.Modules
 {
@@ -88,7 +58,7 @@ namespace Lykke.Job.Messages.Modules
             // Sagas
 
             // Command handlers
-
+            builder.RegisterType<SendEmailCommandHandler>();
             // Projections
 
             builder.Register(ctx => CreateEngine(ctx, messagingEngine))
@@ -104,6 +74,26 @@ namespace Lykke.Job.Messages.Modules
             const string defaultPipeline = "commands";
             const string defaultRoute = "self";
 
+            //var emailMessageDataType = typeof(IEmailMessageData);
+            //var emailTypes = emailMessageDataType.Assembly.GetTypes()
+            //    .Where(type =>
+            //    {
+            //        var isEmailMessage = !type.IsInterface && 
+            //                             !type.IsAbstract && 
+            //                              emailMessageDataType.IsAssignableFrom(type);
+
+            //        return isEmailMessage;
+            //    }).ToArray();
+            var boundedContext = Register.BoundedContext(Self)
+                    .FailedCommandRetryDelay(defaultRetryDelay)
+                    .ListeningCommands(typeof(SendEmailCommand))
+                    .On(defaultRoute)
+                    .ProcessingOptions(defaultRoute).MultiThreaded(8).QueueCapacity(1024)
+                    .WithCommandsHandler<SendEmailCommandHandler>()
+                    .PublishingCommands(typeof(SendEmailCommand))
+                    .To(Self)
+                    .With(defaultPipeline);
+
             return new CqrsEngine(
                 _log,
                 ctx.Resolve<IDependencyResolver>(),
@@ -114,9 +104,8 @@ namespace Lykke.Job.Messages.Modules
                     "RabbitMq",
                     "messagepack",
                     environment: "lykke")),
-
-                Register.BoundedContext(Self)
-                    .FailedCommandRetryDelay(defaultRetryDelay));
+                boundedContext
+                );
         }
     }
 }

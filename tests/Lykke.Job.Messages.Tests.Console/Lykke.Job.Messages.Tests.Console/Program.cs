@@ -3,9 +3,9 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Lykke.Job.Messages.Workflow.Commands;
 using Lykke.Job.Messages.Contract.Emails.MessageData;
 using Lykke.Job.Messages.Contract;
+using System.Threading;
 
 namespace Lykke.Job.Messages.Tests.Console
 {
@@ -13,23 +13,19 @@ namespace Lykke.Job.Messages.Tests.Console
     {
         public static void Main(string[] args)
         {
+            Thread.Sleep(30000);
             var webHostBuilder = CreateWebHost(args);
             var webHost = webHostBuilder.Build();
             var cqrsEngine = webHost.Services.GetService<ICqrsEngine>();
+            var emailSender = new EmailMessageSender(cqrsEngine, EmailMessagesBoundedContext.Name);
 
-            cqrsEngine.SendCommand(new SendEmailCommand<NoRefundOCashOutData>()
+            emailSender.SendEmail("tortyt1@gmail.com", null, new NoRefundOCashOutData()
             {
-                EmailAddress = "tortyt1@gmail.com",
-                MessageData = new NoRefundOCashOutData()
-                {
-                    Amount = 10,
-                    AssetId = "ETH",
-                    SrcBlockchainHash = "0x00000000000000000000000000..."
-                },
-                PartnerId = null
-            },
-            EmailMessagesBoundedContext.Name,
-            EmailMessagesBoundedContext.Name);
+                Amount = 10,
+                AssetId = "ETH",
+                SrcBlockchainHash = "0x00000000000000000000000000..."
+            });
+
             webHost.Run();
             
         }

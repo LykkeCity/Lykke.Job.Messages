@@ -2,7 +2,7 @@
 {
     public class VisaShippingInfoData : IEmailMessageData
     {
-        public const string QueueName = "VisaShippingInfo";
+        public const string EmailTemplateId = "VisaShippingInfo";
         public string TrackingId { get; set; }
         public string TrackingUrl { get; set; }
         public string Year { get; set; }

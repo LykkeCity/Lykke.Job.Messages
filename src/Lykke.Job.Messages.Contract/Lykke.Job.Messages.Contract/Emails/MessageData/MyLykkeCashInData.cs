@@ -2,7 +2,7 @@
 {
     public class MyLykkeCashInData : IEmailMessageData
     {
-        public const string QueueName = "MyLykkeCashIn";
+        public const string EmailTemplateId = "MyLykkeCashIn";
 
         public string ConversionWalletAddress { get; set; }
         public double Amount { get; set; }

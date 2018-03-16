@@ -2,7 +2,7 @@
 {
     public class CashoutUnlockData: IEmailMessageData
     {
-        public const string QueueName = "CashoutUnlockEmail";
+        public const string EmailTemplateId = "CashoutUnlockEmail";
 
         public string Code { get; set; }
         public string ClientId { get; set; }

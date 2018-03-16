@@ -6,6 +6,8 @@ namespace Lykke.Job.Messages.Contract.Emails.MessageData
 {
     public class SendBroadcastData<T> : IEmailMessageData
     {
+        public const string EmailTemplateId = "SendBroadcastData";
+
         public string PartnerId { get; set; }
         public BroadcastGroup BroadcastGroup { get; set; }
         public T MessageData { get; set; }

@@ -2,7 +2,7 @@
 {
     public class PlainTextData : IEmailMessageData
     {
-        public const string QueueName = "PlainTextEmail";
+        public const string EmailTemplateId = "PlainTextEmail";
 
         public string Sender { get; set; }
         public string Subject { get; set; }

@@ -2,7 +2,7 @@
 {    
     public class PasswordRecoveryEmailComfirmationData : IEmailMessageData
     {
-        public const string QueueName = "PasswordRecoveryConfirmationEmail";
+        public const string EmailTemplateId = "PasswordRecoveryConfirmationEmail";
 
         public string ConfirmationCode { get; set; }
         public string Year { get; set; }

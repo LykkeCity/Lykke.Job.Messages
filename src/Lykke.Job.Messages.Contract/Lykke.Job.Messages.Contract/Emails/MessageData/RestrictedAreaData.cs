@@ -2,7 +2,7 @@
 {
     public class RestrictedAreaData : IEmailMessageData
     {
-        public const string QueueName = "RestrictedAreaEmail";
+        public const string EmailTemplateId = "RestrictedAreaEmail";
 
         public string FirstName { get; set; }
         public string LastName { get; set; }

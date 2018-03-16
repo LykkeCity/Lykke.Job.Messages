@@ -2,7 +2,7 @@
 {
     public class LykkeCardVisaData : IEmailMessageData
     {
-        public const string QueueName = "LykkeCardVisa";
+        public const string EmailTemplateId = "LykkeCardVisa";
 
         public string Url { get; set; }
         public int Year { get; set; }

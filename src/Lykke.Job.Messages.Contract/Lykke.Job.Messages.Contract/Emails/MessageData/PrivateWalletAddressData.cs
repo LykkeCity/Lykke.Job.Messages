@@ -2,7 +2,7 @@
 {
     public class PrivateWalletAddressData : IEmailMessageData
     {
-        public const string QueueName = "PrivateWalletAddressEmail";
+        public const string EmailTemplateId = "PrivateWalletAddressEmail";
 
         public string Address { get; set; }
         public string Name { get; set; }

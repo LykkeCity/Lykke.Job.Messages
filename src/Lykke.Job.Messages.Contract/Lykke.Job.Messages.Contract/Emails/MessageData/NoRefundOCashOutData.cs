@@ -2,7 +2,7 @@
 {
     public class NoRefundOCashOutData : IEmailMessageData
     {
-        public const string QueueName = "NoRefundOCashOutEmail";
+        public const string EmailTemplateId = "NoRefundOCashOutEmail";
 
         public string AssetId { get; set; }
         public double Amount { get; set; }

@@ -2,7 +2,7 @@
 {
     public class RegistrationEmailVerifyData : IEmailMessageData
     {
-        public const string QueueName = "RegistrationVerifyEmail";
+        public const string EmailTemplateId = "RegistrationVerifyEmail";
 
         public string Code { get; set; }
         public string Url { get; set; }

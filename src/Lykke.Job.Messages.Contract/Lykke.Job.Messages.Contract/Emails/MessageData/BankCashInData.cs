@@ -2,7 +2,7 @@
 {
     public class BankCashInData : IEmailMessageData
     {
-        public const string QueueName = "BankCashInEmail";
+        public const string EmailTemplateId = "BankCashInEmail";
 
         public string AssetId { get; set; }
         public double Amount { get; set; }

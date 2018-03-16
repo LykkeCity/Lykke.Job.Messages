@@ -2,7 +2,7 @@
 {
     public class SwiftCashOutRequestData : IEmailMessageData
     {
-        public const string QueueName = "SwiftCashOutRequest";
+        public const string EmailTemplateId = "SwiftCashOutRequest";
 
         public string AssetId { get; set; }
         public double Amount { get; set; }

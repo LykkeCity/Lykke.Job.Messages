@@ -2,7 +2,7 @@
 {
     public class UserRegisteredData : IEmailMessageData
     {
-        public const string QueueName = "UserRegisteredBroadcast";
+        public const string EmailTemplateId = "UserRegisteredBroadcast";
 
         public string ClientId { get; set; }
     }

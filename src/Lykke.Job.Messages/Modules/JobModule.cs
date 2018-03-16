@@ -184,6 +184,10 @@ namespace Lykke.Job.Messages.Modules
                     TypedParameter.From(_settings.CurrentValue.WalletApi)
                });
 
+            builder.RegisterType<EmailTemplateProvider>()
+                .As<IEmailTemplateProvide>()
+                .SingleInstance();
+
             builder.RegisterType<EmailMessageProcessor>()
                .As<IEmailMessageProcessor>()
                .SingleInstance();

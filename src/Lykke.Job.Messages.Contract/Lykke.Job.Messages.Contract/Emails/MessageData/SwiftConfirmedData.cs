@@ -2,7 +2,7 @@
 {
     public class SwiftConfirmedData : IEmailMessageData
     {
-        public const string QueueName = "SwiftConfirmedData";
+        public const string EmailTemplateId = "SwiftConfirmedData";
 
         public string Email { get; set; }
         public string AssetId { get; set; }

@@ -2,7 +2,7 @@
 {
     public class PaymentRequestCreatedEmployeesMessageData : IEmailMessageData
     {
-        public const string QueueName = "PaymentRequestCreatedEmployeesEmail";
+        public const string EmailTemplateId = "PaymentRequestCreatedEmployeesEmail";
 
         public string InvoiceNumber { get; set; }
         public string ClientFullName { get; set; }

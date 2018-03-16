@@ -2,6 +2,6 @@
 {
     public class CashInRefundData : BaseRefundData, IEmailMessageData
     {
-        public const string QueueName = "CashInRefundEmail";
+        public const string EmailTemplateId = "CashInRefundEmail";
     }
 }

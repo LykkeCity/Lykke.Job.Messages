@@ -2,7 +2,7 @@
 {
     public class RequestForDocumentData : IEmailMessageData
     {
-        public const string QueueName = "RequestForDocument";
+        public const string EmailTemplateId = "RequestForDocument";
 
 
         public string FullName { get; set; }

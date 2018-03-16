@@ -2,7 +2,7 @@
 {
     public class PaymentRequestCompletedMessageData : IEmailMessageData
     {
-        public const string QueueName = "PaymentRequestCompletedEmail";
+        public const string EmailTemplateId = "PaymentRequestCompletedEmail";
 
         public string InvoiceNumber { get; set; }
         public decimal AmountReceived { get; set; }
