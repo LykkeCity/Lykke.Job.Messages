@@ -4,8 +4,8 @@ using Lykke.Job.Messages.Core.Domain.Email.Models;
 
 namespace Lykke.Job.Messages.Core.Services.Email
 {
-    public interface IEmailTemplateProvide
+    public interface IEmailTemplateProvider
     {
-        Task<FormattedEmail> FormatAsync(string templateId, string partnerId, string language, Dictionary<string, string> parameters);
+        Task<FormattedEmail> GenerateAsync<T>(string partnerId, string templateId, string language, T templateVm);
     }
 }

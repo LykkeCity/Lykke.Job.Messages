@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Lykke.Job.Messages.Contract.Emails;
+using Lykke.Messages.Email;
 using Lykke.Service.EmailSender;
 
 namespace Lykke.Job.Messages.Core.Services.Email

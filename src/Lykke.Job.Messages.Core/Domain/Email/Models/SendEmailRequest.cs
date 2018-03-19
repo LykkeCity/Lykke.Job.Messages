@@ -1,11 +1,10 @@
-﻿using Lykke.Job.Messages.Contract.Emails.MessageData;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Lykke.Job.Messages.Core.Domain.Email.Models
 {
-    public class SendEmailRequest<T> where T : IEmailMessageData
+    public class SendEmailRequest<T> //where T : IEmailMessageData
     {
         public string PartnerId { get; set; }
         public string EmailAddress { get; set; }

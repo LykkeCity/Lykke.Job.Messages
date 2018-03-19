@@ -1,6 +1,6 @@
-using Lykke.Job.Messages.Contract.Emails;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lykke.Messages.Email;
 
 namespace Lykke.Job.Messages.Core.Domain.Email
 {

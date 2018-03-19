@@ -9,11 +9,13 @@ using Lykke.Job.Messages.Utils;
 using Lykke.Cqrs;
 using Lykke.Messaging;
 using Lykke.Messaging.RabbitMq;
-using Lykke.Messaging.Contract;
 using Lykke.Cqrs.Configuration;
 using Lykke.Job.Messages.Contract;
-using Lykke.Job.Messages.Workflow.CommandHandlers;
-using Lykke.Job.Messages.Contract.Commands;
+using System;
+using Lykke.Job.Messages.Commands;
+using Lykke.Job.Messages.Events;
+using Lykke.Job.Messages.Handlers;
+using Lykke.Job.Messages.Sagas;
 
 namespace Lykke.Job.Messages.Modules
 {
@@ -21,91 +23,81 @@ namespace Lykke.Job.Messages.Modules
     {
         public static readonly string Self = EmailMessagesBoundedContext.Name;
 
-        private readonly CqrsSettings _settings;
-        private readonly IReloadingManager<AppSettings> _appSettings;
+        private readonly IReloadingManager<AppSettings.MessagesSettings> _settings;
         private readonly ILog _log;
-        private readonly ServiceCollection _services;
 
-        public CqrsModule(IReloadingManager<AppSettings> settings, ILog log)
+        public CqrsModule(IReloadingManager<AppSettings.MessagesSettings> settings, ILog log)
         {
-            _appSettings = settings;
-            _settings = settings.Nested(x => x.MessagesJob.Cqrs).CurrentValue;
+            _settings = settings;
             _log = log;
-
-            _services = new ServiceCollection();
         }
 
         protected override void Load(ContainerBuilder builder)
         {
+            Messaging.Serialization.MessagePackSerializerFactory.Defaults.FormatterResolver = MessagePack.Resolvers.ContractlessStandardResolver.Instance;
+            var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CurrentValue.Transports.ClientRabbitMqConnectionString };
+
             builder.Register(context => new AutofacDependencyResolver(context)).As<IDependencyResolver>().SingleInstance();
 
-            var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory
-            {
-                Uri = _settings.RabbitConnectionString
-            };
+            builder.RegisterType<LoginNotificationsSaga>().SingleInstance();
+            builder.RegisterType<EmailNotificationsCommandHandler>().WithParameter(TypedParameter.From(_settings.CurrentValue.EmailRetryPeriodInMinutes)).SingleInstance();
 
             var messagingEngine = new MessagingEngine(_log,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                 {
-                    {
-                        "RabbitMq",
-                        new TransportInfo(rabbitMqSettings.Endpoint.ToString(), rabbitMqSettings.UserName,
-                            rabbitMqSettings.Password, "None", "RabbitMq")
-                    }
+                    {"RabbitMq", new TransportInfo(rabbitMqSettings.Endpoint.ToString(), rabbitMqSettings.UserName, rabbitMqSettings.Password, "None", "RabbitMq")}
                 }),
                 new RabbitMqTransportFactory());
 
-            // Sagas
+            builder.Register(ctx =>
+            {
+                return new CqrsEngine(_log,
+                    ctx.Resolve<IDependencyResolver>(),
+                    messagingEngine,
+                    new DefaultEndpointProvider(),
+                    true,
+                    Register.DefaultEndpointResolver(new RabbitMqConventionEndpointResolver(
+                        "RabbitMq",
+                        "messagepack",
+                        environment: "lykke",
+                        exclusiveQueuePostfix: "k8s")),
 
-            // Command handlers
-            builder.RegisterType<SendEmailCommandHandler>();
-            // Projections
+                    Register.Saga<LoginNotificationsSaga>("login-notifications-saga")
+                        .ListeningEvents(typeof(ClientLoggedEvent)).From("registration").On("events")
+                        .PublishingCommands(typeof(SendEmailCommand)).To(Self).With("commands")
+                        .ProcessingOptions("commands").MultiThreaded(4).QueueCapacity(512),
 
-            builder.Register(ctx => CreateEngine(ctx, messagingEngine))
-                .As<ICqrsEngine>()
-                .SingleInstance()
-                .AutoActivate();
+                    Register.BoundedContext(Self)
+                        .ListeningCommands(typeof(SendEmailCommand))
+                        .On("commands")
+                        .WithLoopback()
+                        .WithCommandsHandler<EmailNotificationsCommandHandler>()
+                        .ProcessingOptions("commands").MultiThreaded(4).QueueCapacity(512)
+                    );
+            })
+            .As<ICqrsEngine>()
+            .SingleInstance()
+            .AutoActivate();
         }
 
-        private CqrsEngine CreateEngine(IComponentContext ctx, IMessagingEngine messagingEngine)
+        internal class AutofacDependencyResolver : IDependencyResolver
         {
-            var defaultRetryDelay = (long)_settings.RetryDelay.TotalMilliseconds;
+            private readonly IComponentContext _context;
 
-            const string defaultPipeline = "commands";
-            const string defaultRoute = "self";
+            public AutofacDependencyResolver(IComponentContext kernel)
+            {
+                _context = kernel ?? throw new ArgumentNullException(nameof(kernel));
+            }
 
-            //var emailMessageDataType = typeof(IEmailMessageData);
-            //var emailTypes = emailMessageDataType.Assembly.GetTypes()
-            //    .Where(type =>
-            //    {
-            //        var isEmailMessage = !type.IsInterface && 
-            //                             !type.IsAbstract && 
-            //                              emailMessageDataType.IsAssignableFrom(type);
+            public object GetService(Type type)
+            {
+                return _context.Resolve(type);
+            }
 
-            //        return isEmailMessage;
-            //    }).ToArray();
-            var boundedContext = Register.BoundedContext(Self)
-                    .FailedCommandRetryDelay(defaultRetryDelay)
-                    .ListeningCommands(typeof(SendEmailCommand))
-                    .On(defaultRoute)
-                    .ProcessingOptions(defaultRoute).MultiThreaded(8).QueueCapacity(1024)
-                    .WithCommandsHandler<SendEmailCommandHandler>()
-                    .PublishingCommands(typeof(SendEmailCommand))
-                    .To(Self)
-                    .With(defaultPipeline);
-
-            return new CqrsEngine(
-                _log,
-                ctx.Resolve<IDependencyResolver>(),
-                messagingEngine,
-                new DefaultEndpointProvider(),
-                true,
-                Register.DefaultEndpointResolver(new RabbitMqConventionEndpointResolver(
-                    "RabbitMq",
-                    "messagepack",
-                    environment: "lykke")),
-                boundedContext
-                );
+            public bool HasService(Type type)
+            {
+                return _context.IsRegistered(type);
+            }
         }
     }
 }
