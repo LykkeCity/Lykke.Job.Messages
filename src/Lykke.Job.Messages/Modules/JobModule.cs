@@ -29,6 +29,7 @@ using Lykke.Job.Messages.Services.Sms.Mocks;
 using Lykke.Job.Messages.Services.SwiftCredentials;
 using Lykke.Job.Messages.Services.Templates;
 using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.EmailPartnerRouter;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
@@ -87,6 +88,10 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<PersonalDataService>()
                 .As<IPersonalDataService>()
                 .WithParameter(TypedParameter.From(_appSettings.CurrentValue.PersonalDataServiceSettings));
+
+            builder.RegisterInstance<IClientAccountClient>(
+                new Lykke.Service.ClientAccount.Client.ClientAccountClient(_appSettings.CurrentValue
+                    .ClientAccountServiceClient.ServiceUrl));
 
             RegistermSmsServices(builder);
             RegisterEmailServices(builder);

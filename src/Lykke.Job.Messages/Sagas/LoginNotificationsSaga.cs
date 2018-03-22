@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Autofac.Features.Indexed;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
 using Lykke.Job.Messages.Commands;
 using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Job.Messages.Events;
+using Lykke.Job.Messages.Utils;
+using Lykke.Job.Messages.Workflow;
 using Lykke.Service.PersonalData.Contract;
 
 namespace Lykke.Job.Messages.Sagas
@@ -15,15 +18,20 @@ namespace Lykke.Job.Messages.Sagas
     {
         private readonly IEmailTemplateProvider _templateFormatter;
         private readonly IPersonalDataService _personalDataService;
+        private readonly IIndex<Enum, ICqrsEngine> _engineFactory;
 
-        public LoginNotificationsSaga(IEmailTemplateProvider templateFormatter, IPersonalDataService personalDataService)
+        public LoginNotificationsSaga(IIndex<Enum, ICqrsEngine> engineFactory, 
+            IEmailTemplateProvider templateFormatter, 
+            IPersonalDataService personalDataService)
         {
             _templateFormatter = templateFormatter;
             _personalDataService = personalDataService;
+            _engineFactory = engineFactory;
+
         }
 
         [UsedImplicitly]
-        public async Task Handle(ClientLoggedEvent evt, ICommandSender commandSender)
+        public async Task Handle(ClientLoggedEvent evt)
         {
             var partnerId = evt.PartnerId ?? "Lykke";
 
@@ -39,8 +47,10 @@ namespace Lykke.Job.Messages.Sagas
 
             var formattedEmail = await _templateFormatter.GenerateAsync(partnerId, "LoginNotificationTemplate", "EN", parameters);
             var message = formattedEmail.EmailMessage;
-
-            commandSender.SendCommand(new SendEmailCommand { PartnerId = evt.PartnerId, EmailAddress = evt.Email, Message = message }, EmailMessagesBoundedContext.Name);
+            var cqrsEngine = CqrsEngineRetriever.GetEngine(RabbitType.Registration, _engineFactory);
+            cqrsEngine.SendCommand(new SendEmailCommand { PartnerId = evt.PartnerId, EmailAddress = evt.Email, Message = message }, 
+                EmailMessagesBoundedContext.Name, 
+                EmailMessagesBoundedContext.Name);
         }
     }
 }

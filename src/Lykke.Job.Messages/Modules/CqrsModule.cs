@@ -12,10 +12,12 @@ using Lykke.Messaging.RabbitMq;
 using Lykke.Cqrs.Configuration;
 using Lykke.Job.Messages.Contract;
 using System;
+using Lykke.Job.BlockchainCashoutProcessor.Contract.Events;
 using Lykke.Job.Messages.Commands;
 using Lykke.Job.Messages.Events;
 using Lykke.Job.Messages.Handlers;
 using Lykke.Job.Messages.Sagas;
+using Lykke.Job.Messages.Workflow;
 
 namespace Lykke.Job.Messages.Modules
 {
@@ -34,15 +36,22 @@ namespace Lykke.Job.Messages.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
+            string selfRoute = "self";
+            string commandsRoute = "commands";
+            string eventsRoute = "events";
             Messaging.Serialization.MessagePackSerializerFactory.Defaults.FormatterResolver = MessagePack.Resolvers.ContractlessStandardResolver.Instance;
             var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CurrentValue.Transports.ClientRabbitMqConnectionString };
+            var rabbitMqMeSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CurrentValue.Cqrs.RabbitConnectionString };
 
-            builder.Register(context => new AutofacDependencyResolver(context)).As<IDependencyResolver>().SingleInstance();
+            builder.Register(context => new AutofacDependencyResolver(context)).As<IDependencyResolver>();
 
+            builder.RegisterType<BlockchainOperationsSaga>().SingleInstance();
             builder.RegisterType<LoginNotificationsSaga>().SingleInstance();
             builder.RegisterType<EmailNotificationsCommandHandler>().WithParameter(TypedParameter.From(_settings.CurrentValue.EmailRetryPeriodInMinutes)).SingleInstance();
 
-            var messagingEngine = new MessagingEngine(_log,
+            #region RegistrationRabbit
+
+            var messagingEngineRegistrationRabbit = new MessagingEngine(_log,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                 {
                     {"RabbitMq", new TransportInfo(rabbitMqSettings.Endpoint.ToString(), rabbitMqSettings.UserName, rabbitMqSettings.Password, "None", "RabbitMq")}
@@ -53,7 +62,7 @@ namespace Lykke.Job.Messages.Modules
             {
                 return new CqrsEngine(_log,
                     ctx.Resolve<IDependencyResolver>(),
-                    messagingEngine,
+                    messagingEngineRegistrationRabbit,
                     new DefaultEndpointProvider(),
                     true,
                     Register.DefaultEndpointResolver(new RabbitMqConventionEndpointResolver(
@@ -63,41 +72,62 @@ namespace Lykke.Job.Messages.Modules
                         exclusiveQueuePostfix: "k8s")),
 
                     Register.Saga<LoginNotificationsSaga>("login-notifications-saga")
-                        .ListeningEvents(typeof(ClientLoggedEvent)).From("registration").On("events")
-                        .PublishingCommands(typeof(SendEmailCommand)).To(Self).With("commands")
-                        .ProcessingOptions("commands").MultiThreaded(4).QueueCapacity(512),
+                        .ListeningEvents(typeof(ClientLoggedEvent))
+                        .From("registration").On(eventsRoute)
+                        .PublishingCommands(typeof(SendEmailCommand)).To(Self).With(commandsRoute)
+                        .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
 
                     Register.BoundedContext(Self)
                         .ListeningCommands(typeof(SendEmailCommand))
-                        .On("commands")
+                        .On(commandsRoute)
                         .WithLoopback()
                         .WithCommandsHandler<EmailNotificationsCommandHandler>()
-                        .ProcessingOptions("commands").MultiThreaded(4).QueueCapacity(512)
+                        .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
                     );
             })
-            .As<ICqrsEngine>()
+            .Keyed<ICqrsEngine>(RabbitType.Registration)
             .SingleInstance()
             .AutoActivate();
-        }
 
-        internal class AutofacDependencyResolver : IDependencyResolver
-        {
-            private readonly IComponentContext _context;
+            #endregion
 
-            public AutofacDependencyResolver(IComponentContext kernel)
+            #region ME_Rabbit
+
+            var messagingEngineMeRabbit = new MessagingEngine(_log,
+                new TransportResolver(new Dictionary<string, TransportInfo>
+                {
+                    {"RabbitMq", new TransportInfo(rabbitMqMeSettings.Endpoint.ToString(), rabbitMqMeSettings.UserName, rabbitMqMeSettings.Password, "None", "RabbitMq")}
+                }),
+                new RabbitMqTransportFactory());
+
+            builder.Register(ctx =>
             {
-                _context = kernel ?? throw new ArgumentNullException(nameof(kernel));
-            }
+                return new CqrsEngine(_log,
+                    ctx.Resolve<IDependencyResolver>(),
+                    messagingEngineMeRabbit,
+                    new DefaultEndpointProvider(),
+                    true,
+                    Register.DefaultEndpointResolver(new RabbitMqConventionEndpointResolver(
+                        "RabbitMq",
+                        "messagepack",
+                        environment: "lykke",
+                        exclusiveQueuePostfix: "k8s")),
 
-            public object GetService(Type type)
-            {
-                return _context.Resolve(type);
-            }
+                    Register.Saga<BlockchainOperationsSaga>("blockchain-notification-saga")
+                        .ListeningEvents(typeof(CashinCompletedEvent),
+                                         typeof(CashoutCompletedEvent))
+                        .From(Lykke.Job.BlockchainCashoutProcessor.Contract.BlockchainCashoutProcessorBoundedContext.Name).On(eventsRoute)
+                        .ProcessingOptions(eventsRoute).MultiThreaded(2).QueueCapacity(512)
+                        .ListeningEvents(typeof(Lykke.Job.BlockchainCashinDetector.Contract.Events.CashinCompletedEvent))
+                        .From(Lykke.Job.BlockchainCashinDetector.Contract.BlockchainCashinDetectorBoundedContext.Name).On(eventsRoute)
+                        .ProcessingOptions(eventsRoute).MultiThreaded(2).QueueCapacity(512)
+                    );
+            })
+            .Keyed<ICqrsEngine>(RabbitType.ME)
+            .SingleInstance()
+            .AutoActivate();
 
-            public bool HasService(Type type)
-            {
-                return _context.IsRegistered(type);
-            }
+            #endregion
         }
     }
 }
