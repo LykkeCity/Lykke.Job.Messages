@@ -13,6 +13,7 @@ namespace Lykke.Job.Messages.Core
         public PersonalDataServiceSettings PersonalDataServiceSettings { get; set; }
         public SmsNotificationsSettings SmsNotifications { get; set; }
         public SmsSenderSettings SmsSenderServiceClient { get; set; }
+        public Lykke.Service.ClientAccount.Client.ClientAccountServiceClientSettings ClientAccountServiceClient { get; set; }
 
         public class MessagesSettings
         {

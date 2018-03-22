@@ -5,6 +5,12 @@
     <Version>1.0.1</Version>
     <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <LangVersion>7.1</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <LangVersion>7.1</LangVersion>
+  </PropertyGroup>
   <ItemGroup>
     <None Update="Dockerfile">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -14,13 +20,19 @@
     <PackageReference Include="Lykke.Common" Version="5.1.0" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.3.1" />
     <PackageReference Include="Lykke.Cqrs" Version="4.4.0" />
+    <PackageReference Include="Lykke.Job.BlockchainCashinDetector.Contract" Version="1.0.0" />
+    <PackageReference Include="Lykke.Job.BlockchainCashoutProcessor.Contract" Version="2.1.1" />
+    <PackageReference Include="Lykke.Job.BlockchainOperationsExecutor.Contract" Version="6.0.0" />
     <PackageReference Include="Lykke.JobTriggers" Version="1.2.0" />
     <PackageReference Include="Lykke.Logs" Version="3.6.0" />
     <PackageReference Include="Lykke.Messages" Version="1.0.27" />
     <PackageReference Include="Lykke.Messaging.RabbitMq" Version="2.0.0" />
-    <PackageReference Include="Lykke.Service.Assets.Client" Version="1.0.17" />
+    <PackageReference Include="Lykke.Service.Assets.Client" Version="3.3.2" />
+    <PackageReference Include="Lykke.Service.ClientAccount.Client" Version="1.3.0" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
+    <PackageReference Include="Lykke.Service.EmailPartnerRouter.Client" Version="2.0.4" />
     <PackageReference Include="Lykke.Service.PersonalData" Version="1.0.28" />
+    <PackageReference Include="Lykke.Service.PushNotifications.Contract" Version="1.0.6" />
     <PackageReference Include="Lykke.Service.TemplateFormatter.Client" Version="1.0.45" />
     <PackageReference Include="Lykke.Service.SmsSender.Client" Version="1.0.0" />
     <PackageReference Include="Lykke.SettingsReader" Version="2.0.1" />
@@ -49,5 +61,18 @@
     <Folder Include="Workflow\Events\" />
     <Folder Include="Workflow\Projections\" />
     <Folder Include="Workflow\Sagas\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Resources\EmailResources.Designer.cs">
+      <DependentUpon>EmailResources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\EmailResources.resx">
+      <LastGenOutput>EmailResources.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
