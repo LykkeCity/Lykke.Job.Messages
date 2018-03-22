@@ -9,11 +9,11 @@ using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Job.Messages.Resources;
 using Lykke.Job.Messages.Utils;
 using Lykke.Job.Messages.Workflow;
-using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.ClientAccount.Client;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lykke.Service.Assets.Client;
 
 namespace Lykke.Job.Messages.Sagas
 {
@@ -21,12 +21,12 @@ namespace Lykke.Job.Messages.Sagas
     public class BlockchainOperationsSaga
     {
         private readonly IEmailTemplateProvider _templateFormatter;
-        private readonly ICachedAssetsService _cachedAssetsService;
+        private readonly IAssetsServiceWithCache _cachedAssetsService;
         private readonly IClientAccountClient _clientAccountClient;
         private readonly IIndex<Enum, ICqrsEngine> _engineFactory;
 
-        public BlockchainOperationsSaga(IEmailTemplateProvider templateFormatter, 
-            ICachedAssetsService cachedAssetsService,
+        public BlockchainOperationsSaga(IEmailTemplateProvider templateFormatter,
+            IAssetsServiceWithCache cachedAssetsService,
             IClientAccountClient clientAccountClient,
             IIndex<Enum, ICqrsEngine> engineFactory)
         {
