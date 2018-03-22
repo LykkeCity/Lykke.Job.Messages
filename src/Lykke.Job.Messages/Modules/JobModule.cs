@@ -28,7 +28,7 @@ using Lykke.Job.Messages.Services.Slack;
 using Lykke.Job.Messages.Services.Sms.Mocks;
 using Lykke.Job.Messages.Services.SwiftCredentials;
 using Lykke.Job.Messages.Services.Templates;
-using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.EmailPartnerRouter;
 using Lykke.Service.PersonalData.Client;
@@ -74,12 +74,9 @@ namespace Lykke.Job.Messages.Modules
             // NOTE: You can implement your own poison queue notifier. See https://github.com/LykkeCity/JobTriggers/blob/master/readme.md
             // builder.Register<PoisionQueueNotifierImplementation>().As<IPoisionQueueNotifier>();
 
-            _services.UseAssetsClient(new AssetServiceSettings
-            {
-                BaseUri = new Uri(_appSettings.CurrentValue.Assets.ServiceUrl),
-                AssetPairsCacheExpirationPeriod = _settings.CurrentValue.AssetsCache.ExpirationPeriod,
-                AssetsCacheExpirationPeriod = _settings.CurrentValue.AssetsCache.ExpirationPeriod
-            });
+            _services.RegisterAssetsClient(AssetServiceSettings.Create(
+                new Uri(_appSettings.CurrentValue.Assets.ServiceUrl),
+                _settings.CurrentValue.AssetsCache.ExpirationPeriod));
 
             builder.RegisterType<EmailTemplateProvider>().As<IEmailTemplateProvider>().SingleInstance();
             builder.RegisterType<SmsQueueConsumer>().SingleInstance();
