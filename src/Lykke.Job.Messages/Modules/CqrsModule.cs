@@ -12,12 +12,14 @@ using Lykke.Messaging.RabbitMq;
 using Lykke.Cqrs.Configuration;
 using Lykke.Job.Messages.Contract;
 using System;
+using System.Linq;
 using Lykke.Job.BlockchainCashoutProcessor.Contract.Events;
 using Lykke.Job.Messages.Commands;
 using Lykke.Job.Messages.Events;
 using Lykke.Job.Messages.Handlers;
 using Lykke.Job.Messages.Sagas;
 using Lykke.Job.Messages.Workflow;
+using Lykke.Service.PushNotifications.Contract;
 
 namespace Lykke.Job.Messages.Modules
 {
@@ -100,6 +102,11 @@ namespace Lykke.Job.Messages.Modules
                 }),
                 new RabbitMqTransportFactory());
 
+            var pushNotificationsCommands = typeof(PushNotificationsBoundedContext).Assembly
+                .GetTypes()
+                .Where(x => x.Namespace == "Lykke.Service.PushNotifications.Contract.Commands")
+                .ToArray();
+
             builder.Register(ctx =>
             {
                 return new CqrsEngine(_log,
@@ -121,6 +128,15 @@ namespace Lykke.Job.Messages.Modules
                         .ListeningEvents(typeof(Lykke.Job.BlockchainCashinDetector.Contract.Events.CashinCompletedEvent))
                         .From(Lykke.Job.BlockchainCashinDetector.Contract.BlockchainCashinDetectorBoundedContext.Name).On(eventsRoute)
                         .ProcessingOptions(eventsRoute).MultiThreaded(2).QueueCapacity(512)
+                        .PublishingCommands(pushNotificationsCommands)
+                        .To(PushNotificationsBoundedContext.Name)
+                        .With(commandsRoute),
+
+                    Register.BoundedContext(Self)
+                        .PublishingCommands(pushNotificationsCommands)
+                        .To(PushNotificationsBoundedContext.Name)
+                        .With(commandsRoute)
+                        .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
                     );
             })
             .Keyed<ICqrsEngine>(RabbitType.ME)

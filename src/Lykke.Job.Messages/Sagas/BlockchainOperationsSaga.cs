@@ -14,6 +14,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.Service.Assets.Client;
+using Lykke.Service.PushNotifications.Contract;
+using Lykke.Service.PushNotifications.Contract.Commands;
 
 namespace Lykke.Job.Messages.Sagas
 {
@@ -66,12 +68,12 @@ namespace Lykke.Job.Messages.Sagas
                 //{ "ExplorerUrl", string.Format(_blockchainSettings.ExplorerUrl, messageData.SrcBlockchainHash },
                 { "Year", DateTime.UtcNow.Year.ToString() }
             };
-  
+
             var formattedEmail = await _templateFormatter.GenerateAsync(partnerId, "NoRefundOCashOutTemplate", "EN", parameters);
             var message = formattedEmail.EmailMessage;
             var cqrsEngine = CqrsEngineRetriever.GetEngine(RabbitType.Registration, _engineFactory);
-            cqrsEngine.SendCommand(new SendEmailCommand { PartnerId = clientModel.PartnerId, EmailAddress = clientModel.Email, Message = message }, 
-                EmailMessagesBoundedContext.Name, 
+            cqrsEngine.SendCommand(new SendEmailCommand { PartnerId = clientModel.PartnerId, EmailAddress = clientModel.Email, Message = message },
+                EmailMessagesBoundedContext.Name,
                 EmailMessagesBoundedContext.Name);
         }
 
@@ -80,20 +82,35 @@ namespace Lykke.Job.Messages.Sagas
             var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());
             var partnerId = clientModel.PartnerId ?? "Lykke";
             var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
-
+            string amountFormatted = amount.ToString($"F{asset.Accuracy}").TrimEnd('0');
             var parameters = new Dictionary<string, string>()
             {
                 { "AssetName", asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId },
-                { "Amount", amount.ToString($"F{asset.Accuracy}").TrimEnd('0') },
+                { "Amount", amountFormatted },
                 { "Year", DateTime.UtcNow.Year.ToString() }
             };
 
             var formattedEmail = await _templateFormatter.GenerateAsync(partnerId, "NoRefundDepositDoneTemplate", "EN", parameters);
             var message = formattedEmail.EmailMessage;
-            var cqrsEngine = CqrsEngineRetriever.GetEngine(RabbitType.Registration, _engineFactory);
-            cqrsEngine.SendCommand(new SendEmailCommand { PartnerId = clientModel.PartnerId, EmailAddress = clientModel.Email, Message = message },
+            var cqrsEngineRegistration = CqrsEngineRetriever.GetEngine(RabbitType.Registration, _engineFactory);
+            cqrsEngineRegistration.SendCommand(new SendEmailCommand { PartnerId = clientModel.PartnerId, EmailAddress = clientModel.Email, Message = message },
                 EmailMessagesBoundedContext.Name,
                 EmailMessagesBoundedContext.Name);
+
+            var notificationId = clientModel.NotificationsId;
+            if (!string.IsNullOrEmpty(notificationId))
+            {
+                var cqrsEngineME = CqrsEngineRetriever.GetEngine(RabbitType.ME, _engineFactory);
+                cqrsEngineME.SendCommand(new AssetsCreditedCommand()
+                {
+                    Amount = (double)amount,
+                    AssetId = assetId,
+                    Message = $"A deposit of {amountFormatted} {asset.DisplayId} has been completed to your trading wallet",
+                    NotificationIds = new [] { notificationId }
+                    },
+                    EmailMessagesBoundedContext.Name,
+                    PushNotificationsBoundedContext.Name);
+            }
         }
     }
 }
