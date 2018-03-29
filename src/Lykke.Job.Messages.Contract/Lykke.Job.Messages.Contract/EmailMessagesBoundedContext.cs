@@ -10,6 +10,6 @@ namespace Lykke.Job.Messages.Contract
         /// <summary>
         /// Context name
         /// </summary>
-        public static readonly string Name = "emails";
+        public static readonly string Name = "email";
     }
 }

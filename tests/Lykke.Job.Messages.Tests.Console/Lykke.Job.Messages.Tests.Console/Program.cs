@@ -3,13 +3,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Lykke.Job.Messages.Contract;
-using System.Threading;
 using Autofac;
-using Lykke.Job.BlockchainCashoutProcessor.Contract.Events;
-using Lykke.Job.Messages.Events;
-using Lykke.Job.Messages.Workflow;
-using Lykke.Messages.Email.MessageData;
 using Microsoft.AspNetCore.Builder;
 
 namespace Lykke.Job.Messages.Tests.Console
@@ -20,7 +14,7 @@ namespace Lykke.Job.Messages.Tests.Console
         {
             var webHostBuilder = CreateWebHost(args);
             var webHost = webHostBuilder.Build();
-            var cqrsEngine = TestStartup.StaticContainer.ResolveKeyed<ICqrsEngine>(RabbitType.ME); //webHost.Services.GetService<ICqrsEngine>();
+            var cqrsEngine = TestStartup.StaticContainer.Resolve<ICqrsEngine>(); //webHost.Services.GetService<ICqrsEngine>();
 
             //cqrsEngine.PublishEvent(new CashinCompletedEvent()
             //{
