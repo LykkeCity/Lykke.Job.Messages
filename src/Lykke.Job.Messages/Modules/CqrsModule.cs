@@ -68,7 +68,7 @@ namespace Lykke.Job.Messages.Modules
                 .Where(x => x.Namespace == typeof(TextNotificationCommand).Namespace)
                 .ToArray();
 
-            builder.Register(ctx =>
+          builder.Register(ctx =>
             {
                 return new CqrsEngine(_log,
                     ctx.Resolve<IDependencyResolver>(),
@@ -92,9 +92,11 @@ namespace Lykke.Job.Messages.Modules
                             .From(BlockchainCashinDetector.Contract.BlockchainCashinDetectorBoundedContext.Name).On(eventsRoute)
                             .WithEndpointResolver(meEndpointResolver)
                             .ProcessingOptions(eventsRoute).MultiThreaded(2).QueueCapacity(512)
-                        .PublishingCommands(pushNotificationsCommands)
+                        .PublishingCommands(typeof(AssetsCreditedCommand))
                             .To(PushNotificationsBoundedContext.Name)
-                            .With(commandsRoute)                    
+                            .With(commandsRoute)
+                        .PublishingCommands(typeof(SendEmailCommand)).To("email").With(commandsRoute)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)                    
                     );
             })
             .As<ICqrsEngine>()

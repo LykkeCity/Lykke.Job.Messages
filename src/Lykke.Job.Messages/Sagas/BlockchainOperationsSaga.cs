@@ -9,6 +9,7 @@ using System;
 using System.Threading.Tasks;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.EmailPartnerRouter.Contracts;
+using Lykke.Service.PushNotifications.Contract;
 using Lykke.Service.PushNotifications.Contract.Commands;
 
 namespace Lykke.Job.Messages.Sagas
@@ -101,7 +102,7 @@ namespace Lykke.Job.Messages.Sagas
                             $"A deposit of {amountFormatted} {asset.DisplayId} has been completed to your trading wallet",
                         NotificationIds = new[] {notificationId}
                     },
-                    EmailMessagesBoundedContext.Name);
+                    PushNotificationsBoundedContext.Name);
             }
         }
     }
