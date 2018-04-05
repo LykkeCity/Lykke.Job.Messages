@@ -28,7 +28,7 @@ namespace Lykke.Job.Messages.AzureRepositories.Email
             var (templatePath, metadataPath) = GetHtmlAndJsonBlobNames(partnerId, templateName, language);
             bool[] result = await Task.WhenAll(_storage.HasBlobAsync(_containerName, templatePath),
                                             _storage.HasBlobAsync(_containerName, metadataPath));
-            bool exists = result.Where(x => x).Count() == 2;
+            bool exists = result.Count(x => x) == 2;
 
             return exists;
         }
@@ -63,7 +63,7 @@ namespace Lykke.Job.Messages.AzureRepositories.Email
 
         protected (string templatePath, string metadataPath) GetHtmlAndJsonBlobNames(string partner, string templateName, string language = "EN")
         {
-            string path = $"{partner}\\/{language}\\/{templateName}";
+            string path = $"{partner}/{language}/{templateName}";
             string templatePath = $"{path}.html";
             string metadataPath = $"{path}.json";
 
