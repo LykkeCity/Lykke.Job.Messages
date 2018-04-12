@@ -41,5 +41,6 @@ namespace Lykke.Job.Messages.Core.Services.Email
         Task<EmailMessage> GenerateRegistrationVerifyEmailMsgAsync(string partnerId, RegistrationEmailVerifyData messageData);
         Task<EmailMessage> GenerateWelcomeCypMsg(string partnerId, RegistrationCypMessageData kycOkData);
         Task<EmailMessage> GenerateWelcomeFxCypMsg(string partnerId, KycOkCypData kycOkData);
+        Task<EmailMessage> GenerateActionConfirmationMsg(string partnerId, ActionConfirmationData messageData);
     }
 }
