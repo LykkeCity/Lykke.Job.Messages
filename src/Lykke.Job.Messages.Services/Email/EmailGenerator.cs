@@ -484,6 +484,7 @@ namespace Lykke.Job.Messages.Services.Email
             var templateVm = new SwiftCashoutProcessedTemplate
             {
                 FullName = messageData.FullName,
+                DateOfWithdrawal = messageData.DateOfWithdrawal,
                 Year = DateTime.UtcNow.Year.ToString()
             };
 
