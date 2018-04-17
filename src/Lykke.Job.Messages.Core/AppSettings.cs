@@ -35,8 +35,7 @@ namespace Lykke.Job.Messages.Core
             public string EmailTemplatesConnString { get; set; }
             public string BitCoinQueueConnectionString { get; set; }
             public string SharedStorageConnString { get; set; }
-            public string DictsConnString { get; set; }
-            public string PartnerEmailTemplatesConnectionString { get; set; }
+            public string DictsConnString { get; set; }            
         }
 
         public class AssetsCacheSettings
