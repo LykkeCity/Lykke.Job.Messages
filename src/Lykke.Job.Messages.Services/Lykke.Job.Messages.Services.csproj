@@ -11,7 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Lykke.AzureStorage" Version="7.0.2" />
     <PackageReference Include="Lykke.Common" Version="5.1.0" />
-    <PackageReference Include="Lykke.Messages" Version="1.0.28" />
+    <PackageReference Include="Lykke.Messages" Version="1.0.30" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="3.3.2" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
     <PackageReference Include="Lykke.Service.TemplateFormatter.Client" Version="1.0.49" />
