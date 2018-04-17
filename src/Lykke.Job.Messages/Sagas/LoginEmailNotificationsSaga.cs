@@ -13,11 +13,11 @@ using Lykke.Service.PersonalData.Contract;
 
 namespace Lykke.Job.Messages.Sagas
 {
-    public class LoginNotificationsSaga
+    public class LoginEmailNotificationsSaga
     {        
         private readonly IPersonalDataService _personalDataService;
 
-        public LoginNotificationsSaga(IPersonalDataService personalDataService)
+        public LoginEmailNotificationsSaga(IPersonalDataService personalDataService)
         {            
             _personalDataService = personalDataService;            
         }
