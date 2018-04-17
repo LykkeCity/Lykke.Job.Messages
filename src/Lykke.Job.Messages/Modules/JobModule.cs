@@ -28,7 +28,8 @@ using Lykke.Job.Messages.Services.Slack;
 using Lykke.Job.Messages.Services.Sms.Mocks;
 using Lykke.Job.Messages.Services.SwiftCredentials;
 using Lykke.Job.Messages.Services.Templates;
-using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Assets.Client;
+using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.EmailPartnerRouter;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
@@ -36,6 +37,7 @@ using Lykke.Service.SmsSender.Client;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Lykke.Service.TemplateFormatter;
+using BlobSpace = AzureStorage.Blob;
 
 namespace Lykke.Job.Messages.Modules
 {
@@ -72,19 +74,21 @@ namespace Lykke.Job.Messages.Modules
             // NOTE: You can implement your own poison queue notifier. See https://github.com/LykkeCity/JobTriggers/blob/master/readme.md
             // builder.Register<PoisionQueueNotifierImplementation>().As<IPoisionQueueNotifier>();
 
-            _services.UseAssetsClient(new AssetServiceSettings
-            {
-                BaseUri = new Uri(_appSettings.CurrentValue.Assets.ServiceUrl),
-                AssetPairsCacheExpirationPeriod = _settings.CurrentValue.AssetsCache.ExpirationPeriod,
-                AssetsCacheExpirationPeriod = _settings.CurrentValue.AssetsCache.ExpirationPeriod
-            });
+            _services.RegisterAssetsClient(AssetServiceSettings.Create(
+                new Uri(_appSettings.CurrentValue.Assets.ServiceUrl),
+                _settings.CurrentValue.AssetsCache.ExpirationPeriod));
 
+            builder.RegisterType<TemplateFormatter>().As<ITemplateFormatter>().SingleInstance();
             builder.RegisterType<SmsQueueConsumer>().SingleInstance();
             builder.RegisterType<EmailQueueConsumer>().SingleInstance();
 
             builder.RegisterType<PersonalDataService>()
                 .As<IPersonalDataService>()
                 .WithParameter(TypedParameter.From(_appSettings.CurrentValue.PersonalDataServiceSettings));
+
+            builder.RegisterInstance<IClientAccountClient>(
+                new Lykke.Service.ClientAccount.Client.ClientAccountClient(_appSettings.CurrentValue
+                    .ClientAccountServiceClient.ServiceUrl));
 
             RegistermSmsServices(builder);
             RegisterEmailServices(builder);
@@ -99,6 +103,9 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterInstance<IBroadcastMailsRepository>(new BroadcastMailsRepository(
                 AzureTableStorage<BroadcastMailEntity>.Create(
                     _settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString), "BroadcastMails", _log)));
+
+            builder.Register(ctx => AzureTableStorage<PartnerTemplateSettings>.Create(
+                    _settings.ConnectionString(x => x.Db.PartnerEmailTemplatesConnectionString), "PartnerEmailTemplates", _log));
 
             builder.RegisterInstance<IRegulatorRepository>(new RegulatorRepository(
                 AzureTableStorage<RegulatorEntity>.Create(
@@ -119,6 +126,9 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterInstance<ISwiftCredentialsRepository>(new SwiftCredentialsRepository(
                 AzureTableStorage<SwiftCredentialsEntity>.Create(
                     _settings.ConnectionString(s => s.Db.DictsConnString), "SwiftCredentials", _log)));
+
+            builder.RegisterInstance<ITemplateBlobRepository>(new TemplateBlobRepository(
+                BlobSpace.AzureBlobStorage.Create(_settings.ConnectionString(s => s.Db.EmailTemplatesConnString)), "templates"));
         }
 
         private void RegisterSlackServices(ContainerBuilder builder)
@@ -169,6 +179,14 @@ namespace Lykke.Job.Messages.Modules
                     TypedParameter.From(_settings.CurrentValue.Blockchain),
                     TypedParameter.From(_settings.CurrentValue.WalletApi)
                 });
+
+            builder.RegisterType<EmailTemplateProvider>()
+                .As<IEmailTemplateProvide>()
+                .SingleInstance();
+
+            //builder.RegisterType<EmailMessageProcessor>()
+            //   .As<IEmailMessageProcessor>()
+            //   .SingleInstance();
 
             // Email sending dependencies
 

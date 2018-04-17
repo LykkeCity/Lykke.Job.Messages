@@ -2,21 +2,27 @@ using System.Threading.Tasks;
 using Lykke.Job.Messages.Core.Services.Templates;
 using Lykke.Service.EmailSender;
 using Lykke.Service.TemplateFormatter.Client;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using Lykke.Job.Messages.Core.Services.Email;
 
 namespace Lykke.Job.Messages.Services.Templates
 {
     public class RemoteTemplateGenerator : IRemoteTemplateGenerator
     {
-        private readonly ITemplateFormatter _templateFormatter;
+        private readonly IEmailTemplateProvide _emailTemplateProvide;
 
-        public RemoteTemplateGenerator(ITemplateFormatter templateFormatter)
+        public RemoteTemplateGenerator(IEmailTemplateProvide emailTemplateProvide)
         {
-            _templateFormatter = templateFormatter;
+            _emailTemplateProvide = emailTemplateProvide;
         }
 
-        public Task<EmailMessage> GenerateAsync<T>(string partnerId, string templateName, T templateVm)
+        public async Task<EmailMessage> GenerateAsync<T>(string partnerId, string templateName, T templateVm)
         {
-            return _templateFormatter.FormatAsync(templateName, partnerId, "EN", templateVm);
+            var parameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(JsonConvert.SerializeObject(templateVm));
+            var formatted = await _emailTemplateProvide.FormatAsync(templateName, partnerId, "EN", parameters);
+
+            return formatted.EmailMessage;
         }
     }
 }

@@ -11,7 +11,8 @@ using Lykke.Job.Messages.Core.Services.SwiftCredentials;
 using Lykke.Job.Messages.Core.Services.Templates;
 using Lykke.Job.Messages.Services.Email.Resources;
 using Lykke.Messages.Email.MessageData;
-using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Assets.Client;
+using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.EmailSender;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.PersonalData.Contract.Models;
@@ -19,9 +20,12 @@ using Lykke.Service.TemplateFormatter.TemplateModels;
 
 namespace Lykke.Job.Messages.Services.Email
 {
+    //Exists for back compatibility
+    //Do not use it for new emais. Instead, go with events subscription!
+    [Obsolete]
     public class EmailGenerator : IEmailGenerator
     {
-        private readonly ICachedAssetsService _assetsService;
+        private readonly IAssetsServiceWithCache _assetsService;
         private readonly IPersonalDataService _personalDataService;
         private readonly IRemoteTemplateGenerator _templateGenerator;
         private readonly AppSettings.EmailSettings _emailSettings;
@@ -30,7 +34,7 @@ namespace Lykke.Job.Messages.Services.Email
         private readonly ISwiftCredentialsService _swiftCredentialsService;
 
         public EmailGenerator(
-            ICachedAssetsService assetsService, IPersonalDataService personalDataService,
+            IAssetsServiceWithCache assetsService, IPersonalDataService personalDataService,
             AppSettings.EmailSettings emailSettings, AppSettings.BlockchainSettings blockchainSettings, AppSettings.WalletApiSettings walletApiSettings,
             IRemoteTemplateGenerator templateGenerator, ISwiftCredentialsService swiftCredentialsService)
         {
@@ -50,9 +54,9 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = lykkeCardVisaData.Year,
                 Url = lykkeCardVisaData.Url
             };
- 
-             return _templateGenerator.GenerateAsync(partnerId, "LykkeCardMessageTemplate", templateVm);
-         }
+
+            return _templateGenerator.GenerateAsync(partnerId, "LykkeCardMessageTemplate", templateVm);
+        }
 
         public Task<EmailMessage> GenerateWelcomeMsg(string partnerId, RegistrationMessageData kycOkData)
         {
@@ -463,7 +467,7 @@ namespace Lykke.Job.Messages.Services.Email
             return await _templateGenerator.GenerateAsync(partnerId, "RequestForDocument", templateVm);
         }
 
-        public async Task<IAsset> FindAssetByBlockchainAssetIdAsync(string partnerId, string blockchainAssetId)
+        public async Task<Asset> FindAssetByBlockchainAssetIdAsync(string partnerId, string blockchainAssetId)
         {
             if (blockchainAssetId == null)
             {
@@ -482,7 +486,7 @@ namespace Lykke.Job.Messages.Services.Email
                 FullName = messageData.FullName,
                 Year = DateTime.UtcNow.Year.ToString()
             };
-            
+
             return await _templateGenerator.GenerateAsync(partnerId, "SwiftCashoutProcessed", templateVm);
         }
 
@@ -495,7 +499,7 @@ namespace Lykke.Job.Messages.Services.Email
                 Text = messageData.Text,
                 Year = DateTime.UtcNow.Year.ToString()
             };
-            
+
             return await _templateGenerator.GenerateAsync(partnerId, "SwiftCashoutDeclined", templateVm);
         }
 

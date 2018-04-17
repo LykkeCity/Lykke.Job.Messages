@@ -2,10 +2,10 @@
 using Lykke.Job.Messages.Core.Domain.SwiftCredentials;
 using Lykke.Job.Messages.Core.Regulator;
 using Lykke.Job.Messages.Core.Services.SwiftCredentials;
-using Lykke.Service.Assets.Client.Custom;
 using Lykke.Job.Messages.Core.Domain.DepositRefId;
 using System;
 using System.Globalization;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.PersonalData.Contract.Models;
 
 namespace Lykke.Job.Messages.Services.SwiftCredentials
@@ -14,7 +14,7 @@ namespace Lykke.Job.Messages.Services.SwiftCredentials
     {
         private readonly IRegulatorRepository _regulatorRepository;
         private readonly ISwiftCredentialsRepository _swiftCredentialsRepository;
-        private readonly ICachedAssetsService _assetsService;
+        private readonly IAssetsServiceWithCache _assetsService;
         private readonly IDepositRefIdInUseRepository _depositRefIdInUseRepository;
         private readonly IDepositRefIdRepository _depositRefIdRepository;
 
@@ -23,7 +23,7 @@ namespace Lykke.Job.Messages.Services.SwiftCredentials
             ISwiftCredentialsRepository swiftCredentialsRepository,
             IDepositRefIdInUseRepository depositRefIdInUseRepository,
             IDepositRefIdRepository depositRefIdRepository,
-            ICachedAssetsService assetsService)
+            IAssetsServiceWithCache assetsService)
         {
             _regulatorRepository = regulatorRepository;
             _swiftCredentialsRepository = swiftCredentialsRepository;

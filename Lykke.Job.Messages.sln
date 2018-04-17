@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.12
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Job.Messages", "src\Lykke.Job.Messages\Lykke.Job.Messages.csproj", "{5566FD3E-0DB6-4BF3-A98D-4A1181B3E02C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Job.Messages", "src\Lykke.Job.Messages\Lykke.Job.Messages.csproj", "{5566FD3E-0DB6-4BF3-A98D-4A1181B3E02C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Job.Messages.Core", "src\Lykke.Job.Messages.Core\Lykke.Job.Messages.Core.csproj", "{0415D4B4-5275-4B5C-AFD5-644572CD91CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Job.Messages.Core", "src\Lykke.Job.Messages.Core\Lykke.Job.Messages.Core.csproj", "{0415D4B4-5275-4B5C-AFD5-644572CD91CD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Infrastructure", "1. Infrastructure", "{68994F01-8220-4B7C-9AB8-14E137C44AE5}"
 EndProject
@@ -13,11 +13,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2. Repositories", "2. Repos
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Tests", "3. Tests", "{AB790991-CEB2-44A5-9C0C-A2D26DB86D41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Job.Messages.Services", "src\Lykke.Job.Messages.Services\Lykke.Job.Messages.Services.csproj", "{D42134F9-A73E-4890-966D-746FE732934E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Job.Messages.Services", "src\Lykke.Job.Messages.Services\Lykke.Job.Messages.Services.csproj", "{D42134F9-A73E-4890-966D-746FE732934E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Job.Messages.AzureRepositories", "src\Lykke.Job.Messages.AzureRepositories\Lykke.Job.Messages.AzureRepositories.csproj", "{1322B569-1032-4276-B86E-69F8BE3DC1F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Job.Messages.AzureRepositories", "src\Lykke.Job.Messages.AzureRepositories\Lykke.Job.Messages.AzureRepositories.csproj", "{1322B569-1032-4276-B86E-69F8BE3DC1F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Job.Messages.Tests", "tests\Lykke.Job.Messages.Tests\Lykke.Job.Messages.Tests.csproj", "{AAC9F450-14D7-4482-BC12-7C55006864E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Job.Messages.Tests", "tests\Lykke.Job.Messages.Tests\Lykke.Job.Messages.Tests.csproj", "{AAC9F450-14D7-4482-BC12-7C55006864E2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4. Contract", "4. Contract", "{CB5A6DD7-4209-4673-9B23-A461B949C5B0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.Job.Messages.Contract", "src\Lykke.Job.Messages.Contract\Lykke.Job.Messages.Contract\Lykke.Job.Messages.Contract.csproj", "{70B9D212-1D96-46A7-8619-4F7F6447EA1E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.Job.Messages.Tests.Console", "tests\Lykke.Job.Messages.Tests.Console\Lykke.Job.Messages.Tests.Console\Lykke.Job.Messages.Tests.Console.csproj", "{501B54D3-7F6F-4998-9B7A-C7635ED75742}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +51,14 @@ Global
 		{AAC9F450-14D7-4482-BC12-7C55006864E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAC9F450-14D7-4482-BC12-7C55006864E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAC9F450-14D7-4482-BC12-7C55006864E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70B9D212-1D96-46A7-8619-4F7F6447EA1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70B9D212-1D96-46A7-8619-4F7F6447EA1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70B9D212-1D96-46A7-8619-4F7F6447EA1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70B9D212-1D96-46A7-8619-4F7F6447EA1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{501B54D3-7F6F-4998-9B7A-C7635ED75742}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{501B54D3-7F6F-4998-9B7A-C7635ED75742}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{501B54D3-7F6F-4998-9B7A-C7635ED75742}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{501B54D3-7F6F-4998-9B7A-C7635ED75742}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -54,5 +68,10 @@ Global
 		{D42134F9-A73E-4890-966D-746FE732934E} = {68994F01-8220-4B7C-9AB8-14E137C44AE5}
 		{1322B569-1032-4276-B86E-69F8BE3DC1F7} = {AA5ECC48-14C3-4BE7-AF0C-D59FCA2742C2}
 		{AAC9F450-14D7-4482-BC12-7C55006864E2} = {AB790991-CEB2-44A5-9C0C-A2D26DB86D41}
+		{70B9D212-1D96-46A7-8619-4F7F6447EA1E} = {CB5A6DD7-4209-4673-9B23-A461B949C5B0}
+		{501B54D3-7F6F-4998-9B7A-C7635ED75742} = {AB790991-CEB2-44A5-9C0C-A2D26DB86D41}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {753DCFCC-4F76-4062-A192-199A76D22B12}
 	EndGlobalSection
 EndGlobal
