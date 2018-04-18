@@ -44,6 +44,7 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<BlockchainOperationsSaga>().SingleInstance();
             builder.RegisterType<LoginEmailNotificationsSaga>().SingleInstance();
             builder.RegisterType<LoginPushNotificationsSaga>().SingleInstance();
+            builder.RegisterType<TerminalSessionsSaga>().SingleInstance();
 
             var messagingEngine = new MessagingEngine(_log,
                 new TransportResolver(new Dictionary<string, TransportInfo>
