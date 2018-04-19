@@ -43,7 +43,7 @@ namespace Lykke.Job.Messages.AzureRepositories.Email
             if (string.IsNullOrEmpty(html) ||
                 string.IsNullOrEmpty(json))
             {
-                throw new Exception($"Both {templatePath} and {metadataPath} should exist in {_containerName}");
+                throw new Exception($"Html: {String.IsNullOrWhiteSpace(html)}, Json: { String.IsNullOrWhiteSpace(html) }, Both {templatePath} and {metadataPath} should exist in {_containerName}");
             }
 
             EmailMetada metadata = Newtonsoft.Json.JsonConvert.DeserializeObject<EmailMetada>(json);
