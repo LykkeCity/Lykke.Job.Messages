@@ -104,6 +104,9 @@ namespace Lykke.Job.Messages.QueueConsumers
                 queueReader.RegisterHandler<QueueRequestModel<SendBroadcastData<SwiftConfirmedData>>>(
                     SwiftConfirmedData.QueueName, itm => HandleSwiftConfirmedBroadcastAsync(itm.Data));
 
+                queueReader.RegisterHandler<QueueRequestModel<SendBroadcastData<SwiftCashoutRequestedData>>>(
+                    SwiftCashoutRequestedData.QueueName, itm => HandleSwiftCashoutRequestedAsync(itm.Data));
+
                 queueReader.RegisterHandler<QueueRequestModel<SendBroadcastData<PlainTextBroadCastData>>>(
                     PlainTextBroadCastData.QueueName, itm => HandlePlainTextBroadcastAsync(itm.Data));
 
@@ -272,6 +275,14 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleSwiftConfirmedBroadcastAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                                $"{Environment.NewLine}Broadcast group: {result.BroadcastGroup}");
             var msg = await _emailGenerator.GenerateSwiftConfirmedMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendBroadcastAsync(result.PartnerId, (BroadcastGroup)result.BroadcastGroup, msg);
+        }
+
+        private async Task HandleSwiftCashoutRequestedAsync(SendBroadcastData<SwiftCashoutRequestedData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleSwiftCashoutRequestedAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                               $"{Environment.NewLine}Broadcast group: {result.BroadcastGroup}");
+            var msg = await _emailGenerator.GenerateSwiftCashoutRequestedMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendBroadcastAsync(result.PartnerId, (BroadcastGroup)result.BroadcastGroup, msg);
         }
 

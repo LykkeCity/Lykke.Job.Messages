@@ -364,6 +364,11 @@ namespace Lykke.Job.Messages.Services.Email
             return _templateGenerator.GenerateAsync(partnerId, "SwiftConfirmedTemplate", templateVm);
         }
 
+        public Task<EmailMessage> GenerateSwiftCashoutRequestedMsg(string partnerId, SwiftCashoutRequestedData messageData)
+        {
+            return _templateGenerator.GenerateAsync(partnerId, "SwiftCashoutRequestedTemplate", messageData);
+        }
+
         public async Task<EmailMessage> GenerateSwiftCashOutRequestMsg(string partnerId, SwiftCashOutRequestData messageData)
         {
             var personalData = await _personalDataService.GetAsync(messageData.ClientId);
