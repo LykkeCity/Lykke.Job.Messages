@@ -520,6 +520,17 @@ namespace Lykke.Job.Messages.Services.Email
             return assets.FirstOrDefault(itm => itm.BlockChainAssetId == blockchainAssetId || itm.Id == blockchainAssetId);
         }
 
+        public async Task<EmailMessage> GenerateSwiftCashoutRequestedMsg(string partnerId, SwiftCashoutRequestedData messageData)
+        {
+            var templateVm = new SwiftCashoutRequestedTemplate
+            {
+                FullName = messageData.FullName,
+                Year = DateTime.UtcNow.Year.ToString()
+            };
+
+            return await _templateGenerator.GenerateAsync(partnerId, "SwiftCashoutRequested", templateVm);
+        }
+
         public async Task<EmailMessage> GenerateSwiftCashoutProcessedMsg(string partnerId, SwiftCashoutProcessedData messageData)
         {
             var templateVm = new SwiftCashoutProcessedTemplate

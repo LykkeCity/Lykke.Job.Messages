@@ -5,6 +5,7 @@ using Lykke.Service.TemplateFormatter.Client;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using Lykke.Job.Messages.Core.Services.Email;
+using System;
 
 namespace Lykke.Job.Messages.Services.Templates
 {
