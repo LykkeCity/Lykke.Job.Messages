@@ -43,7 +43,7 @@ namespace Lykke.Job.Messages.AzureRepositories.Email
             if (string.IsNullOrEmpty(html) ||
                 string.IsNullOrEmpty(json))
             {
-                throw new Exception($"Html: {String.IsNullOrWhiteSpace(html)}, Json: { String.IsNullOrWhiteSpace(html) }, Both {templatePath} and {metadataPath} should exist in {_containerName}");
+                throw new Exception($"Html: {!String.IsNullOrWhiteSpace(html)}, Json: {!String.IsNullOrWhiteSpace(html)}; Both {templatePath} and {metadataPath} should exist in {_containerName}");
             }
 
             EmailMetada metadata = Newtonsoft.Json.JsonConvert.DeserializeObject<EmailMetada>(json);
@@ -81,6 +81,7 @@ namespace Lykke.Job.Messages.AzureRepositories.Email
                 using (var reader = new StreamReader(stream))
                 {
                     result = await reader.ReadToEndAsync();
+                    return result;
                 }
             }
 
