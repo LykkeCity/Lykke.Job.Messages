@@ -24,7 +24,7 @@ namespace Lykke.Job.Messages.Sagas
             var command = new TextNotificationCommand
             {
                 NotificationIds = notificationIds,
-                Message = "Successful login " + (!string.IsNullOrWhiteSpace(evt.ClientInfo) ? ", evt.ClientInfo": ""),
+                Message = "Successful login" + (!string.IsNullOrWhiteSpace(evt.ClientInfo) ? $", {evt.ClientInfo}": ""),
                 Type = "Info"
             };
 
