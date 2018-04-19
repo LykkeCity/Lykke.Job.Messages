@@ -14,7 +14,7 @@
     <PackageReference Include="Lykke.Messages" Version="1.0.31" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="3.3.2" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
-    <PackageReference Include="Lykke.Service.TemplateFormatter.Client" Version="1.0.49" />
+    <PackageReference Include="Lykke.Service.TemplateFormatter.Client" Version="1.0.51" />
     <PackageReference Include="Lykke.Service.SmsSender.Client" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="2.0.0" />
     <PackageReference Include="RazorLight2" Version="2.0.0" />
