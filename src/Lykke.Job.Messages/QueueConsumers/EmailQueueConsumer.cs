@@ -238,6 +238,15 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleNoRefundOCashOutEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                              $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateNoRefundOCashOutMsg(result.PartnerId, result.MessageData);
+
+            if (msg == null)
+            {
+                await _log.WriteWarningAsync(nameof(EmailQueueConsumer), nameof(HandleNoRefundOCashOutEmailAsync), result.ToJson(), $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                                      $"{Environment.NewLine}Email was not generated");
+
+                return;
+            }
+
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
 
