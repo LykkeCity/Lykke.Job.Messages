@@ -457,7 +457,7 @@ namespace Lykke.Job.Messages.QueueConsumers
                                                                                                             $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
 
             var msg = await _emailGenerator.GenerateWelcomeCypMsg(result.PartnerId, result.MessageData);
-            await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+            await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
 
         private async Task HandleKycOkCypEmailAsync(SendEmailData<KycOkCypData> result)
@@ -465,7 +465,7 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleKycOkCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                        $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateWelcomeFxCypMsg(result.PartnerId, result.MessageData);
-            await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+            await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
 
 
