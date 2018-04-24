@@ -7,6 +7,7 @@ using Lykke.Job.Messages.Resources;
 using Lykke.Service.ClientAccount.Client;
 using System;
 using System.Threading.Tasks;
+using Lykke.Job.Messages.Core.Util;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PushNotifications.Contract;
@@ -52,7 +53,7 @@ namespace Lykke.Job.Messages.Sagas
             var parameters = new
             {
                 AssetId = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId,
-                Amount = evt.Amount.ToString($"F{asset.Accuracy}").TrimEnd('0'),
+                Amount = NumberFormatter.FormatNumber(evt.Amount, asset.Accuracy),
                 ExplorerUrl = "",
                 //{ "ExplorerUrl", string.Format(_blockchainSettings.ExplorerUrl, messageData.SrcBlockchainHash },
                 Year = DateTime.UtcNow.Year.ToString()
@@ -72,7 +73,7 @@ namespace Lykke.Job.Messages.Sagas
         {
             var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());            
             var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
-            string amountFormatted = amount.ToString($"F{asset.Accuracy}").TrimEnd('0');
+            string amountFormatted = NumberFormatter.FormatNumber(amount, asset.Accuracy);
 
             var parameters = new 
             {

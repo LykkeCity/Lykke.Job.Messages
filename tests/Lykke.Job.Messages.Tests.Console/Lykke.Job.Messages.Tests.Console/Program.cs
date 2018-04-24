@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Hosting;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Autofac;
+using Lykke.Job.Messages.Core.Services.Email;
+using Lykke.Messages.Email.MessageData;
 using Microsoft.AspNetCore.Builder;
 
 namespace Lykke.Job.Messages.Tests.Console
@@ -14,6 +16,14 @@ namespace Lykke.Job.Messages.Tests.Console
         {
             var webHostBuilder = CreateWebHost(args);
             var webHost = webHostBuilder.Build();
+            var emailGenerator = TestStartup.StaticContainer.Resolve<IEmailGenerator>();
+            var result = emailGenerator.GenerateNoRefundOCashOutMsg("", new NoRefundOCashOutData()
+            {
+                AssetId = "BTC",
+                Amount =  1.0000001,
+                SrcBlockchainHash = "Hasj2qewweqedswwqdas"
+
+            }).Result;
             var cqrsEngine = TestStartup.StaticContainer.Resolve<ICqrsEngine>(); //webHost.Services.GetService<ICqrsEngine>();
 
             //cqrsEngine.PublishEvent(new CashinCompletedEvent()
