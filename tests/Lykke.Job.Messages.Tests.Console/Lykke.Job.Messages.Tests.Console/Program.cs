@@ -20,7 +20,7 @@ namespace Lykke.Job.Messages.Tests.Console
             var result = emailGenerator.GenerateNoRefundOCashOutMsg("", new NoRefundOCashOutData()
             {
                 AssetId = "BTC",
-                Amount =  0.00000001,
+                Amount =  1.0000001,
                 SrcBlockchainHash = "Hasj2qewweqedswwqdas"
 
             }).Result;
