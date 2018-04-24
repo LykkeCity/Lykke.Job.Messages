@@ -108,27 +108,34 @@ namespace Lykke.Job.Messages.Services.Email
         public async Task<EmailMessage> GenerateNoRefundDepositDoneMsg(string partnerId, NoRefundDepositDoneData messageData)
         {
             var asset = await FindAssetByBlockchainAssetIdAsync(partnerId, messageData.AssetBcnId);
-            var templateVm = new BtcDepositDoneTempate
+            var templateVm = new
             {
                 AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId,
-                Amount = messageData.Amount,
+                Amount = messageData.Amount.ToString($"F{asset.Accuracy}").TrimEnd('0'),
                 Year = DateTime.UtcNow.Year
             };
 
             return await _templateGenerator.GenerateAsync(partnerId, "NoRefundDepositDoneTemplate", templateVm);
         }
 
-        public Task<EmailMessage> GenerateNoRefundOCashOutMsg(string partnerId, NoRefundOCashOutData messageData)
+        public async Task<EmailMessage> GenerateNoRefundOCashOutMsg(string partnerId, NoRefundOCashOutData messageData)
         {
-            var templateVm = new NoRefundCashOutTemplate
+            var asset = await _assetsService.TryGetAssetAsync(messageData.AssetId);
+
+            if (asset == null)
             {
-                AssetId = messageData.AssetId,
-                Amount = messageData.Amount,
+                return null;
+            }
+            
+            var templateVm = new
+            {
+                AssetId = asset.DisplayId,
+                Amount = messageData.Amount.ToString($"F{asset.Accuracy}").TrimEnd('0'),
                 ExplorerUrl = string.Format(_blockchainSettings.ExplorerUrl, messageData.SrcBlockchainHash),
                 Year = DateTime.UtcNow.Year
             };
 
-            return _templateGenerator.GenerateAsync(partnerId, "NoRefundOCashOutTemplate", templateVm);
+            return await _templateGenerator.GenerateAsync(partnerId, "NoRefundOCashOutTemplate", templateVm);
         }
 
         public async Task<EmailMessage> GenerateBankCashInMsg(string partnerId, BankCashInData messageData)
