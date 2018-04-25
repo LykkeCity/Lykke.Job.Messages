@@ -4,6 +4,7 @@ using Lykke.Cqrs;
 using Lykke.Job.Messages.Events;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PushNotifications.Contract.Commands;
+using Lykke.Service.PushNotifications.Contract.Enums;
 
 namespace Lykke.Job.Messages.Sagas
 {

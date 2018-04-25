@@ -1,10 +1,35 @@
-﻿using Lykke.Job.Messages.Contract.Emails.MessageData;
-using Lykke.Service.EmailSender;
+﻿using Lykke.Service.EmailSender;
 using Lykke.Service.PersonalData.Contract.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Lykke.Messages.Email.MessageData;
+using BankCashInData = Lykke.Job.Messages.Contract.Emails.MessageData.BankCashInData;
+using CashInRefundData = Lykke.Job.Messages.Contract.Emails.MessageData.CashInRefundData;
+using CashoutUnlockData = Lykke.Job.Messages.Contract.Emails.MessageData.CashoutUnlockData;
+using DeclinedDocumentsData = Lykke.Job.Messages.Contract.Emails.MessageData.DeclinedDocumentsData;
+using DirectTransferCompletedData = Lykke.Job.Messages.Contract.Emails.MessageData.DirectTransferCompletedData;
+using EmailComfirmationData = Lykke.Job.Messages.Contract.Emails.MessageData.EmailComfirmationData;
+using KycOkData = Lykke.Job.Messages.Contract.Emails.MessageData.KycOkData;
+using LykkeCardVisaData = Lykke.Job.Messages.Contract.Emails.MessageData.LykkeCardVisaData;
+using MyLykkeCashInData = Lykke.Job.Messages.Contract.Emails.MessageData.MyLykkeCashInData;
+using NoRefundDepositDoneData = Lykke.Job.Messages.Contract.Emails.MessageData.NoRefundDepositDoneData;
+using NoRefundOCashOutData = Lykke.Job.Messages.Contract.Emails.MessageData.NoRefundOCashOutData;
+using OrdinaryCashOutRefundData = Lykke.Job.Messages.Contract.Emails.MessageData.OrdinaryCashOutRefundData;
+using PrivateWalletAddressData = Lykke.Job.Messages.Contract.Emails.MessageData.PrivateWalletAddressData;
+using RegistrationEmailVerifyData = Lykke.Job.Messages.Contract.Emails.MessageData.RegistrationEmailVerifyData;
+using RegistrationMessageData = Lykke.Job.Messages.Contract.Emails.MessageData.RegistrationMessageData;
+using RemindPasswordData = Lykke.Job.Messages.Contract.Emails.MessageData.RemindPasswordData;
+using RequestForDocumentData = Lykke.Job.Messages.Contract.Emails.MessageData.RequestForDocumentData;
+using SolarCashOutData = Lykke.Job.Messages.Contract.Emails.MessageData.SolarCashOutData;
+using SolarCoinAddressData = Lykke.Job.Messages.Contract.Emails.MessageData.SolarCoinAddressData;
+using SwapRefundData = Lykke.Job.Messages.Contract.Emails.MessageData.SwapRefundData;
+using SwiftCashoutDeclinedData = Lykke.Job.Messages.Contract.Emails.MessageData.SwiftCashoutDeclinedData;
+using SwiftCashoutProcessedData = Lykke.Job.Messages.Contract.Emails.MessageData.SwiftCashoutProcessedData;
+using SwiftCashOutRequestData = Lykke.Job.Messages.Contract.Emails.MessageData.SwiftCashOutRequestData;
+using SwiftConfirmedData = Lykke.Job.Messages.Contract.Emails.MessageData.SwiftConfirmedData;
+using TransferCompletedData = Lykke.Job.Messages.Contract.Emails.MessageData.TransferCompletedData;
 
 namespace Lykke.Job.Messages.Core.Services.Email
 {
@@ -13,8 +38,7 @@ namespace Lykke.Job.Messages.Core.Services.Email
         Task<EmailMessage> GenerateLykkeCardVisaMsg(string partnerId, LykkeCardVisaData lykkeCardVisaData);
         Task<EmailMessage> GenerateWelcomeMsg(string partnerId, RegistrationMessageData kycOkData);
         Task<EmailMessage> GenerateWelcomeFxMsg(string partnerId, KycOkData kycOkData);
-        Task<EmailMessage> GenerateConfirmEmailMsg(string partnerId, EmailComfirmationData registrationData);
-        Task<EmailMessage> GenerateCashInMsg(string partnerId, CashInData messageData);
+        Task<EmailMessage> GenerateConfirmEmailMsg(string partnerId, EmailComfirmationData registrationData);      
         Task<EmailMessage> GenerateNoRefundDepositDoneMsg(string partnerId, NoRefundDepositDoneData messageData);
         Task<EmailMessage> GenerateNoRefundOCashOutMsg(string partnerId, NoRefundOCashOutData messageData);
         Task<EmailMessage> GenerateBankCashInMsg(string partnerId, BankCashInData messageData);
