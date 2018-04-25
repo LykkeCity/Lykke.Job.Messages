@@ -90,20 +90,40 @@ namespace Lykke.Job.Messages.Services.Email
             return _templateGenerator.GenerateAsync(partnerId, "EmailConfirmation", templateVm);
         }
 
-        public async Task<EmailMessage> GenerateCashInMsg(string partnerId, CashInData cashInData)
+        public async Task<EmailMessage> GenerateCashInMsg(string partnerId, CashInData messageData)
         {
-            if (cashInData.AssetId == null)
-                throw new ArgumentNullException(nameof(cashInData.AssetId));
-
-            var asset = await _assetsService.TryGetAssetAsync(cashInData.AssetId);
-            var templateVm = new CashInTemplate
+            if (messageData.AssetId == null)
             {
-                Multisig = cashInData.Multisig,
-                Year = DateTime.UtcNow.Year.ToString(),
-                AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId
-            };
+                throw new ArgumentException(nameof(messageData.AssetId));
+            }
 
-            return await _templateGenerator.GenerateAsync(partnerId, "CashInTemplate", templateVm);
+            var asset = await _assetsService.TryGetAssetAsync(messageData.AssetId);
+
+            if (string.IsNullOrEmpty(messageData.AddressExtension))
+            {
+                var templateVm = new CashInTemplate
+                {
+                    Multisig = messageData.Address,
+                    Year = DateTime.UtcNow.Year.ToString(),
+                    AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId
+                };
+
+                return await _templateGenerator.GenerateAsync(partnerId, "CashInTemplate", templateVm);
+            }
+            else
+            {
+                var templateVm = new
+                {
+                    messageData.Address,
+                    messageData.AddressName,
+                    messageData.AddressExtension,
+                    messageData.AddressExtensionName,
+                    Year = DateTime.UtcNow.Year.ToString(),
+                    AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId
+                };
+
+                return await _templateGenerator.GenerateAsync(partnerId, "CashInWithAddressExtensionTemplate", templateVm);
+            }
         }
 
         public async Task<EmailMessage> GenerateNoRefundDepositDoneMsg(string partnerId, NoRefundDepositDoneData messageData)
