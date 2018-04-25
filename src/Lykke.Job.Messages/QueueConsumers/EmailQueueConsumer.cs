@@ -204,9 +204,16 @@ namespace Lykke.Job.Messages.QueueConsumers
 
         private async Task HandleCashInEmailAsync(SendEmailData<CashInData> result)
         {
-            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleCashInEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
-                                                                                                   $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            await _log.WriteInfoAsync
+            (
+                nameof(EmailQueueConsumer),
+                nameof(HandleCashInEmailAsync),
+                null,
+                $"DT: {DateTime.UtcNow.ToIsoDateTime()}{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}"
+            );
+            
             var msg = await _emailGenerator.GenerateCashInMsg(result.PartnerId, result.MessageData);
+
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
 

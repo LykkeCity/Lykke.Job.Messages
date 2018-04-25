@@ -13,8 +13,7 @@ namespace Lykke.Job.Messages.Core.Services.Email
         Task<EmailMessage> GenerateLykkeCardVisaMsg(string partnerId, LykkeCardVisaData lykkeCardVisaData);
         Task<EmailMessage> GenerateWelcomeMsg(string partnerId, RegistrationMessageData kycOkData);
         Task<EmailMessage> GenerateWelcomeFxMsg(string partnerId, KycOkData kycOkData);
-        Task<EmailMessage> GenerateConfirmEmailMsg(string partnerId, EmailComfirmationData registrationData);
-        Task<EmailMessage> GenerateCashInMsg(string partnerId, CashInData messageData);
+        Task<EmailMessage> GenerateConfirmEmailMsg(string partnerId, EmailComfirmationData registrationData);      
         Task<EmailMessage> GenerateNoRefundDepositDoneMsg(string partnerId, NoRefundDepositDoneData messageData);
         Task<EmailMessage> GenerateNoRefundOCashOutMsg(string partnerId, NoRefundOCashOutData messageData);
         Task<EmailMessage> GenerateBankCashInMsg(string partnerId, BankCashInData messageData);
