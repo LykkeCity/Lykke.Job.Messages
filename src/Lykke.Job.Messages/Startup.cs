@@ -54,7 +54,7 @@ namespace Lykke.Job.Messages
             var log = CreateLogWithSlack(services, appSettings);
 
             builder.RegisterModule(new JobModule(appSettings, log));
-            builder.RegisterModule(new CqrsModule(appSettings.Nested(a => a.MessagesJob), log));
+            builder.RegisterModule(new CqrsModule(appSettings, log));
 
             builder.AddTriggers(pool =>
             {

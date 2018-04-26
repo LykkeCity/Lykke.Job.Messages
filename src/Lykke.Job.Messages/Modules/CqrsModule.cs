@@ -21,10 +21,10 @@ namespace Lykke.Job.Messages.Modules
 {
     public class CqrsModule : Module
     {
-        private readonly IReloadingManager<AppSettings.MessagesSettings> _settings;
+        private readonly IReloadingManager<AppSettings> _settings;
         private readonly ILog _log;
 
-        public CqrsModule(IReloadingManager<AppSettings.MessagesSettings> settings, ILog log)
+        public CqrsModule(IReloadingManager<AppSettings> settings, ILog log)
         {
             _settings = settings;
             _log = log;
@@ -36,8 +36,8 @@ namespace Lykke.Job.Messages.Modules
             string commandsRoute = "commands";
             string eventsRoute = "events";
             Messaging.Serialization.MessagePackSerializerFactory.Defaults.FormatterResolver = MessagePack.Resolvers.ContractlessStandardResolver.Instance;
-            var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CurrentValue.Transports.ClientRabbitMqConnectionString };
-            var rabbitMqMeSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CurrentValue.Cqrs.RabbitConnectionString };
+            var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CurrentValue.MessagesJob.Transports.ClientRabbitMqConnectionString };
+            var rabbitMqMeSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CurrentValue.SagasRabbitMq.RabbitConnectionString };
 
             builder.Register(context => new AutofacDependencyResolver(context)).As<IDependencyResolver>();
 
@@ -49,13 +49,13 @@ namespace Lykke.Job.Messages.Modules
             var messagingEngine = new MessagingEngine(_log,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                 {
-                    { "MeRabbitMq", new TransportInfo(rabbitMqMeSettings.Endpoint.ToString(), rabbitMqMeSettings.UserName, rabbitMqMeSettings.Password, "None", "RabbitMq") },
+                    { "SagasRabbitMq", new TransportInfo(rabbitMqMeSettings.Endpoint.ToString(), rabbitMqMeSettings.UserName, rabbitMqMeSettings.Password, "None", "RabbitMq") },
                     { "ClientRabbitMq", new TransportInfo(rabbitMqSettings.Endpoint.ToString(), rabbitMqSettings.UserName, rabbitMqSettings.Password, "None", "RabbitMq") }
                 }),
                 new RabbitMqTransportFactory());
 
             var meEndpointResolver = new RabbitMqConventionEndpointResolver(
-                "MeRabbitMq",
+                "SagasRabbitMq",
                 "messagepack",
                 environment: "lykke",
                 exclusiveQueuePostfix: "k8s");
