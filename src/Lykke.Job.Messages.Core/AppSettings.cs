@@ -14,6 +14,7 @@ namespace Lykke.Job.Messages.Core
         public SmsNotificationsSettings SmsNotifications { get; set; }
         public SmsSenderSettings SmsSenderServiceClient { get; set; }
         public Lykke.Service.ClientAccount.Client.ClientAccountServiceClientSettings ClientAccountServiceClient { get; set; }
+        public SagasRabbitMq SagasRabbitMq { get; set; }
 
         public class MessagesSettings
         {
@@ -25,7 +26,6 @@ namespace Lykke.Job.Messages.Core
             public BlockchainSettings Blockchain { get; set; }
             public WalletApiSettings WalletApi { get; set; }
             public AssetsCacheSettings AssetsCache { get; set; }
-            public CqrsSettings Cqrs { get; set; }
         }
 
         public class DbSettings
@@ -110,16 +110,14 @@ namespace Lykke.Job.Messages.Core
         {
             public AzureQueueSettings AzureQueue { get; set; }
         }
+    }
 
-        public class CqrsSettings
-        {
-            [AmqpCheck]
-            [UsedImplicitly(ImplicitUseKindFlags.Assign)]
-            public string RabbitConnectionString { get; set; }
+    public class SagasRabbitMq
+    {
+        [AmqpCheck]
+        public string RabbitConnectionString { get; set; }
 
-            [UsedImplicitly(ImplicitUseKindFlags.Assign)]
-            public TimeSpan RetryDelay { get; set; }
-        }
+        public string RetryDelay { get; set; }
     }
 
     public class Transports
