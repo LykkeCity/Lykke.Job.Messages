@@ -10,7 +10,7 @@ namespace Lykke.Job.Messages.Core
         public MessagesSettings MessagesJob { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public AssetsSettings Assets { get; set; }
-        public PersonalDataServiceSettings PersonalDataServiceSettings { get; set; }
+        public PersonalDataServiceClientSettings PersonalDataServiceSettings { get; set; }
         public SmsNotificationsSettings SmsNotifications { get; set; }
         public SmsSenderSettings SmsSenderServiceClient { get; set; }
         public Lykke.Service.ClientAccount.Client.ClientAccountServiceClientSettings ClientAccountServiceClient { get; set; }
