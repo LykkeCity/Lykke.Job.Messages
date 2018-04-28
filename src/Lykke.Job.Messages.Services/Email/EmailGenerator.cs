@@ -339,12 +339,23 @@ namespace Lykke.Job.Messages.Services.Email
             {
                 foreach (var document in messageData.Documents)
                 {
-                    KycDocumentTypeApi kycDocType;
-                    Enum.TryParse(document.Type, out kycDocType);
+                    string kycDocType = document.Type;
+                    switch(document.Type.ToLower())
+                    {
+                        case "idcard":
+                            kycDocType = "Passport or ID";
+                            break;
+                        case "idcardbackside":
+                            kycDocType = "Passport or ID (back side)";
+                            break;
+                        case "proofofaddress":
+                            kycDocType = "Proof of address";
+                            break;
+                    }
 
                     documentsAsHtml.AppendLine("<tr style='border-top: 1px solid #8C94A0; border-bottom: 1px solid #8C94A0;'>");
                     documentsAsHtml.AppendLine(
-                        $"<td style='padding: 15px 0 15px 0;' width='260'><span style='font-size: 1.1em;color: #8C94A0;'>{KycDocumentTypes.GetDocumentTypeName(kycDocType)}</span></td>");
+                        $"<td style='padding: 15px 0 15px 0;' width='260'><span style='font-size: 1.1em;color: #8C94A0;'>{kycDocType}</span></td>");
                     documentsAsHtml.AppendLine(
                         $"<td style='padding: 15px 0 15px 0;' width='260'><span style='font-size: 1.1em;color: #3F4D60;'>{HtmlBreaks(document.KycComment)}</span></td>");
                     documentsAsHtml.AppendLine("</tr>");
@@ -360,6 +371,8 @@ namespace Lykke.Job.Messages.Services.Email
 
             return _templateGenerator.GenerateAsync(partnerId, "DeclinedDocumentsTemplate", templateVm);
         }
+
+
 
         public Task<EmailMessage> GenerateCashoutUnlockMsg(string partnerId, CashoutUnlockData messageData)
         {
@@ -590,7 +603,7 @@ namespace Lykke.Job.Messages.Services.Email
 
         private static string HtmlBreaks(string src)
         {
-            return src.Replace("\r\n", "<br>");
+            return src == null ? "" : src.Replace("\r\n", "<br>");
         }
     }
 }
