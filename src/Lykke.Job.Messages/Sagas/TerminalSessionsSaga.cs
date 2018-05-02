@@ -22,7 +22,7 @@ namespace Lykke.Job.Messages.Sagas
             var command = new DataNotificationCommand
             {
                 NotificationIds = new [] { (await _clientAccountClient.GetByIdAsync(evt.ClientId)).NotificationsId },
-                Type =  "TradingSessionCreated"
+                Type = "TradingSessionCreated"
             };
 
             sender.SendCommand(command, "push-notifications");

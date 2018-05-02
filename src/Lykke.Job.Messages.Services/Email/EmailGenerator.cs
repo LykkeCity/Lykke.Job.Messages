@@ -282,7 +282,7 @@ namespace Lykke.Job.Messages.Services.Email
                 Year = DateTime.UtcNow.Year
             };
 
-            return _templateGenerator.GenerateAsync(partnerId, "RemindPasswordTemplate", templateVm);
+            return _templateGenerator.GenerateAsync(partnerId, string.IsNullOrEmpty(messageData.PasswordHint) ? "NoPasswordHintTemplate" : "RemindPasswordTemplate", templateVm);
         }
 
         public Task<EmailMessage> GeneratPrivateWalletAddressMsg(string partnerId, PrivateWalletAddressData messageData)
@@ -599,6 +599,17 @@ namespace Lykke.Job.Messages.Services.Email
             };
 
             return _templateGenerator.GenerateAsync(partnerId, "ActionConfirmation", templateVm);
+        }
+
+        public Task<EmailMessage> GenerateNoAccountPasswordRecoverydMsg(string partnerId, NoAccountPasswordRecoveryData noAccountData)
+        {
+            var templateVm = new NoAccountPasswordRecoveryTemplate
+            {
+                Email = noAccountData.Email,
+                Year = DateTime.UtcNow.Year
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "NoAccountPasswordRecoveryTemplate", templateVm);
         }
 
         private static string HtmlBreaks(string src)
