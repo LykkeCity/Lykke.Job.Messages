@@ -26,7 +26,7 @@ namespace Lykke.Job.Messages.Sagas
             var notificationIds = new[] { (await _clientAccountClient.GetByIdAsync(evt.ClientId)).NotificationsId };
 
             var isMobile = !string.IsNullOrWhiteSpace(evt.ClientInfo);
-            var devicePart = isMobile ? $"on mobile ({GetDeviceName(evt.ClientInfo)})" : $"on the web ({GetBrowserName(evt.UserAgent)})";
+            var devicePart = isMobile ? $"on mobile ({GetDeviceName(evt.UserAgent)})" : $"on the web ({GetBrowserName(evt.UserAgent)})";
             
             var command = new TextNotificationCommand
             {

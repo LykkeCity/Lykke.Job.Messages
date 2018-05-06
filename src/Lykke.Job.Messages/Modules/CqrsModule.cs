@@ -42,9 +42,10 @@ namespace Lykke.Job.Messages.Modules
             builder.Register(context => new AutofacDependencyResolver(context)).As<IDependencyResolver>();
 
             builder.RegisterType<BlockchainOperationsSaga>().SingleInstance();
+
+            builder.RegisterType<TerminalSessionsSaga>().SingleInstance();
             builder.RegisterType<LoginEmailNotificationsSaga>().SingleInstance();
             builder.RegisterType<LoginPushNotificationsSaga>().SingleInstance();
-            builder.RegisterType<TerminalSessionsSaga>().SingleInstance();
 
             var messagingEngine = new MessagingEngine(_log,
                 new TransportResolver(new Dictionary<string, TransportInfo>
@@ -89,17 +90,21 @@ namespace Lykke.Job.Messages.Modules
                               .WithEndpointResolver(sagasEndpointResolver)
                               .ProcessingOptions(commandsRoute).MultiThreaded(4).QueueCapacity(1024),
 
-                    Register.Saga<LoginEmailNotificationsSaga>("login-email-notifications-saga")
+					  Register.Saga<LoginEmailNotificationsSaga>("login-email-notifications-saga")
                         .ListeningEvents(typeof(ClientLoggedEvent))
-                        .From("registration").On(eventsRoute)
-                        .PublishingCommands(typeof(SendEmailCommand)).To("email").With(commandsRoute)
-                        .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+                            .From("registration").On(eventsRoute)
+                        .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                            .With(commandsRoute)
+                            .WithEndpointResolver(sagasEndpointResolver)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
 
-                    Register.Saga<LoginPushNotificationsSaga>("login-push-notifications-saga")
+                      Register.Saga<LoginPushNotificationsSaga>("login-push-notifications-saga")
                         .ListeningEvents(typeof(ClientLoggedEvent))
-                        .From("registration").On(eventsRoute)
-                        .PublishingCommands(typeof(TextNotificationCommand)).To("push-notifications").With(commandsRoute)
-                        .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+                            .From("registration").On(eventsRoute)
+                        .PublishingCommands(typeof(TextNotificationCommand)).To("push-notifications")
+                            .With(commandsRoute)
+                            .WithEndpointResolver(sagasEndpointResolver)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
 
                       Register.Saga<BlockchainOperationsSaga>("blockchain-notification-saga")
                           .ListeningEvents(typeof(CashinCompletedEvent), typeof(CashoutCompletedEvent))
