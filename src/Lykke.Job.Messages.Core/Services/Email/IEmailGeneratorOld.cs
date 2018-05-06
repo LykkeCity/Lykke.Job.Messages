@@ -43,6 +43,6 @@ namespace Lykke.Job.Messages.Core.Services.Email
         Task<EmailMessage> GenerateWelcomeCypMsg(string partnerId, RegistrationCypMessageData kycOkData);
         Task<EmailMessage> GenerateWelcomeFxCypMsg(string partnerId, KycOkCypData kycOkData);
         Task<EmailMessage> GenerateActionConfirmationMsg(string partnerId, ActionConfirmationData messageData);
-        Task<EmailMessage> GenerateNoAccountPasswordRecoverydMsg(string partnerId, NoAccountPasswordRecoveryData noAccountData);
+        Task<EmailMessage> GenerateNoAccountPasswordRecoveryMsg(string partnerId, NoAccountPasswordRecoveryData noAccountData);
     }
 }
