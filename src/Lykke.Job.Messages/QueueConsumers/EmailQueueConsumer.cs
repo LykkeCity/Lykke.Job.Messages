@@ -147,6 +147,9 @@ namespace Lykke.Job.Messages.QueueConsumers
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<KycOkCypData>>>(
                     KycOkCypData.QueueName, itm => HandleKycOkCypEmailAsync(itm.Data));
+                
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<NoAccountPasswordRecoveryData>>>(
+                    NoAccountPasswordRecoveryData.QueueName, itm => HandleNoAccountPasswordRecoveryEmailAsync(itm.Data));
             }
         }
 
@@ -458,6 +461,14 @@ namespace Lykke.Job.Messages.QueueConsumers
                                                                                                        $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateWelcomeFxCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
+        }
+        
+        private async Task HandleNoAccountPasswordRecoveryEmailAsync(SendEmailData<NoAccountPasswordRecoveryData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleNoAccountPasswordRecoveryEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                       $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            var msg = await _emailGenerator.GenerateNoAccountPasswordRecoveryMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
 
         public void Start()
