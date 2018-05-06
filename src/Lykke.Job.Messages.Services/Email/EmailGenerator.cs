@@ -577,7 +577,7 @@ namespace Lykke.Job.Messages.Services.Email
             return _templateGenerator.GenerateAsync(partnerId, "WelcomeFxCypTemplate", templateVm);
         }
 
-        public Task<EmailMessage> GenerateNoAccountPasswordRecoverydMsg(string partnerId, NoAccountPasswordRecoveryData noAccountData)
+        public Task<EmailMessage> GenerateNoAccountPasswordRecoveryMsg(string partnerId, NoAccountPasswordRecoveryData noAccountData)
         {
             var templateVm = new NoAccountPasswordRecoveryTemplate
             {

@@ -467,7 +467,7 @@ namespace Lykke.Job.Messages.QueueConsumers
         {
             await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleNoAccountPasswordRecoveryEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                        $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
-            var msg = await _emailGenerator.GenerateNoAccountPasswordRecoverydMsg(result.PartnerId, result.MessageData);
+            var msg = await _emailGenerator.GenerateNoAccountPasswordRecoveryMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
 
