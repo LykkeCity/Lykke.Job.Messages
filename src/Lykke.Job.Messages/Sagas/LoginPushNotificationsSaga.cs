@@ -30,7 +30,7 @@ namespace Lykke.Job.Messages.Sagas
             var command = new TextNotificationCommand
             {
                 NotificationIds = notificationIds,
-                Message = $"Successful login {devicePart} on {dateTimeNow:dd.MM.yyyy} at {dateTimeNow:HH:mm}",
+                Message = $"Successful login {devicePart} on {dateTimeNow:dd.MM.yyyy} at {dateTimeNow:HH:mm} (CET)",
                 Type = "Info"
             };
 
