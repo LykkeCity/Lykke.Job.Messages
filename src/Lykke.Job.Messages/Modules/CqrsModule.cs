@@ -119,7 +119,9 @@ namespace Lykke.Job.Messages.Modules
                               .To(PushNotificationsBoundedContext.Name)
                               .With(commandsRoute)
                               .WithEndpointResolver(sagasEndpointResolver)
-                          .PublishingCommands(typeof(SendEmailCommand)).To("email").With(commandsRoute)
+                          .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                               .With(commandsRoute)
+                               .WithEndpointResolver(sagasEndpointResolver)
                               .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
                       );
               })
