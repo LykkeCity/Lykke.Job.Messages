@@ -19,9 +19,8 @@ namespace Lykke.Job.Messages.Sagas
         [UsedImplicitly]
         public async Task Handle(TradingSessionCreatedEvent evt, ICommandSender sender)
         {
-            var command = new TextNotificationCommand
+            var command = new DataNotificationCommand
             {
-                Message = "Open the app to confirm trade session",
                 NotificationIds = new [] { (await _clientAccountClient.GetByIdAsync(evt.ClientId)).NotificationsId },
                 Type = "TradingSessionCreated"
             };
