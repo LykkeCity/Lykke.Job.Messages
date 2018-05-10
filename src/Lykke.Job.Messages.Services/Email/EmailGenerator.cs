@@ -365,6 +365,7 @@ namespace Lykke.Job.Messages.Services.Email
             var templateVm = new DeclinedDocumentsTemplate
             {
                 FullName = messageData.FullName,
+                LykkeKycWebsiteUrl = messageData.LykkeKycWebsiteUrl,
                 DocumentsAsHtml = documentsAsHtml.ToString(),
                 Year = DateTime.UtcNow.Year
             };
