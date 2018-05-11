@@ -43,7 +43,7 @@ namespace Lykke.Job.Messages.AzureRepositories.Email
             if (string.IsNullOrEmpty(html) ||
                 string.IsNullOrEmpty(json))
             {
-                throw new Exception($"Both {templatePath} and {metadataPath} should exist in {_containerName}");
+                throw new Exception($"Html: {!String.IsNullOrWhiteSpace(html)}, Json: {!String.IsNullOrWhiteSpace(json)}; Both {templatePath} and {metadataPath} should exist in {_containerName}");
             }
 
             EmailMetada metadata = Newtonsoft.Json.JsonConvert.DeserializeObject<EmailMetada>(json);
@@ -72,15 +72,20 @@ namespace Lykke.Job.Messages.AzureRepositories.Email
 
         protected async Task<string> GetBlobInfoAsync(string path)
         {
-            string result;
+            string result = null;
 
-            using (var stream = await _storage.GetAsync(_containerName, path))
-            using (var reader = new StreamReader(stream))
+            bool isBlobExistent = await _storage.HasBlobAsync(_containerName, path);
+            if (isBlobExistent)
             {
-                result = await reader.ReadToEndAsync();
-
-                return result;
+                using (var stream = await _storage.GetAsync(_containerName, path))
+                using (var reader = new StreamReader(stream))
+                {
+                    result = await reader.ReadToEndAsync();
+                    return result;
+                }
             }
+
+            return await Task.FromResult((string)null);
         }
     }
 }
