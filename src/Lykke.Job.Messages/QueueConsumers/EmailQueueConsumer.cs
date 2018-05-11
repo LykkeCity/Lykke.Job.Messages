@@ -152,6 +152,9 @@ namespace Lykke.Job.Messages.QueueConsumers
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<KycOkCypData>>>(
                     KycOkCypData.QueueName, itm => HandleKycOkCypEmailAsync(itm.Data));
 
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<EmailComfirmationCypData>>>(
+                    EmailComfirmationCypData.QueueName, itm => HandleConfirmCypEmailAsync(itm.Data));
+                
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<ActionConfirmationData>>>(
                     ActionConfirmationData.QueueName, itm => HandleActionConfirmationEmailAsync(itm.Data));
                 
@@ -478,7 +481,14 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
 
-
+        private async Task HandleConfirmCypEmailAsync(SendEmailData<EmailComfirmationCypData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleConfirmCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                         $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            var msg = await _emailGenerator.GenerateConfirmEmailCypMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
+        }
+        
         private async Task HandleActionConfirmationEmailAsync(SendEmailData<ActionConfirmationData> result)
         {
             await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleKycOkCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +

@@ -589,6 +589,17 @@ namespace Lykke.Job.Messages.Services.Email
             return _templateGenerator.GenerateAsync(partnerId, "WelcomeFxCypTemplate", templateVm);
         }
 
+        public Task<EmailMessage> GenerateConfirmEmailCypMsg(string partnerId, EmailComfirmationCypData data)
+        {
+            var templateVm = new EmailVerificationTemplate
+            {
+                ConfirmationCode = data.ConfirmationCode,
+                Year = data.Year
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "EmailConfirmationCypTemplate", templateVm);
+        }
+
         public Task<EmailMessage> GenerateActionConfirmationMsg(string partnerId, ActionConfirmationData messageData)
         {
             var templateVm = new ActionConfirmationTemplate
