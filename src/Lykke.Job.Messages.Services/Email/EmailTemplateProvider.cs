@@ -42,10 +42,6 @@ namespace Lykke.Job.Messages.Services.Email
                     var key = match.Groups[1].Value;
                     if (parameters != null && parameters.ContainsKey(key))
                         return parameters[key];
-                    if (key == "Year")
-                    {
-                        return DateTime.UtcNow.Year.ToString();
-                    }
                     throw new KeyNotFoundException($"Unable to find parameter {key} required by email template {templateId} ({language}) for partner {partnerId}");
                 }
 
