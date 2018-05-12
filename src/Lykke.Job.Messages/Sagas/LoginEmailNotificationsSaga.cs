@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
-using Autofac.Features.Indexed;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
 using Lykke.Job.Messages.Contract;
-using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Job.Messages.Events;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PersonalData.Contract;
