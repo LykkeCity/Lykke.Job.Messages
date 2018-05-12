@@ -5,7 +5,6 @@ using Lykke.Cqrs;
 using Lykke.Job.Messages.Events;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PushNotifications.Contract.Commands;
-using Lykke.Service.PushNotifications.Contract.Enums;
 using UAParser;
 
 namespace Lykke.Job.Messages.Sagas
@@ -21,7 +20,7 @@ namespace Lykke.Job.Messages.Sagas
 
         [UsedImplicitly]
         public async Task Handle(ClientLoggedEvent evt, ICommandSender commandSender)
-        {
+        {            
             var dateTimeNow = DateTime.UtcNow;
             var notificationIds = new[] { (await _clientAccountClient.GetByIdAsync(evt.ClientId)).NotificationsId };
 
