@@ -3,11 +3,8 @@ using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
 using Lykke.Job.Messages.Contract.Commands;
-using Lykke.Job.Messages.Contract.Emails.MessageData;
 using Lykke.Job.Messages.Core.Services.Email;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Lykke.Job.Messages.Workflow.CommandHandlers
