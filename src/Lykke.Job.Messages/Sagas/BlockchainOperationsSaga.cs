@@ -12,6 +12,7 @@ using Lykke.Service.Assets.Client;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PushNotifications.Contract;
 using Lykke.Service.PushNotifications.Contract.Commands;
+using Lykke.Service.PersonalData.Contract;
 
 namespace Lykke.Job.Messages.Sagas
 {
@@ -20,13 +21,16 @@ namespace Lykke.Job.Messages.Sagas
     {        
         private readonly IAssetsServiceWithCache _cachedAssetsService;
         private readonly IClientAccountClient _clientAccountClient;
-        
+        private readonly IPersonalDataService _personalDataService;
+
         public BlockchainOperationsSaga(            
             IAssetsServiceWithCache cachedAssetsService,
-            IClientAccountClient clientAccountClient)
+            IClientAccountClient clientAccountClient,
+            IPersonalDataService personalDataService)
         {            
             _cachedAssetsService = cachedAssetsService;
-            _clientAccountClient = clientAccountClient;            
+            _clientAccountClient = clientAccountClient;
+            _personalDataService = personalDataService;
         }
 
         //From CashinDetector
@@ -47,7 +51,8 @@ namespace Lykke.Job.Messages.Sagas
         [UsedImplicitly]
         public async Task Handle(CashoutCompletedEvent evt, ICommandSender commandSender)
         {
-            var clientModel = await _clientAccountClient.GetByIdAsync(evt.ClientId.ToString());            
+            var clientModel = await _clientAccountClient.GetByIdAsync(evt.ClientId.ToString());
+            var clientEmail = await _personalDataService.GetEmailAsync(evt.ClientId.ToString());
             var asset = await _cachedAssetsService.TryGetAssetAsync(evt.AssetId);
 
             var parameters = new
@@ -63,7 +68,7 @@ namespace Lykke.Job.Messages.Sagas
                 {
                     ApplicationId = clientModel.PartnerId,
                     Template = "NoRefundOCashOutTemplate",
-                    EmailAddresses = new[] {clientModel.Email},
+                    EmailAddresses = new[] { clientEmail },
                     Payload = parameters
                 },
                 EmailMessagesBoundedContext.Name);
@@ -71,7 +76,8 @@ namespace Lykke.Job.Messages.Sagas
 
         private async Task SendCashinEmailAsync(Guid clientId, decimal amount, string assetId, ICommandSender commandSender)
         {
-            var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());            
+            var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());   
+            var clientEmail = await _personalDataService.GetEmailAsync(clientId.ToString());
             var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
             string amountFormatted = NumberFormatter.FormatNumber(amount, asset.Accuracy);
 
@@ -87,7 +93,7 @@ namespace Lykke.Job.Messages.Sagas
                 {
                     ApplicationId = clientModel.PartnerId,
                     Template = "NoRefundDepositDoneTemplate",
-                    EmailAddresses = new[] {clientModel.Email},
+                    EmailAddresses = new[] { clientEmail },
                     Payload = parameters
                 },
                 EmailMessagesBoundedContext.Name);
