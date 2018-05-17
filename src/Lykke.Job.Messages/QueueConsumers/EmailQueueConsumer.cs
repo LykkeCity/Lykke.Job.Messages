@@ -154,6 +154,9 @@ namespace Lykke.Job.Messages.QueueConsumers
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<EmailComfirmationCypData>>>(
                     EmailComfirmationCypData.QueueName, itm => HandleConfirmCypEmailAsync(itm.Data));
+
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<DirectTransferCompletedCypData>>>(
+                    DirectTransferCompletedCypData.QueueName, itm => HandleDirectTransferCompletedCypEmailAsync(itm.Data));
                 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<ActionConfirmationData>>>(
                     ActionConfirmationData.QueueName, itm => HandleActionConfirmationEmailAsync(itm.Data));
@@ -486,6 +489,14 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleConfirmCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                          $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateConfirmEmailCypMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
+        }
+
+        private async Task HandleDirectTransferCompletedCypEmailAsync(SendEmailData<DirectTransferCompletedCypData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleDirectTransferCompletedCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                                         $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            var msg = await _emailGenerator.GenerateDirectTransferCompletedCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
         
