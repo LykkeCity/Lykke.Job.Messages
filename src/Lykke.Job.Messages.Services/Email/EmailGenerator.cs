@@ -599,6 +599,20 @@ namespace Lykke.Job.Messages.Services.Email
             return _templateGenerator.GenerateAsync(partnerId, "EmailConfirmationCypTemplate", templateVm);
         }
 
+        public Task<EmailMessage> GenerateDirectTransferCompletedCypMsg(string partnerId, DirectTransferCompletedCypData transferCompletedData)
+        {
+            var templateVm = new DirectTransferTemplate
+            {
+                Amount = transferCompletedData.Amount,
+                AssetId = transferCompletedData.AssetId,
+                ClientName = transferCompletedData.ClientName,
+                ExplorerUrl = string.Format(_blockchainSettings.ExplorerUrl, transferCompletedData.SrcBlockchainHash),
+                Year = DateTime.UtcNow.Year
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "DirectTransferCompleteCypTemplate", templateVm);
+        }
+
         public Task<EmailMessage> GenerateNoAccountPasswordRecoveryMsg(string partnerId, NoAccountPasswordRecoveryData noAccountData)
         {
             var templateVm = new NoAccountPasswordRecoveryTemplate

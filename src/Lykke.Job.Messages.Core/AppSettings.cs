@@ -70,7 +70,6 @@ namespace Lykke.Job.Messages.Core
         {
             [HttpCheck("/api/isalive")]
             public string EmailFormatterUrl { get; set; }
-            [HttpCheck("/api/isalive")]
             public string EmailPartnerRouterUrl { get; set; }
             public int RefundTimeoutInDays { get; set; }
         }
