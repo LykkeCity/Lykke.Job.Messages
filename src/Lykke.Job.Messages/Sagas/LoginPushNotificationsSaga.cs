@@ -20,7 +20,7 @@ namespace Lykke.Job.Messages.Sagas
 
         [UsedImplicitly]
         public async Task Handle(ClientLoggedEvent evt, ICommandSender commandSender)
-        {
+        {            
             var dateTimeNow = DateTime.UtcNow;
             var notificationIds = new[] { (await _clientAccountClient.GetByIdAsync(evt.ClientId)).NotificationsId };
 

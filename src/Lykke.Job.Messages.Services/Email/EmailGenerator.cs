@@ -365,6 +365,7 @@ namespace Lykke.Job.Messages.Services.Email
             var templateVm = new DeclinedDocumentsTemplate
             {
                 FullName = messageData.FullName,
+                LykkeKycWebsiteUrl = messageData.LykkeKycWebsiteUrl,
                 DocumentsAsHtml = documentsAsHtml.ToString(),
                 Year = DateTime.UtcNow.Year
             };
@@ -586,6 +587,44 @@ namespace Lykke.Job.Messages.Services.Email
             };
 
             return _templateGenerator.GenerateAsync(partnerId, "WelcomeFxCypTemplate", templateVm);
+        }
+
+        public Task<EmailMessage> GenerateConfirmEmailCypMsg(string partnerId, EmailComfirmationCypData data)
+        {
+            var templateVm = new EmailVerificationTemplate
+            {
+                ConfirmationCode = data.ConfirmationCode,
+                Year = data.Year
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "EmailConfirmationCypTemplate", templateVm);
+        }
+
+        public Task<EmailMessage> GenerateDirectTransferCompletedCypMsg(string partnerId, DirectTransferCompletedCypData transferCompletedData)
+        {
+            var templateVm = new DirectTransferTemplate
+            {
+                Amount = transferCompletedData.Amount,
+                AssetId = transferCompletedData.AssetId,
+                ClientName = transferCompletedData.ClientName,
+                ExplorerUrl = string.Format(_blockchainSettings.ExplorerUrl, transferCompletedData.SrcBlockchainHash),
+                Year = DateTime.UtcNow.Year
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "DirectTransferCompleteCypTemplate", templateVm);
+        }
+
+        public Task<EmailMessage> GenerateActionConfirmationMsg(string partnerId, ActionConfirmationData messageData)
+        {
+            var templateVm = new ActionConfirmationTemplate
+            {
+                Year = DateTime.UtcNow.Year.ToString(CultureInfo.InvariantCulture),
+                ClientName = messageData.ClientName,
+                ConfirmationLink = messageData.ConfirmationLink,
+                Ip = messageData.Ip
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "ActionConfirmation", templateVm);
         }
 
         public Task<EmailMessage> GenerateNoAccountPasswordRecoveryMsg(string partnerId, NoAccountPasswordRecoveryData noAccountData)
