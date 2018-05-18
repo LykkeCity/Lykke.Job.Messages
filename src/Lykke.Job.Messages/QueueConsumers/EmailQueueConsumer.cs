@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AzureStorage.Queue;
@@ -156,7 +157,10 @@ namespace Lykke.Job.Messages.QueueConsumers
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<DirectTransferCompletedCypData>>>(
                     DirectTransferCompletedCypData.QueueName, itm => HandleDirectTransferCompletedCypEmailAsync(itm.Data));
-
+                
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<ActionConfirmationData>>>(
+                    ActionConfirmationData.QueueName, itm => HandleActionConfirmationEmailAsync(itm.Data));
+                
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<NoAccountPasswordRecoveryData>>>(
                     NoAccountPasswordRecoveryData.QueueName, itm => HandleNoAccountPasswordRecoveryEmailAsync(itm.Data));
             }
@@ -495,7 +499,15 @@ namespace Lykke.Job.Messages.QueueConsumers
             var msg = await _emailGenerator.GenerateDirectTransferCompletedCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
-
+        
+        private async Task HandleActionConfirmationEmailAsync(SendEmailData<ActionConfirmationData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleKycOkCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                          $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            var msg = await _emailGenerator.GenerateActionConfirmationMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+        }
+        
         private async Task HandleNoAccountPasswordRecoveryEmailAsync(SendEmailData<NoAccountPasswordRecoveryData> result)
         {
             await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleNoAccountPasswordRecoveryEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +

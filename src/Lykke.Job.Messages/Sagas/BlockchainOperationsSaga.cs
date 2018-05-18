@@ -13,6 +13,8 @@ using Lykke.Service.PushNotifications.Contract;
 using Lykke.Service.PushNotifications.Contract.Commands;
 using System;
 using System.Threading.Tasks;
+using Lykke.Service.PersonalData.Contract;
+
 
 namespace Lykke.Job.Messages.Sagas
 {

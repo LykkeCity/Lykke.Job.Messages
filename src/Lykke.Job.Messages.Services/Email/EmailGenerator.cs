@@ -365,6 +365,7 @@ namespace Lykke.Job.Messages.Services.Email
             var templateVm = new DeclinedDocumentsTemplate
             {
                 FullName = messageData.FullName,
+                LykkeKycWebsiteUrl = messageData.LykkeKycWebsiteUrl,
                 DocumentsAsHtml = documentsAsHtml.ToString(),
                 Year = DateTime.UtcNow.Year
             };
@@ -611,6 +612,19 @@ namespace Lykke.Job.Messages.Services.Email
             };
 
             return _templateGenerator.GenerateAsync(partnerId, "DirectTransferCompleteCypTemplate", templateVm);
+        }
+
+        public Task<EmailMessage> GenerateActionConfirmationMsg(string partnerId, ActionConfirmationData messageData)
+        {
+            var templateVm = new ActionConfirmationTemplate
+            {
+                Year = DateTime.UtcNow.Year.ToString(CultureInfo.InvariantCulture),
+                ClientName = messageData.ClientName,
+                ConfirmationLink = messageData.ConfirmationLink,
+                Ip = messageData.Ip
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "ActionConfirmation", templateVm);
         }
 
         public Task<EmailMessage> GenerateNoAccountPasswordRecoveryMsg(string partnerId, NoAccountPasswordRecoveryData noAccountData)

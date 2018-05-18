@@ -1,11 +1,9 @@
-﻿using Lykke.Cqrs;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using System;
+using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
-using Autofac;
-using Lykke.Job.Messages.Core.Services.Email;
-using Lykke.Messages.Email.MessageData;
+using Lykke.Job.Messages.Contract.Emails.MessageData;
 using Microsoft.AspNetCore.Builder;
 
 namespace Lykke.Job.Messages.Tests.Console
@@ -14,17 +12,17 @@ namespace Lykke.Job.Messages.Tests.Console
     {
         public static void Main(string[] args)
         {
-            var webHostBuilder = CreateWebHost(args);
-            var webHost = webHostBuilder.Build();
-            var emailGenerator = TestStartup.StaticContainer.Resolve<IEmailGenerator>();
-            var result = emailGenerator.GenerateNoRefundOCashOutMsg("", new NoRefundOCashOutData()
-            {
-                AssetId = "BTC",
-                Amount =  1.0000001,
-                SrcBlockchainHash = "Hasj2qewweqedswwqdas"
-
-            }).Result;
-            var cqrsEngine = TestStartup.StaticContainer.Resolve<ICqrsEngine>(); //webHost.Services.GetService<ICqrsEngine>();
+            //var webHostBuilder = CreateWebHost(args);
+            //var webHost = webHostBuilder.Build();
+            //var emailGenerator = TestStartup.StaticContainer.Resolve<IEmailGenerator>();
+            //var result = emailGenerator.GenerateNoRefundOCashOutMsg("", new NoRefundOCashOutData()
+            //{
+            //    AssetId = "BTC",
+            //    Amount =  1.0000001,
+            //    SrcBlockchainHash = "Hasj2qewweqedswwqdas"
+            //
+            //}).Result;
+            //var cqrsEngine = TestStartup.StaticContainer.Resolve<ICqrsEngine>(); //webHost.Services.GetService<ICqrsEngine>();
 
             //cqrsEngine.PublishEvent(new CashinCompletedEvent()
             //{
@@ -52,7 +50,7 @@ namespace Lykke.Job.Messages.Tests.Console
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             var provider = _startup.ConfigureServices(services);
-            StaticContainer = _startup.ApplicationContainer;
+            //StaticContainer = _startup.ApplicationContainer;
 
             return provider;
         }
