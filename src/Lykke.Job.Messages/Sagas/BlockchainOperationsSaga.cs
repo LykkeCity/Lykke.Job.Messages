@@ -3,16 +3,18 @@ using Lykke.Cqrs;
 using Lykke.Job.BlockchainCashoutProcessor.Contract.Events;
 using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Core;
-using Lykke.Job.Messages.Resources;
-using Lykke.Service.ClientAccount.Client;
-using System;
-using System.Threading.Tasks;
 using Lykke.Job.Messages.Core.Util;
+using Lykke.Job.Messages.Resources;
 using Lykke.Service.Assets.Client;
+using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.EmailPartnerRouter.Contracts;
+using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.PushNotifications.Contract;
 using Lykke.Service.PushNotifications.Contract.Commands;
+using System;
+using System.Threading.Tasks;
 using Lykke.Service.PersonalData.Contract;
+
 
 namespace Lykke.Job.Messages.Sagas
 {
@@ -76,7 +78,7 @@ namespace Lykke.Job.Messages.Sagas
 
         private async Task SendCashinEmailAsync(Guid clientId, decimal amount, string assetId, ICommandSender commandSender)
         {
-            var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());   
+            var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());
             var clientEmail = await _personalDataService.GetEmailAsync(clientId.ToString());
             var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
             string amountFormatted = NumberFormatter.FormatNumber(amount, asset.Accuracy);
