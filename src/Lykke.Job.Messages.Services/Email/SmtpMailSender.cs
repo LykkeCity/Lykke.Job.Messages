@@ -28,7 +28,8 @@ namespace Lykke.Job.Messages.Services.Email
         {
             try
             {
-                await _emailPartnerRouter.SendAsync(partnerId, message, new EmailAddressee { EmailAddress = emailAddress });
+                if(!String.IsNullOrEmpty(partnerId))
+                    await _emailPartnerRouter.SendAsync(partnerId, message, new EmailAddressee { EmailAddress = emailAddress });
             }
             catch (Exception ex)
             {
