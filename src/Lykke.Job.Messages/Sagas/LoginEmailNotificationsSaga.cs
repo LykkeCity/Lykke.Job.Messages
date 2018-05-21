@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using Lykke.Cqrs;
 using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Events;
+using Lykke.Job.Messages.Utils;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PersonalData.Contract;
 
@@ -23,6 +24,7 @@ namespace Lykke.Job.Messages.Sagas
         public async Task Handle(ClientLoggedEvent evt, ICommandSender commandSender)
         {
             var personalData = await _personalDataService.GetAsync(evt.ClientId);
+            EmailValidator.ValidateEmail(personalData.Email, evt.ClientId);
 
             var parameters = new 
             {
