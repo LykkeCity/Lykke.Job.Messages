@@ -38,7 +38,7 @@ namespace Lykke.Job.Messages.Sagas
                 {
                     ApplicationId = evt.PartnerId,
                     Template = "LoginNotification",
-                    EmailAddresses = new[] { evt.Email },
+                    EmailAddresses = new[] { personalData.Email },
                     Payload = parameters
                 }, 
                 EmailMessagesBoundedContext.Name);
