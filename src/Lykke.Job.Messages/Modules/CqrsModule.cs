@@ -16,6 +16,7 @@ using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PushNotifications.Contract;
 using Lykke.Service.PushNotifications.Contract.Commands;
 using Lykke.Service.Session.Contracts;
+using Lykke.Service.SwiftWithdrawal.Contracts;
 
 namespace Lykke.Job.Messages.Modules
 {
@@ -46,6 +47,7 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<TerminalSessionsSaga>().SingleInstance();
             builder.RegisterType<LoginEmailNotificationsSaga>().SingleInstance();
             builder.RegisterType<LoginPushNotificationsSaga>().SingleInstance();
+            builder.RegisterType<SwiftWithdrawalEmailNotificationSaga>().SingleInstance();
 
             var messagingEngine = new MessagingEngine(_log,
                 new TransportResolver(new Dictionary<string, TransportInfo>
@@ -105,6 +107,15 @@ namespace Lykke.Job.Messages.Modules
                             .With(commandsRoute)
                             .WithEndpointResolver(sagasEndpointResolver)
                             .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+
+                      Register.Saga<SwiftWithdrawalEmailNotificationSaga>("swift-withdrawal-email-notifications-saga")
+                          .ListeningEvents(typeof(SwiftCashoutCreatedEvent))
+                          .From(SwiftWithdrawalBoundedContext.Name).On(eventsRoute)
+                          .WithEndpointResolver(sagasEndpointResolver)
+                          .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                          .With(commandsRoute)
+                          .WithEndpointResolver(sagasEndpointResolver)
+                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
 
                       Register.Saga<BlockchainOperationsSaga>("blockchain-notification-saga")
                           .ListeningEvents(typeof(CashinCompletedEvent), typeof(CashoutCompletedEvent))
