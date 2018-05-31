@@ -10,11 +10,11 @@ using Lykke.Messaging.RabbitMq;
 using Lykke.Cqrs.Configuration;
 using System.Linq;
 using Lykke.Job.BlockchainCashoutProcessor.Contract.Events;
-using Lykke.Job.Messages.Events;
 using Lykke.Job.Messages.Sagas;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PushNotifications.Contract;
 using Lykke.Service.PushNotifications.Contract.Commands;
+using Lykke.Service.Registration.Contract.Events;
 using Lykke.Service.Session.Contracts;
 
 namespace Lykke.Job.Messages.Modules

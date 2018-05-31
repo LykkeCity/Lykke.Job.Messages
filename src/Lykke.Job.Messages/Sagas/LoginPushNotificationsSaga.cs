@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
-using Lykke.Job.Messages.Events;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PushNotifications.Contract.Commands;
+using Lykke.Service.Registration.Contract.Events;
 using UAParser;
 
 namespace Lykke.Job.Messages.Sagas

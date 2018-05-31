@@ -7,9 +7,9 @@ using JetBrains.Annotations;
 using Lykke.Cqrs;
 using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Core.Services.Email;
-using Lykke.Job.Messages.Events;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PersonalData.Contract;
+using Lykke.Service.Registration.Contract.Events;
 
 namespace Lykke.Job.Messages.Sagas
 {
@@ -32,6 +32,8 @@ namespace Lykke.Job.Messages.Sagas
                 personalData.FullName,
                 evt.ClientInfo,
                 evt.Ip,
+                evt.Country,
+                evt.City,
                 Date = DateTime.UtcNow.ToString("MMMM dd, yyyy, hh:mm tt", CultureInfo.CreateSpecificCulture("en-US")),
                 Year = DateTime.UtcNow.Year.ToString()
             };
