@@ -86,7 +86,7 @@ namespace Lykke.Job.Messages.Modules
                 .WithParameter(TypedParameter.From(_appSettings.CurrentValue.PersonalDataServiceSettings));
 
             builder.RegisterInstance<IClientAccountClient>(
-                new Lykke.Service.ClientAccount.Client.ClientAccountClient(_appSettings.CurrentValue
+                new ClientAccountClient(_appSettings.CurrentValue
                     .ClientAccountServiceClient.ServiceUrl));
 
             RegistermSmsServices(builder);
