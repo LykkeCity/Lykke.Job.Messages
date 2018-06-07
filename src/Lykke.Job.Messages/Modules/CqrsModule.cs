@@ -16,6 +16,7 @@ using Lykke.Service.PushNotifications.Contract;
 using Lykke.Service.PushNotifications.Contract.Commands;
 using Lykke.Service.Registration.Contract.Events;
 using Lykke.Service.Session.Contracts;
+using Lykke.Service.SwiftWithdrawal.Contracts;
 
 namespace Lykke.Job.Messages.Modules
 {
@@ -46,6 +47,7 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<TerminalSessionsSaga>().SingleInstance();
             builder.RegisterType<LoginEmailNotificationsSaga>().SingleInstance();
             builder.RegisterType<LoginPushNotificationsSaga>().SingleInstance();
+            builder.RegisterType<SwiftWithdrawalEmailNotificationSaga>().SingleInstance();
 
             var messagingEngine = new MessagingEngine(_log,
                 new TransportResolver(new Dictionary<string, TransportInfo>
@@ -79,49 +81,52 @@ namespace Lykke.Job.Messages.Modules
                       messagingEngine,
                       new DefaultEndpointProvider(),
                       true,
-                      Register.DefaultEndpointResolver(clientEndpointResolver),
+                      Register.DefaultEndpointResolver(sagasEndpointResolver),
 
                       Register.Saga<TerminalSessionsSaga>("terminal-sessions-saga")
                           .ListeningEvents(typeof(TradingSessionCreatedEvent))
                               .From("sessions").On(eventsRoute)
+                              .WithEndpointResolver(clientEndpointResolver)
                           .PublishingCommands(typeof(DataNotificationCommand))
                               .To(PushNotificationsBoundedContext.Name)
                               .With(commandsRoute)
-                              .WithEndpointResolver(sagasEndpointResolver)
                               .ProcessingOptions(commandsRoute).MultiThreaded(4).QueueCapacity(1024),
 
 					  Register.Saga<LoginEmailNotificationsSaga>("login-email-notifications-saga")
                         .ListeningEvents(typeof(ClientLoggedEvent))
                             .From("registration").On(eventsRoute)
+					        .WithEndpointResolver(clientEndpointResolver)
                         .PublishingCommands(typeof(SendEmailCommand)).To("email")
                             .With(commandsRoute)
-                            .WithEndpointResolver(sagasEndpointResolver)
                             .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
 
                       Register.Saga<LoginPushNotificationsSaga>("login-push-notifications-saga")
                         .ListeningEvents(typeof(ClientLoggedEvent))
                             .From("registration").On(eventsRoute)
+                            .WithEndpointResolver(clientEndpointResolver)
                         .PublishingCommands(typeof(TextNotificationCommand)).To("push-notifications")
                             .With(commandsRoute)
-                            .WithEndpointResolver(sagasEndpointResolver)
                             .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+
+                      Register.Saga<SwiftWithdrawalEmailNotificationSaga>("swift-withdrawal-email-notifications-saga")
+                          .ListeningEvents(typeof(SwiftCashoutCreatedEvent))
+                          .From(SwiftWithdrawalBoundedContext.Name).On(eventsRoute)
+                          .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                          .With(commandsRoute)
+                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
 
                       Register.Saga<BlockchainOperationsSaga>("blockchain-notification-saga")
                           .ListeningEvents(typeof(CashinCompletedEvent), typeof(CashoutCompletedEvent))
                               .From(BlockchainCashoutProcessor.Contract.BlockchainCashoutProcessorBoundedContext.Name).On(eventsRoute)
-                              .WithEndpointResolver(sagasEndpointResolver)
                               .ProcessingOptions(eventsRoute).MultiThreaded(2).QueueCapacity(512)
                           .ListeningEvents(typeof(BlockchainCashinDetector.Contract.Events.CashinCompletedEvent))
                               .From(BlockchainCashinDetector.Contract.BlockchainCashinDetectorBoundedContext.Name).On(eventsRoute)
-                              .WithEndpointResolver(sagasEndpointResolver)
                               .ProcessingOptions(eventsRoute).MultiThreaded(2).QueueCapacity(512)
                           .PublishingCommands(pushNotificationsCommands)
                               .To(PushNotificationsBoundedContext.Name)
                               .With(commandsRoute)
-                              .WithEndpointResolver(sagasEndpointResolver)
                           .PublishingCommands(typeof(SendEmailCommand)).To("email")
                                .With(commandsRoute)
-                               .WithEndpointResolver(sagasEndpointResolver)
                               .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
                       );
               })
