@@ -15,6 +15,9 @@ namespace Lykke.Job.Messages.Core
         public SmsSenderSettings SmsSenderServiceClient { get; set; }
         public Lykke.Service.ClientAccount.Client.ClientAccountServiceClientSettings ClientAccountServiceClient { get; set; }
         public SagasRabbitMq SagasRabbitMq { get; set; }
+        [Optional]
+        public CifLicenseActivationSettings CifLicenseActivation { get; set; } = 
+            new CifLicenseActivationSettings { MarginRegulatorId = "aba58647-45be-41ad-9123-1e077dea1584" };
 
         public class MessagesSettings
         {
@@ -108,6 +111,10 @@ namespace Lykke.Job.Messages.Core
         public class SmsNotificationsSettings
         {
             public AzureQueueSettings AzureQueue { get; set; }
+        }
+        public class CifLicenseActivationSettings
+        {
+            public string MarginRegulatorId { get; set; }
         }
     }
 

@@ -45,6 +45,7 @@ namespace Lykke.Job.Messages.Modules
     {
         private readonly IReloadingManager<AppSettings> _appSettings;
         private readonly IReloadingManager<AppSettings.MessagesSettings> _settings;
+        private readonly IReloadingManager<AppSettings.CifLicenseActivationSettings> _cifLicenseActivationSettings;
         private readonly ILog _log;
         private readonly ServiceCollection _services;
         
@@ -53,6 +54,7 @@ namespace Lykke.Job.Messages.Modules
         {
             _appSettings = settings;
             _settings = settings.Nested(x => x.MessagesJob);
+            _cifLicenseActivationSettings = settings.Nested(x => x.CifLicenseActivation);
             _log = log;
 
             _services = new ServiceCollection();
@@ -61,6 +63,9 @@ namespace Lykke.Job.Messages.Modules
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterInstance(_settings)
+                .SingleInstance();
+
+            builder.RegisterInstance(_cifLicenseActivationSettings)
                 .SingleInstance();
 
             builder.RegisterInstance(_log)
