@@ -159,6 +159,12 @@ namespace Lykke.Job.Messages.QueueConsumers
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<NoAccountPasswordRecoveryData>>>(
                     NoAccountPasswordRecoveryData.QueueName, itm => HandleNoAccountPasswordRecoveryEmailAsync(itm.Data));
+
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<SwiftCashoutProcessedCypData>>>(
+                   SwiftCashoutProcessedCypData.QueueName, itm => HandleSwiftCashoutProcessedCypEmailAsync(itm.Data));
+
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<SwiftCashoutDeclinedCypData>>>(
+                   SwiftCashoutDeclinedCypData.QueueName, itm => HandleSwiftCashoutDeclinedCypEmailAsync(itm.Data));
             }
         }
 
@@ -502,6 +508,21 @@ namespace Lykke.Job.Messages.QueueConsumers
                                                                                                        $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateNoAccountPasswordRecoveryMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+        }
+
+        private async Task HandleSwiftCashoutProcessedCypEmailAsync(SendEmailData<SwiftCashoutProcessedCypData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleSwiftCashoutProcessedCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                         $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            var msg = await _emailGenerator.GenerateSwiftCashoutProcessedCypMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
+        }
+        private async Task HandleSwiftCashoutDeclinedCypEmailAsync(SendEmailData<SwiftCashoutDeclinedCypData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleSwiftCashoutDeclinedCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                         $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            var msg = await _emailGenerator.GenerateSwiftCashoutDeclinedCypMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
 
         public void Start()
