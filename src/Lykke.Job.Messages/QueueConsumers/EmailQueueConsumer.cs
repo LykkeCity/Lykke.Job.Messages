@@ -165,6 +165,9 @@ namespace Lykke.Job.Messages.QueueConsumers
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<SwiftCashoutDeclinedCypData>>>(
                    SwiftCashoutDeclinedCypData.QueueName, itm => HandleSwiftCashoutDeclinedCypEmailAsync(itm.Data));
+
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RejectedCypData>>>(
+                  RejectedCypData.QueueName, itm => HandleRejectedCypEmailAsync(itm.Data));
             }
         }
 
@@ -524,6 +527,14 @@ namespace Lykke.Job.Messages.QueueConsumers
             var msg = await _emailGenerator.GenerateSwiftCashoutDeclinedCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
+        private async Task HandleRejectedCypEmailAsync(SendEmailData<RejectedCypData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleRejectedCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                         $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            var msg = await _emailGenerator.GenerateRejectedEmailCypMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
+        }
+        
 
         public void Start()
         {
