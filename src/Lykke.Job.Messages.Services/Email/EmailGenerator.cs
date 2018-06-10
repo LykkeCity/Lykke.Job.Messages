@@ -472,6 +472,15 @@ namespace Lykke.Job.Messages.Services.Email
 
             return _templateGenerator.GenerateAsync(partnerId, "RejectedTemplate", templateVm);
         }
+        public Task<EmailMessage> GenerateRejectedEmailCypMsg(string partnerId, RejectedCypData messageData)
+        {
+            var templateVm = new BaseTemplate
+            {
+                Year = DateTime.UtcNow.Year.ToString()
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "RejectedCypTemplate", templateVm);
+        }
 
         public EmailMessage GenerateFailedTransactionMsg(string partnerId, string transactionId, string[] clientIds)
         {
