@@ -47,5 +47,6 @@ namespace Lykke.Job.Messages.Core.Services.Email
         Task<EmailMessage> GenerateNoAccountPasswordRecoveryMsg(string partnerId, NoAccountPasswordRecoveryData noAccountData);
         Task<EmailMessage> GenerateSwiftCashoutProcessedCypMsg(string partnerId, SwiftCashoutProcessedCypData messageData);
         Task<EmailMessage> GenerateSwiftCashoutDeclinedCypMsg(string partnerId, SwiftCashoutDeclinedCypData messageData);
+        Task<EmailMessage> GenerateRejectedEmailCypMsg(string partnerId, RejectedCypData messageData);
     }
 }
