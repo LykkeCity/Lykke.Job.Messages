@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -6,23 +6,30 @@ using Lykke.Cqrs;
 using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Core;
 using Lykke.Job.Messages.Utils;
+using JetBrains.Annotations;
+using Lykke.Cqrs;
+using Lykke.Job.Messages.Contract;
+using Lykke.Service.ClientAccount.Client;
+using Lykke.Service.ClientAccount.Client.Models;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.PersonalData.Contract.Models;
 using Lykke.Service.Registration.Contract.Events;
-using Lykke.SettingsReader;
+using System;
+using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Lykke.Job.Messages.Sagas
 {
     public class LoginEmailNotificationsSaga
     {        
         private readonly IPersonalDataService _personalDataService;
-        private readonly IReloadingManager<AppSettings.CifLicenseActivationSettings> _cifLicenseActivationSettings;
+        private readonly IClientAccountClient _clientAccountClient;
 
-        public LoginEmailNotificationsSaga(IPersonalDataService personalDataService, IReloadingManager<AppSettings.CifLicenseActivationSettings> cifLicenseActivationSettings)
+        public LoginEmailNotificationsSaga(IPersonalDataService personalDataService, IClientAccountClient clientAccountClient)
         {            
             _personalDataService = personalDataService;
-            _cifLicenseActivationSettings = cifLicenseActivationSettings;
+            _clientAccountClient = clientAccountClient;
         }
 
         [UsedImplicitly]
@@ -41,8 +48,8 @@ namespace Lykke.Job.Messages.Sagas
                 Date = DateTime.UtcNow.ToString("MMMM dd, yyyy, hh:mm tt", CultureInfo.CreateSpecificCulture("en-US")),
                 Year = DateTime.UtcNow.Year.ToString()
             };
-
-            var template = IsCyprusClient(personalData)
+            var clientAccount = await _clientAccountClient.GetByIdAsync(personalData.Id);
+            var template = clientAccount.ICyprusClient
                 ? "LoginNotificationCyp"
                 : "LoginNotification";
 
@@ -58,9 +65,6 @@ namespace Lykke.Job.Messages.Sagas
                 EmailMessagesBoundedContext.Name);
         }
 
-        public bool IsCyprusClient(IPersonalData personalData)
-        {
-            return (personalData.MarginRegulator == _cifLicenseActivationSettings.CurrentValue.MarginRegulatorId);
-        }
+        
     }
 }
