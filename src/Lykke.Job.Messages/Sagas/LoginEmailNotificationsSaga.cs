@@ -40,19 +40,21 @@ namespace Lykke.Job.Messages.Sagas
                 Year = DateTime.UtcNow.Year.ToString()
             };
             var clientAccount = await _clientAccountClient.GetByIdAsync(personalData.Id);
-            var template = clientAccount.ICyprusClient
+            var template = clientAccount.IsCyprusClient
                 ? "LoginNotificationCyp"
                 : "LoginNotification";
-
+            var applicationId = clientAccount.IsCyprusClient
+                ? "LykkeCyprus"
+                : evt.PartnerId;
 
             commandSender.SendCommand(
                 new SendEmailCommand
                 {
-                    ApplicationId = evt.PartnerId,
+                    ApplicationId = applicationId,
                     Template = template,
                     EmailAddresses = new[] { personalData.Email },
                     Payload = parameters
-                }, 
+                },
                 EmailMessagesBoundedContext.Name);
         }
 
