@@ -62,7 +62,7 @@ namespace Lykke.Job.Messages.Modules
         {
             builder.RegisterInstance(_settings)
                 .SingleInstance();
-
+                       
             builder.RegisterInstance(_log)
                 .As<ILog>()
                 .SingleInstance();

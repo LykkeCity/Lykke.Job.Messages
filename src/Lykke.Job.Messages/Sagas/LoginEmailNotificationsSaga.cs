@@ -1,25 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Threading.Tasks;
-using Autofac.Features.Indexed;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Lykke.Cqrs;
 using Lykke.Job.Messages.Contract;
-using Lykke.Job.Messages.Core.Services.Email;
+using Lykke.Service.ClientAccount.Client;
+using Lykke.Service.ClientAccount.Client.Models;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PersonalData.Contract;
+using Lykke.Service.PersonalData.Contract.Models;
 using Lykke.Service.Registration.Contract.Events;
+using System;
+using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Lykke.Job.Messages.Sagas
 {
     public class LoginEmailNotificationsSaga
     {        
         private readonly IPersonalDataService _personalDataService;
+        private readonly IClientAccountClient _clientAccountClient;
 
-        public LoginEmailNotificationsSaga(IPersonalDataService personalDataService)
+        public LoginEmailNotificationsSaga(IPersonalDataService personalDataService, IClientAccountClient clientAccountClient)
         {            
-            _personalDataService = personalDataService;            
+            _personalDataService = personalDataService;
+            _clientAccountClient = clientAccountClient;
         }
 
         [UsedImplicitly]
@@ -37,16 +39,25 @@ namespace Lykke.Job.Messages.Sagas
                 Date = DateTime.UtcNow.ToString("MMMM dd, yyyy, hh:mm tt", CultureInfo.CreateSpecificCulture("en-US")),
                 Year = DateTime.UtcNow.Year.ToString()
             };
-            
+            var clientAccount = await _clientAccountClient.GetByIdAsync(personalData.Id);
+            var template = clientAccount.IsCyprusClient
+                ? "LoginNotificationCyp"
+                : "LoginNotification";
+            var applicationId = clientAccount.IsCyprusClient
+                ? "LykkeCyprus"
+                : evt.PartnerId;
+
             commandSender.SendCommand(
                 new SendEmailCommand
                 {
-                    ApplicationId = evt.PartnerId,
-                    Template = "LoginNotification",
+                    ApplicationId = applicationId,
+                    Template = template,
                     EmailAddresses = new[] { personalData.Email },
                     Payload = parameters
-                }, 
+                },
                 EmailMessagesBoundedContext.Name);
         }
+
+        
     }
 }

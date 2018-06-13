@@ -472,6 +472,15 @@ namespace Lykke.Job.Messages.Services.Email
 
             return _templateGenerator.GenerateAsync(partnerId, "RejectedTemplate", templateVm);
         }
+        public Task<EmailMessage> GenerateRejectedEmailCypMsg(string partnerId, RejectedCypData messageData)
+        {
+            var templateVm = new BaseTemplate
+            {
+                Year = DateTime.UtcNow.Year.ToString()
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "RejectedCypTemplate", templateVm);
+        }
 
         public EmailMessage GenerateFailedTransactionMsg(string partnerId, string transactionId, string[] clientIds)
         {
@@ -623,6 +632,31 @@ namespace Lykke.Job.Messages.Services.Email
             };
 
             return _templateGenerator.GenerateAsync(partnerId, "NoAccountPasswordRecoveryTemplate", templateVm);
+        }
+
+        public async Task<EmailMessage> GenerateSwiftCashoutProcessedCypMsg(string partnerId, SwiftCashoutProcessedCypData messageData)
+        {
+            var templateVm = new SwiftCashoutProcessedTemplate
+            {
+                FullName = messageData.FullName,
+                DateOfWithdrawal = messageData.DateOfWithdrawal,
+                Year = messageData.Year
+            };
+
+            return await _templateGenerator.GenerateAsync(partnerId, "SwiftCashoutProcessedCyp", templateVm);
+        }
+
+        public async Task<EmailMessage> GenerateSwiftCashoutDeclinedCypMsg(string partnerId, SwiftCashoutDeclinedCypData messageData)
+        {
+            var templateVm = new SwiftCashoutDeclinedTemplate
+            {
+                FullName = messageData.FullName,
+                Comment = messageData.Comment,
+                Text = messageData.Text,
+                Year = messageData.Year
+            };
+
+            return await _templateGenerator.GenerateAsync(partnerId, "SwiftCashoutDeclinedCyp", templateVm);
         }
 
         private static string HtmlBreaks(string src)

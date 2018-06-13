@@ -17,7 +17,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="6.8.2" />
+    <PackageReference Include="Lykke.Common" Version="6.8.5" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.5.0" />
     <PackageReference Include="Lykke.Cqrs" Version="4.5.0" />
     <PackageReference Include="Lykke.Job.BlockchainCashinDetector.Contract" Version="1.0.0" />
@@ -25,11 +25,11 @@
     <PackageReference Include="Lykke.Job.BlockchainOperationsExecutor.Contract" Version="6.0.0" />
     <PackageReference Include="Lykke.JobTriggers" Version="2.1.0" />
     <PackageReference Include="Lykke.Logs" Version="4.3.3" />
-    <PackageReference Include="Lykke.Messages" Version="1.5.0" />
+    <PackageReference Include="Lykke.Messages" Version="1.7.0" />
     <PackageReference Include="Lykke.Messaging" Version="5.0.0" />
     <PackageReference Include="Lykke.Messaging.RabbitMq" Version="2.0.0" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="3.3.2" />
-    <PackageReference Include="Lykke.Service.ClientAccount.Client" Version="1.3.0" />
+    <PackageReference Include="Lykke.Service.ClientAccount.Client" Version="1.4.6" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter.Client" Version="2.0.4" />
     <PackageReference Include="Lykke.Service.PersonalData" Version="1.0.75" />
