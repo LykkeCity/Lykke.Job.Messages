@@ -514,20 +514,20 @@ namespace Lykke.Job.Messages.QueueConsumers
         }
 
         private async Task HandleSwiftCashoutProcessedCypEmailAsync(SendEmailData<SwiftCashoutProcessedCypData> result)
-        {   
-            _log.WriteInfo(nameof(EmailQueueConsumer), nameof(HandleSwiftCashoutProcessedCypEmailAsync), $"Email to: {result.EmailAddress.SanitizeEmail()}");
+        {
+            _log.WriteInfo(nameof(HandleSwiftCashoutProcessedCypEmailAsync), null, $"Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateSwiftCashoutProcessedCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
         private async Task HandleSwiftCashoutDeclinedCypEmailAsync(SendEmailData<SwiftCashoutDeclinedCypData> result)
-        {   
-            _log.WriteInfo(nameof(EmailQueueConsumer), nameof(HandleSwiftCashoutDeclinedCypEmailAsync), $"Email to: {result.EmailAddress.SanitizeEmail()}");
+        {
+            _log.WriteInfo(nameof(HandleSwiftCashoutDeclinedCypEmailAsync), null, $"Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateSwiftCashoutDeclinedCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
         private async Task HandleRejectedCypEmailAsync(SendEmailData<RejectedCypData> result)
-        {   
-            _log.WriteInfo(nameof(EmailQueueConsumer), nameof(HandleRejectedCypEmailAsync), $"Email to: {result.EmailAddress.SanitizeEmail()}");
+        {
+            _log.WriteInfo(nameof(HandleRejectedCypEmailAsync), null, $"Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateRejectedEmailCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
