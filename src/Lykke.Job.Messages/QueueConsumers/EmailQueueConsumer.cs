@@ -96,6 +96,9 @@ namespace Lykke.Job.Messages.QueueConsumers
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RemindPasswordData>>>(
                     RemindPasswordData.QueueName, itm => HandleRemindPasswordEmailAsync(itm.Data));
+                
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RemindPasswordCypData>>>(
+                    RemindPasswordCypData.QueueName, itm => HandleRemindPasswordCypEmailAsync(itm.Data));
 
                 queueReader.RegisterHandler<QueueRequestModel<SendBroadcastData<UserRegisteredData>>>(
                     UserRegisteredData.QueueName, itm => HandleUserRegisteredBroadcastAsync(itm.Data));
@@ -382,6 +385,14 @@ namespace Lykke.Job.Messages.QueueConsumers
                                                                                                            $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateRemindPasswordMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+        }
+        
+        private async Task HandleRemindPasswordCypEmailAsync(SendEmailData<RemindPasswordCypData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleRemindPasswordCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                                $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            var msg = await _emailGenerator.GenerateRemindPasswordCypMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
 
         private async Task HandlePrivateWalletAddressEmailAsync(SendEmailData<PrivateWalletAddressData> result)

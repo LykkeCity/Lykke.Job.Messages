@@ -6,7 +6,7 @@
   <ItemGroup>
     <PackageReference Include="Lykke.AzureStorage" Version="8.4.0" />
     <PackageReference Include="Lykke.Common" Version="6.8.5" />
-    <PackageReference Include="Lykke.Messages" Version="1.7.0" />
+    <PackageReference Include="Lykke.Messages" Version="1.8.0" />
     <PackageReference Include="Lykke.Service.ClientAccount.Client" Version="1.4.6" />
     <PackageReference Include="Lykke.Service.EmailSender" Version="1.0.16" />
     <PackageReference Include="Lykke.Service.PersonalData" Version="1.0.75" />
