@@ -163,6 +163,9 @@ namespace Lykke.Job.Messages.QueueConsumers
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<NoAccountPasswordRecoveryData>>>(
                     NoAccountPasswordRecoveryData.QueueName, itm => HandleNoAccountPasswordRecoveryEmailAsync(itm.Data));
 
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<NoAccountPasswordRecoveryCypData>>>(
+                    NoAccountPasswordRecoveryCypData.QueueName, itm => HandleNoAccountPasswordRecoveryCypEmailAsync(itm.Data));
+                
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<SwiftCashoutProcessedCypData>>>(
                    SwiftCashoutProcessedCypData.QueueName, itm => HandleSwiftCashoutProcessedCypEmailAsync(itm.Data));
 
@@ -524,6 +527,14 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
 
+        private async Task HandleNoAccountPasswordRecoveryCypEmailAsync(SendEmailData<NoAccountPasswordRecoveryCypData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleNoAccountPasswordRecoveryCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                                           $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            var msg = await _emailGenerator.GenerateNoAccountPasswordRecoveryCypMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
+        }
+        
         private async Task HandleSwiftCashoutProcessedCypEmailAsync(SendEmailData<SwiftCashoutProcessedCypData> result)
         {
             _log.WriteInfo(nameof(HandleSwiftCashoutProcessedCypEmailAsync), null, $"Email to: {result.EmailAddress.SanitizeEmail()}");
