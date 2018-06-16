@@ -285,6 +285,17 @@ namespace Lykke.Job.Messages.Services.Email
             return _templateGenerator.GenerateAsync(partnerId, string.IsNullOrEmpty(messageData.PasswordHint) ? "NoPasswordHintTemplate" : "RemindPasswordTemplate", templateVm);
         }
 
+        public Task<EmailMessage> GenerateRemindPasswordCypMsg(string partnerId, RemindPasswordCypData messageData)
+        {
+            var templateVm = new RemindPasswordTemplate
+            {
+                Hint = messageData.PasswordHint,
+                Year = DateTime.UtcNow.Year
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, string.IsNullOrEmpty(messageData.PasswordHint) ? "NoPasswordHintCypTemplate" : "RemindPasswordCypTemplate", templateVm);
+        }
+        
         public Task<EmailMessage> GeneratPrivateWalletAddressMsg(string partnerId, PrivateWalletAddressData messageData)
         {
             var templateVm = new PrivateWalletAddressTemplate

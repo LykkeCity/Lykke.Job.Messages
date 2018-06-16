@@ -28,7 +28,7 @@ namespace Lykke.Job.Messages.QueueConsumers
             _smtpEmailSender = smtpEmailSender;
             _emailGenerator = emailGenerator;
             _personalDataService = personalDataService;
-            _log = log;
+            _log = log.CreateComponentScope(nameof(EmailQueueConsumer));
 
             InitQueues();
         }
@@ -97,6 +97,9 @@ namespace Lykke.Job.Messages.QueueConsumers
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RemindPasswordData>>>(
                     RemindPasswordData.QueueName, itm => HandleRemindPasswordEmailAsync(itm.Data));
+                
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RemindPasswordCypData>>>(
+                    RemindPasswordCypData.QueueName, itm => HandleRemindPasswordCypEmailAsync(itm.Data));
 
                 queueReader.RegisterHandler<QueueRequestModel<SendBroadcastData<UserRegisteredData>>>(
                     UserRegisteredData.QueueName, itm => HandleUserRegisteredBroadcastAsync(itm.Data));
@@ -387,6 +390,14 @@ namespace Lykke.Job.Messages.QueueConsumers
             var msg = await _emailGenerator.GenerateRemindPasswordMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
+        
+        private async Task HandleRemindPasswordCypEmailAsync(SendEmailData<RemindPasswordCypData> result)
+        {
+            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleRemindPasswordCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
+                                                                                                                $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            var msg = await _emailGenerator.GenerateRemindPasswordCypMsg(result.PartnerId, result.MessageData);
+            await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
+        }
 
         private async Task HandlePrivateWalletAddressEmailAsync(SendEmailData<PrivateWalletAddressData> result)
         {
@@ -527,22 +538,19 @@ namespace Lykke.Job.Messages.QueueConsumers
 
         private async Task HandleSwiftCashoutProcessedCypEmailAsync(SendEmailData<SwiftCashoutProcessedCypData> result)
         {
-            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleSwiftCashoutProcessedCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
-                                                                                                         $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            _log.WriteInfo(nameof(HandleSwiftCashoutProcessedCypEmailAsync), null, $"Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateSwiftCashoutProcessedCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
         private async Task HandleSwiftCashoutDeclinedCypEmailAsync(SendEmailData<SwiftCashoutDeclinedCypData> result)
         {
-            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleSwiftCashoutDeclinedCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
-                                                                                                         $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            _log.WriteInfo(nameof(HandleSwiftCashoutDeclinedCypEmailAsync), null, $"Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateSwiftCashoutDeclinedCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
         private async Task HandleRejectedCypEmailAsync(SendEmailData<RejectedCypData> result)
         {
-            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleRejectedCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
-                                                                                                         $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            _log.WriteInfo(nameof(HandleRejectedCypEmailAsync), null, $"Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateRejectedEmailCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }

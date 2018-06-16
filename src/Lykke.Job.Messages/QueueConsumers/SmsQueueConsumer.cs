@@ -1,11 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using Common.Log;
-using AzureStorage.Queue;
+﻿using AzureStorage.Queue;
 using Common;
+using Common.Log;
 using Lykke.Job.Messages.Contract.Sms;
 using Lykke.Service.SmsSender.Client;
 using Lykke.Service.TemplateFormatter.TemplateModels;
+using System;
+using System.Threading.Tasks;
 using Lykke.Service.TemplateFormatter.Client;
 
 namespace Lykke.Job.Messages.QueueConsumers

@@ -27,6 +27,7 @@ namespace Lykke.Job.Messages.Core.Services.Email
         Task<EmailMessage> GenerateDirectTransferCompletedMsg(string partnerId, DirectTransferCompletedData transferCompletedData);
         Task<EmailMessage> GenerateMyLykkeCashInMsg(string partnerId, MyLykkeCashInData messageData);
         Task<EmailMessage> GenerateRemindPasswordMsg(string partnerId, RemindPasswordData messageData);
+        Task<EmailMessage> GenerateRemindPasswordCypMsg(string partnerId, RemindPasswordCypData messageData);
         Task<EmailMessage> GeneratPrivateWalletAddressMsg(string partnerId, PrivateWalletAddressData messageData);
         Task<EmailMessage> GenerateRestrictedAreaMsg(string partnerId, RestrictedAreaData messageData);
         Task<EmailMessage> GeneratSolarCashOutMsg(string partnerId, SolarCashOutData messageData);

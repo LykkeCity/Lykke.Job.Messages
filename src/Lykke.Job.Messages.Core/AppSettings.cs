@@ -108,11 +108,7 @@ namespace Lykke.Job.Messages.Core
         public class SmsNotificationsSettings
         {
             public AzureQueueSettings AzureQueue { get; set; }
-        }
-        public class CifLicenseActivationSettings
-        {
-            public string MarginRegulatorId { get; set; }
-        }
+        }       
     }
 
     public class SagasRabbitMq
