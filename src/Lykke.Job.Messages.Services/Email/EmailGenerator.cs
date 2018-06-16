@@ -657,6 +657,17 @@ namespace Lykke.Job.Messages.Services.Email
 
             return _templateGenerator.GenerateAsync(partnerId, "NoAccountPasswordRecoveryTemplate", templateVm);
         }
+        
+        public Task<EmailMessage> GenerateNoAccountPasswordRecoveryCypMsg(string partnerId, NoAccountPasswordRecoveryCypData noAccountData)
+        {
+            var templateVm = new NoAccountPasswordRecoveryTemplate
+            {
+                Email = noAccountData.Email,
+                Year = DateTime.UtcNow.Year
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "NoAccountPasswordRecoveryCypTemplate", templateVm);
+        }
 
         public async Task<EmailMessage> GenerateSwiftCashoutProcessedCypMsg(string partnerId, SwiftCashoutProcessedCypData messageData)
         {
