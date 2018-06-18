@@ -27,6 +27,7 @@ namespace Lykke.Job.Messages.Core.Services.Email
         Task<EmailMessage> GenerateDirectTransferCompletedMsg(string partnerId, DirectTransferCompletedData transferCompletedData);
         Task<EmailMessage> GenerateMyLykkeCashInMsg(string partnerId, MyLykkeCashInData messageData);
         Task<EmailMessage> GenerateRemindPasswordMsg(string partnerId, RemindPasswordData messageData);
+        Task<EmailMessage> GenerateRemindPasswordCypMsg(string partnerId, RemindPasswordCypData messageData);
         Task<EmailMessage> GeneratPrivateWalletAddressMsg(string partnerId, PrivateWalletAddressData messageData);
         Task<EmailMessage> GenerateRestrictedAreaMsg(string partnerId, RestrictedAreaData messageData);
         Task<EmailMessage> GeneratSolarCashOutMsg(string partnerId, SolarCashOutData messageData);
@@ -45,6 +46,7 @@ namespace Lykke.Job.Messages.Core.Services.Email
         Task<EmailMessage> GenerateConfirmEmailCypMsg(string partnerId, EmailComfirmationCypData data);
         Task<EmailMessage> GenerateDirectTransferCompletedCypMsg(string partnerId, DirectTransferCompletedCypData transferCompletedData);
         Task<EmailMessage> GenerateNoAccountPasswordRecoveryMsg(string partnerId, NoAccountPasswordRecoveryData noAccountData);
+        Task<EmailMessage> GenerateNoAccountPasswordRecoveryCypMsg(string partnerId, NoAccountPasswordRecoveryCypData noAccountData);
         Task<EmailMessage> GenerateSwiftCashoutProcessedCypMsg(string partnerId, SwiftCashoutProcessedCypData messageData);
         Task<EmailMessage> GenerateSwiftCashoutDeclinedCypMsg(string partnerId, SwiftCashoutDeclinedCypData messageData);
         Task<EmailMessage> GenerateRejectedEmailCypMsg(string partnerId, RejectedCypData messageData);

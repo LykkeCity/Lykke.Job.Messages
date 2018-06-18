@@ -285,6 +285,17 @@ namespace Lykke.Job.Messages.Services.Email
             return _templateGenerator.GenerateAsync(partnerId, string.IsNullOrEmpty(messageData.PasswordHint) ? "NoPasswordHintTemplate" : "RemindPasswordTemplate", templateVm);
         }
 
+        public Task<EmailMessage> GenerateRemindPasswordCypMsg(string partnerId, RemindPasswordCypData messageData)
+        {
+            var templateVm = new RemindPasswordTemplate
+            {
+                Hint = messageData.PasswordHint,
+                Year = DateTime.UtcNow.Year
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, string.IsNullOrEmpty(messageData.PasswordHint) ? "NoPasswordHintCypTemplate" : "RemindPasswordCypTemplate", templateVm);
+        }
+        
         public Task<EmailMessage> GeneratPrivateWalletAddressMsg(string partnerId, PrivateWalletAddressData messageData)
         {
             var templateVm = new PrivateWalletAddressTemplate
@@ -632,6 +643,17 @@ namespace Lykke.Job.Messages.Services.Email
             };
 
             return _templateGenerator.GenerateAsync(partnerId, "NoAccountPasswordRecoveryTemplate", templateVm);
+        }
+        
+        public Task<EmailMessage> GenerateNoAccountPasswordRecoveryCypMsg(string partnerId, NoAccountPasswordRecoveryCypData noAccountData)
+        {
+            var templateVm = new NoAccountPasswordRecoveryTemplate
+            {
+                Email = noAccountData.Email,
+                Year = DateTime.UtcNow.Year
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "NoAccountPasswordRecoveryCypTemplate", templateVm);
         }
 
         public async Task<EmailMessage> GenerateSwiftCashoutProcessedCypMsg(string partnerId, SwiftCashoutProcessedCypData messageData)
