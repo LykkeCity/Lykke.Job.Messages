@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Globalization;
+using Common;
 
 namespace Lykke.Job.Messages.Core.Util
 {
@@ -8,14 +7,14 @@ namespace Lykke.Job.Messages.Core.Util
     {
         public static string FormatNumber(decimal number, int accuracy)
         {
-            string formattedNumber = number.ToString($"F{accuracy}").TrimEnd('0').TrimEnd(new char[] {',', '.'});
+            var formattedNumber = number.TruncateDecimalPlaces(accuracy).ToString(CultureInfo.InvariantCulture);
 
             return formattedNumber;
         }
 
         public static string FormatNumber(double number, int accuracy)
         {
-            string formattedNumber = number.ToString($"F{accuracy}").TrimEnd('0').TrimEnd(new char[] { ',', '.' });
+            var formattedNumber = number.TruncateDecimalPlaces(accuracy).ToString(CultureInfo.InvariantCulture);
 
             return formattedNumber;
         }

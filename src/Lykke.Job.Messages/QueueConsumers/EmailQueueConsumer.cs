@@ -367,8 +367,7 @@ namespace Lykke.Job.Messages.QueueConsumers
         
         private async Task HandleRemindPasswordCypEmailAsync(SendEmailData<RemindPasswordCypData> result)
         {
-            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleRemindPasswordCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
-                                                                                                                $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            _log.WriteInfo(nameof(HandleRemindPasswordCypEmailAsync), null, $"Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateRemindPasswordCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
@@ -495,8 +494,7 @@ namespace Lykke.Job.Messages.QueueConsumers
 
         private async Task HandleNoAccountPasswordRecoveryCypEmailAsync(SendEmailData<NoAccountPasswordRecoveryCypData> result)
         {
-            await _log.WriteInfoAsync(nameof(EmailQueueConsumer), nameof(HandleNoAccountPasswordRecoveryCypEmailAsync), null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
-                                                                                                                           $"{Environment.NewLine}Email to: {result.EmailAddress.SanitizeEmail()}");
+            _log.WriteInfo(nameof(HandleNoAccountPasswordRecoveryCypEmailAsync), null, $"Email to: {result.EmailAddress.SanitizeEmail()}");
             var msg = await _emailGenerator.GenerateNoAccountPasswordRecoveryCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
