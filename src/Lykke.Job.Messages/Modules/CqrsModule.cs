@@ -10,6 +10,7 @@ using Lykke.Messaging.RabbitMq;
 using Lykke.Cqrs.Configuration;
 using System.Linq;
 using Lykke.Job.BlockchainCashoutProcessor.Contract.Events;
+using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Sagas;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PushNotifications.Contract;
@@ -48,6 +49,7 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<LoginEmailNotificationsSaga>().SingleInstance();
             builder.RegisterType<LoginPushNotificationsSaga>().SingleInstance();
             builder.RegisterType<SwiftWithdrawalEmailNotificationSaga>().SingleInstance();
+            builder.RegisterType<SpecialSelfieNotificationsSaga>().SingleInstance();
 
             var messagingEngine = new MessagingEngine(_log,
                 new TransportResolver(new Dictionary<string, TransportInfo>
@@ -127,7 +129,15 @@ namespace Lykke.Job.Messages.Modules
                               .With(commandsRoute)
                           .PublishingCommands(typeof(SendEmailCommand)).To("email")
                                .With(commandsRoute)
-                              .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
+                              .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+
+                      Register.Saga<SpecialSelfieNotificationsSaga>("special-selfie-email-notifications-saga")
+                          .ListeningEvents(typeof(SpecialSelfieEvent))
+                          .From("backoffice").On(eventsRoute)
+                          .WithEndpointResolver(clientEndpointResolver)
+                          .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                          .With(commandsRoute)
+                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
                       );
               })
               .As<ICqrsEngine>()
