@@ -118,6 +118,13 @@ namespace Lykke.Job.Messages.Modules
                           .PublishingCommands(typeof(SendEmailCommand)).To("email")
                           .With(commandsRoute)
                           .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+                      
+                      Register.Saga<SwiftCredentialsRequestSaga>("swift-credentials-request-saga")
+                          .ListeningEvents(typeof(SwiftCredentialsRequestedEvent))
+                          .From(SwiftCredentialsBoundedContext.Name).On(eventsRoute)
+                          .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                          .With(commandsRoute)
+                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
 
                       Register.Saga<BlockchainOperationsSaga>("blockchain-notification-saga")
                           .ListeningEvents(typeof(CashinCompletedEvent), typeof(CashoutCompletedEvent))
