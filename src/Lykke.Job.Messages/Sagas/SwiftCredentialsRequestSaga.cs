@@ -4,8 +4,8 @@ using Common;
 using JetBrains.Annotations;
 using Lykke.Cqrs;
 using Lykke.Job.Messages.Contract;
-using Lykke.Job.Messages.Contract.Commands;
 using Lykke.Job.Messages.Core.Services.SwiftCredentials;
+using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.SwiftCredentials.Contracts;
 
 namespace Lykke.Job.Messages.Sagas
@@ -37,10 +37,10 @@ namespace Lykke.Job.Messages.Sagas
             
             commandSender.SendCommand(new SendEmailCommand
                 {
-                    EmailAddress = evt.Email,
-                    PartnerId = evt.PartnerId,
-                    EmailTemplateId = "BankCashInTemplate",
-                    SerializedMessageData = templateVm.ToJson()
+                    EmailAddresses = new[] {evt.Email},
+                    ApplicationId = "LykkeApi2",
+                    Template = "BankCashInTemplate",
+                    Payload = templateVm
                 },
                 EmailMessagesBoundedContext.Name);
         }
