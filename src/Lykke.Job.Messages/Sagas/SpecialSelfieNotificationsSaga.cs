@@ -25,6 +25,7 @@ namespace Lykke.Job.Messages.Sagas
 
             var parameters = new
             {
+                personalData.FullName,
                 evt.Reason
             };
             var clientAccount = await _clientAccountClient.GetByIdAsync(personalData.Id);
