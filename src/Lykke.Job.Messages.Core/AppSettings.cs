@@ -15,6 +15,7 @@ namespace Lykke.Job.Messages.Core
         public SmsSenderSettings SmsSenderServiceClient { get; set; }
         public Lykke.Service.ClientAccount.Client.ClientAccountServiceClientSettings ClientAccountServiceClient { get; set; }
         public SagasRabbitMq SagasRabbitMq { get; set; }
+        public SpecialSelfieSetting SpecialSelfieSettings { get; set; }
 
         public class MessagesSettings
         {
@@ -108,7 +109,12 @@ namespace Lykke.Job.Messages.Core
         public class SmsNotificationsSettings
         {
             public AzureQueueSettings AzureQueue { get; set; }
-        }       
+        }
+        public class SpecialSelfieSetting
+        {
+            public string SelfieUrl { get; set; }
+            public string SupportEmail { get; set; }
+        }
     }
 
     public class SagasRabbitMq

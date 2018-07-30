@@ -51,6 +51,8 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<SwiftCredentialsRequestSaga>().SingleInstance();
             builder.RegisterType<LoginPushNotificationsSaga>().SingleInstance();
             builder.RegisterType<SwiftWithdrawalEmailNotificationSaga>().SingleInstance();
+            builder.RegisterType<SpecialSelfieSupportNotificationSaga>().SingleInstance()
+                .WithParameters(new[] { TypedParameter.From(_settings.CurrentValue.SpecialSelfieSettings) });
             builder.RegisterType<SpecialSelfieNotificationsSaga>().SingleInstance();
 
             var messagingEngine = new MessagingEngine(_log,
@@ -140,6 +142,15 @@ namespace Lykke.Job.Messages.Modules
                                .With(commandsRoute)
                               .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
 
+                      Register.Saga<SpecialSelfieSupportNotificationSaga>("special-selfie-support-notification-saga")
+                          .ListeningEvents(typeof(SelfiePostedEvent))
+                          .From("client-account-recovery").On(eventsRoute)
+                          .WithEndpointResolver(clientEndpointResolver)
+                          .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                          .With(commandsRoute)
+                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
+                              .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+
                       Register.Saga<SpecialSelfieNotificationsSaga>("special-selfie-email-notifications-saga")
                           .ListeningEvents(typeof(SpecialSelfieEvent))
                           .From("backoffice").On(eventsRoute)
@@ -148,6 +159,7 @@ namespace Lykke.Job.Messages.Modules
                           .With(commandsRoute)
                           .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
                       );
+
               })
               .As<ICqrsEngine>()
               .SingleInstance()

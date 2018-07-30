@@ -12,6 +12,12 @@ namespace Lykke.Job.Messages.Contract
         public string Status { get; set; }
     }
 
+    public class SelfiePostedEvent
+    {
+        public string SelfieId { get; set; }
+        public string ClientId { get; set; }
+        public string RecoveryId { get; set; }
+    }
     public enum SelfieStatus
     {
         Approved,
