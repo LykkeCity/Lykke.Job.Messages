@@ -16,6 +16,7 @@ using Lykke.Service.PushNotifications.Contract;
 using Lykke.Service.PushNotifications.Contract.Commands;
 using Lykke.Service.Registration.Contract.Events;
 using Lykke.Service.Session.Contracts;
+using Lykke.Service.SwiftCredentials.Contracts;
 using Lykke.Service.SwiftWithdrawal.Contracts;
 
 namespace Lykke.Job.Messages.Modules
@@ -46,6 +47,7 @@ namespace Lykke.Job.Messages.Modules
 
             builder.RegisterType<TerminalSessionsSaga>().SingleInstance();
             builder.RegisterType<LoginEmailNotificationsSaga>().SingleInstance();
+            builder.RegisterType<SwiftCredentialsRequestSaga>().SingleInstance();
             builder.RegisterType<LoginPushNotificationsSaga>().SingleInstance();
             builder.RegisterType<SwiftWithdrawalEmailNotificationSaga>().SingleInstance();
 
@@ -111,6 +113,13 @@ namespace Lykke.Job.Messages.Modules
                       Register.Saga<SwiftWithdrawalEmailNotificationSaga>("swift-withdrawal-email-notifications-saga")
                           .ListeningEvents(typeof(SwiftCashoutCreatedEvent))
                           .From(SwiftWithdrawalBoundedContext.Name).On(eventsRoute)
+                          .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                          .With(commandsRoute)
+                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+                      
+                      Register.Saga<SwiftCredentialsRequestSaga>("swift-credentials-request-saga")
+                          .ListeningEvents(typeof(SwiftCredentialsRequestedEvent))
+                          .From(SwiftCredentialsBoundedContext.Name).On(eventsRoute)
                           .PublishingCommands(typeof(SendEmailCommand)).To("email")
                           .With(commandsRoute)
                           .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
