@@ -3,7 +3,6 @@ using Autofac;
 using Common.Log;
 using Lykke.Job.Messages.Core;
 using Lykke.SettingsReader;
-using Lykke.Job.Messages.Utils;
 using Lykke.Cqrs;
 using Lykke.Messaging;
 using Lykke.Messaging.RabbitMq;
@@ -13,6 +12,7 @@ using Lykke.Job.BlockchainCashoutProcessor.Contract.Events;
 using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Sagas;
 using Lykke.Service.EmailPartnerRouter.Contracts;
+using Lykke.Service.PostProcessing.Contracts.Cqrs.Events;
 using Lykke.Service.PushNotifications.Contract;
 using Lykke.Service.PushNotifications.Contract.Commands;
 using Lykke.Service.Registration.Contract.Events;
@@ -54,26 +54,33 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<SpecialSelfieSupportNotificationSaga>().SingleInstance()
                 .WithParameters(new[] { TypedParameter.From(_settings.CurrentValue.SpecialSelfieSettings) });
             builder.RegisterType<SpecialSelfieNotificationsSaga>().SingleInstance();
+            builder.RegisterType<OrderExecutionSaga>().SingleInstance();
 
             var messagingEngine = new MessagingEngine(_log,
                 new TransportResolver(new Dictionary<string, TransportInfo>
                 {
                     { "SagasRabbitMq", new TransportInfo(rabbitMqSagasSettings.Endpoint.ToString(), rabbitMqSagasSettings.UserName, rabbitMqSagasSettings.Password, "None", "RabbitMq") },
-                    { "ClientRabbitMq", new TransportInfo(rabbitMqSettings.Endpoint.ToString(), rabbitMqSettings.UserName, rabbitMqSettings.Password, "None", "RabbitMq") }
+                    { "ClientRabbitMq", new TransportInfo(rabbitMqSettings.Endpoint.ToString(), rabbitMqSettings.UserName, rabbitMqSettings.Password, "None", "RabbitMq") },
+                    { "PostProcessingRabbitMq", new TransportInfo(rabbitMqSagasSettings.Endpoint.ToString(), rabbitMqSagasSettings.UserName, rabbitMqSagasSettings.Password, "None", "RabbitMq") }
                 }),
                 new RabbitMqTransportFactory());
 
             var sagasEndpointResolver = new RabbitMqConventionEndpointResolver(
                 "SagasRabbitMq",
-                "messagepack",
+                Messaging.Serialization.SerializationFormat.MessagePack,
                 environment: "lykke",
                 exclusiveQueuePostfix: "k8s");
 
             var clientEndpointResolver = new RabbitMqConventionEndpointResolver(
                 "ClientRabbitMq",
-                "messagepack",
+                Messaging.Serialization.SerializationFormat.MessagePack,
                 environment: "lykke",
                 exclusiveQueuePostfix: "k8s");
+
+            var postProcessingEndpointResolver = new RabbitMqConventionEndpointResolver(
+                "PostProcessingRabbitMq",
+                Messaging.Serialization.SerializationFormat.ProtoBuf,
+                environment: "lykke");
 
             var pushNotificationsCommands = typeof(PushNotificationsBoundedContext).Assembly
                 .GetTypes()
@@ -113,6 +120,14 @@ namespace Lykke.Job.Messages.Modules
                         .PublishingCommands(typeof(TextNotificationCommand)).To("push-notifications")
                             .With(commandsRoute)
                             .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+
+                      Register.Saga<OrderExecutionSaga>("order-execution-notifications-saga")
+                          .ListeningEvents(typeof(ManualOrderTradeProcessedEvent))
+                          .From(Service.PostProcessing.Contracts.Cqrs.PostProcessingBoundedContext.Name).On(eventsRoute)
+                          .WithEndpointResolver(postProcessingEndpointResolver)
+                          .PublishingCommands(typeof(TextNotificationCommand)).To("push-notifications")
+                          .With(commandsRoute)
+                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
 
                       Register.Saga<SwiftWithdrawalEmailNotificationSaga>("swift-withdrawal-email-notifications-saga")
                           .ListeningEvents(typeof(SwiftCashoutCreatedEvent))
