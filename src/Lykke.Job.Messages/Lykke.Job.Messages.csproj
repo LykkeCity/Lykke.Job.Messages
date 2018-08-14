@@ -33,6 +33,7 @@
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter.Client" Version="2.0.4" />
     <PackageReference Include="Lykke.Service.PersonalData" Version="2.0.2" />
+    <PackageReference Include="Lykke.Service.PostProcessing.Contracts" Version="1.5.0" />
     <PackageReference Include="Lykke.Service.PushNotifications.Client" Version="2.0.2" />
     <PackageReference Include="Lykke.Service.Registration.Contract" Version="1.0.0" />
     <PackageReference Include="Lykke.Service.Session.Client" Version="1.22.1" />
@@ -69,6 +70,11 @@
     <Folder Include="Workflow\Sagas\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Resources\PushResources.Designer.cs">
+      <DependentUpon>PushResources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Update="Resources\EmailResources.Designer.cs">
       <DependentUpon>EmailResources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
@@ -76,6 +82,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Update="Resources\PushResources.resx">
+      <LastGenOutput>PushResources.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Update="Resources\EmailResources.resx">
       <LastGenOutput>EmailResources.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
