@@ -49,7 +49,7 @@ namespace Lykke.Job.Messages.Modules
         private readonly IReloadingManager<AppSettings.MessagesSettings> _settings;
         private readonly ILog _log;
         private readonly ServiceCollection _services;
-        
+
 
         public JobModule(IReloadingManager<AppSettings> settings, ILog log)
         {
@@ -64,7 +64,7 @@ namespace Lykke.Job.Messages.Modules
         {
             builder.RegisterInstance(_settings)
                 .SingleInstance();
-                       
+
             builder.RegisterInstance(_log)
                 .As<ILog>()
                 .SingleInstance();
@@ -73,17 +73,10 @@ namespace Lykke.Job.Messages.Modules
                 .As<IHealthService>()
                 .SingleInstance();
 
-            // NOTE: You can implement your own poison queue notifier. See https://github.com/LykkeCity/JobTriggers/blob/master/readme.md
-            // builder.Register<PoisionQueueNotifierImplementation>().As<IPoisionQueueNotifier>();
+            _services.RegisterAssetsClient(AssetServiceSettings.Create(
+                new Uri(_appSettings.CurrentValue.Assets.ServiceUrl),
+                _settings.CurrentValue.AssetsCache.ExpirationPeriod), _log);
 
-            _services.RegisterAssetsClient
-            (
-                AssetServiceSettings.Create(
-                    new Uri(_appSettings.CurrentValue.Assets.ServiceUrl),
-                    _settings.CurrentValue.AssetsCache.ExpirationPeriod),
-                _log
-            );
-            
             builder.RegisterType<SmsQueueConsumer>().SingleInstance();
             builder.RegisterType<EmailQueueConsumer>().SingleInstance();
 
@@ -108,7 +101,7 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterInstance<IBroadcastMailsRepository>(new BroadcastMailsRepository(
                 AzureTableStorage<BroadcastMailEntity>.Create(
                     _settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString), "BroadcastMails", _log)));
-            
+
             builder.RegisterInstance<IRegulatorRepository>(new RegulatorRepository(
                 AzureTableStorage<RegulatorEntity>.Create(
                     _settings.ConnectionString(s => s.Db.SharedStorageConnString), "Residences", _log)));
