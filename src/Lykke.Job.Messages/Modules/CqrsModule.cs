@@ -3,7 +3,6 @@ using Autofac;
 using Common.Log;
 using Lykke.Job.Messages.Core;
 using Lykke.SettingsReader;
-using Lykke.Job.Messages.Utils;
 using Lykke.Cqrs;
 using Lykke.Messaging;
 using Lykke.Messaging.RabbitMq;
@@ -61,13 +60,13 @@ namespace Lykke.Job.Messages.Modules
 
             var sagasEndpointResolver = new RabbitMqConventionEndpointResolver(
                 "SagasRabbitMq",
-                "messagepack",
+                Messaging.Serialization.SerializationFormat.MessagePack,
                 environment: "lykke",
                 exclusiveQueuePostfix: "k8s");
 
             var clientEndpointResolver = new RabbitMqConventionEndpointResolver(
                 "ClientRabbitMq",
-                "messagepack",
+                Messaging.Serialization.SerializationFormat.MessagePack,
                 environment: "lykke",
                 exclusiveQueuePostfix: "k8s");
 
