@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Common;
+﻿using Common;
+using Common.Log;
 using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.Cqrs;
 using Lykke.Job.Messages.Resources;
 using Lykke.Service.Assets.Client;
@@ -12,6 +10,10 @@ using Lykke.Service.PostProcessing.Contracts.Cqrs.Events;
 using Lykke.Service.PostProcessing.Contracts.Cqrs.Models;
 using Lykke.Service.PostProcessing.Contracts.Cqrs.Models.Enums;
 using Lykke.Service.PushNotifications.Contract.Commands;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lykke.Job.Messages.Sagas
 {
@@ -19,12 +21,14 @@ namespace Lykke.Job.Messages.Sagas
     {
         private readonly IAssetsServiceWithCache _assetsService;
         private readonly IClientAccountClient _clientAccountClient;
-        readonly Dictionary<Guid, bool> _trusted = new Dictionary<Guid, bool>();
+        readonly Dictionary<Guid, bool> walletsByType = new Dictionary<Guid, bool>();
+        private readonly ILog _log;
 
-        public OrderExecutionSaga([NotNull] IAssetsServiceWithCache assetsService, [NotNull] IClientAccountClient clientAccountClient)
+        public OrderExecutionSaga([NotNull] IAssetsServiceWithCache assetsService, [NotNull] IClientAccountClient clientAccountClient, ILog log)
         {
             _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
             _clientAccountClient = clientAccountClient ?? throw new ArgumentNullException(nameof(clientAccountClient));
+            _log = log.CreateComponentScope(nameof(OrderExecutionSaga));
         }
 
         [UsedImplicitly]
@@ -33,15 +37,21 @@ namespace Lykke.Job.Messages.Sagas
             var order = evt.Order;
             var walletId = order.WalletId;
 
-            if (!_trusted.ContainsKey(walletId))
-                _trusted[walletId] = (await _clientAccountClient.IsTrustedAsync(walletId.ToString())).Value;
-
-            var isTrustedClient = _trusted[walletId];
-            if (isTrustedClient)
-                return; // todo: move into PostProcessing
-
             if (order.Trades == null || !order.Trades.Any())
-                return; // todo: warning
+            {
+                _log.Warning("The order has no trades.");
+                return;
+            }
+
+            #region Checking if this wallet is used for manual trading
+            // todo: This filtering logic should be transfered into PostProcessing 
+            if (!walletsByType.ContainsKey(walletId))
+                walletsByType[walletId] = (await _clientAccountClient.IsTrustedAsync(walletId.ToString())).Value;
+
+            var isRobot = walletsByType[walletId];
+            if (isRobot)
+                return;
+            #endregion
 
             var pushSettings = await _clientAccountClient.GetPushNotificationAsync(walletId.ToString());
             if (!pushSettings.Enabled)
@@ -56,12 +66,6 @@ namespace Lykke.Job.Messages.Sagas
 
             var priceAsset = await _assetsService.TryGetAssetAsync(assetPair.QuotingAssetId);
 
-            //var prevRemainingVolumeNotEmpty = command.PrevRemainingVolume.HasValue
-            //                                  && Math.Abs(command.PrevRemainingVolume.Value) > 0.0
-            //                                  && Math.Abs(command.PrevRemainingVolume.Value) >= assetPair.MinVolume;
-            //var remainingVolume = (decimal)Math.Abs(prevRemainingVolumeNotEmpty ? command.PrevRemainingVolume.Value : order.Volume);
-            // todo: use remaining volume of the previous order state
-            var remainingVolume = order.Volume;
             var executedSum = Math.Abs(aggregatedSwaps.Where(x => x.WalletId == walletId && x.AssetId == receivedAsset)
                 .Select(x => x.Amount)
                 .DefaultIfEmpty(0)
@@ -74,22 +78,23 @@ namespace Lykke.Job.Messages.Sagas
             switch (order.Status)
             {
                 case OrderStatus.PartiallyMatched:
-                    message = string.Format(PushResources.LimitOrderPartiallyExecuted, orderSide, order.AssetPairId, remainingVolume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
+                    message = string.Format(PushResources.LimitOrderPartiallyExecuted, orderSide, order.AssetPairId, order.Volume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
                     status = "Processing";
                     break;
                 case OrderStatus.Cancelled:
-                    message = string.Format(PushResources.LimitOrderExecuted, orderSide, order.AssetPairId, remainingVolume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
+                    message = string.Format(PushResources.LimitOrderExecuted, orderSide, order.AssetPairId, order.Volume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
                     status = "Cancelled";
                     break;
                 case OrderStatus.Matched:
-                    message = string.Format(PushResources.LimitOrderExecuted, orderSide, order.AssetPairId, remainingVolume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
+                    message = string.Format(PushResources.LimitOrderExecuted, orderSide, order.AssetPairId, order.Volume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
                     status = "Matched";
                     break;
                 case OrderStatus.Replaced:
                 case OrderStatus.Pending:
                 case OrderStatus.Placed:
                 case OrderStatus.Rejected:
-                    return; // todo: warning
+                    _log.Warning($"The order has unexpected status {order.Status}.");
+                    return;
                 case OrderStatus.Unknown:
                 default:
                     // ReSharper disable once NotResolvedInText
