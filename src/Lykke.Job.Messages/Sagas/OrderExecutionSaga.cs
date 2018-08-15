@@ -56,12 +56,6 @@ namespace Lykke.Job.Messages.Sagas
 
             var priceAsset = await _assetsService.TryGetAssetAsync(assetPair.QuotingAssetId);
 
-            //var prevRemainingVolumeNotEmpty = command.PrevRemainingVolume.HasValue
-            //                                  && Math.Abs(command.PrevRemainingVolume.Value) > 0.0
-            //                                  && Math.Abs(command.PrevRemainingVolume.Value) >= assetPair.MinVolume;
-            //var remainingVolume = (decimal)Math.Abs(prevRemainingVolumeNotEmpty ? command.PrevRemainingVolume.Value : order.Volume);
-            // todo: use remaining volume of the previous order state
-            var remainingVolume = order.Volume;
             var executedSum = Math.Abs(aggregatedSwaps.Where(x => x.WalletId == walletId && x.AssetId == receivedAsset)
                 .Select(x => x.Amount)
                 .DefaultIfEmpty(0)
@@ -74,15 +68,15 @@ namespace Lykke.Job.Messages.Sagas
             switch (order.Status)
             {
                 case OrderStatus.PartiallyMatched:
-                    message = string.Format(PushResources.LimitOrderPartiallyExecuted, orderSide, order.AssetPairId, remainingVolume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
+                    message = string.Format(PushResources.LimitOrderPartiallyExecuted, orderSide, order.AssetPairId, order.Volume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
                     status = "Processing";
                     break;
                 case OrderStatus.Cancelled:
-                    message = string.Format(PushResources.LimitOrderExecuted, orderSide, order.AssetPairId, remainingVolume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
+                    message = string.Format(PushResources.LimitOrderExecuted, orderSide, order.AssetPairId, order.Volume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
                     status = "Cancelled";
                     break;
                 case OrderStatus.Matched:
-                    message = string.Format(PushResources.LimitOrderExecuted, orderSide, order.AssetPairId, remainingVolume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
+                    message = string.Format(PushResources.LimitOrderExecuted, orderSide, order.AssetPairId, order.Volume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
                     status = "Matched";
                     break;
                 case OrderStatus.Replaced:
