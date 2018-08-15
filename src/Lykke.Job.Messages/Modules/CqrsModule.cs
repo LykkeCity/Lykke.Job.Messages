@@ -122,7 +122,7 @@ namespace Lykke.Job.Messages.Modules
                           .ListeningEvents(typeof(ManualOrderTradeProcessedEvent))
                           .From(Service.PostProcessing.Contracts.Cqrs.PostProcessingBoundedContext.Name).On(eventsRoute)
                           .WithEndpointResolver(postProcessingEndpointResolver)
-                          .PublishingCommands(typeof(TextNotificationCommand)).To("push-notifications")
+                          .PublishingCommands(typeof(LimitOrderNotificationCommand)).To("push-notifications")
                           .With(commandsRoute)
                           .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
 
