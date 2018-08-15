@@ -8,6 +8,11 @@ using Lykke.Job.Messages.Resources;
 using Lykke.Job.Messages.Utils;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.ClientAccount.Client;
+using System;
+using System.Threading.Tasks;
+using Lykke.Job.Messages.Core.Domain.Deduplication;
+using Lykke.Job.Messages.Core.Util;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.PushNotifications.Contract;
@@ -23,29 +28,32 @@ namespace Lykke.Job.Messages.Sagas
         private readonly IAssetsServiceWithCache _cachedAssetsService;
         private readonly IClientAccountClient _clientAccountClient;
         private readonly IPersonalDataService _personalDataService;
+        private readonly IOperationMessagesDeduplicationRepository _deduplicationRepository;
 
         public BlockchainOperationsSaga(            
             IAssetsServiceWithCache cachedAssetsService,
             IClientAccountClient clientAccountClient,
-            IPersonalDataService personalDataService)
+            IPersonalDataService personalDataService,
+            IOperationMessagesDeduplicationRepository deduplicationRepository)
         {            
             _cachedAssetsService = cachedAssetsService;
             _clientAccountClient = clientAccountClient;
             _personalDataService = personalDataService;
+            _deduplicationRepository = deduplicationRepository;
         }
 
         //From CashinDetector
         [UsedImplicitly]
         public async Task Handle(BlockchainCashinDetector.Contract.Events.CashinCompletedEvent evt, ICommandSender commandSender)
         {
-            await SendCashinEmailAsync(evt.ClientId, evt.Amount, evt.AssetId, commandSender);
+            await SendCashinEmailAsync(evt.OperationId, evt.ClientId, evt.Amount, evt.AssetId, commandSender);
         }
 
         //From CashoutProcessor
         [UsedImplicitly]
         public async Task Handle(CashinCompletedEvent evt, ICommandSender commandSender)
         {
-            await SendCashinEmailAsync(evt.ClientId, evt.Amount, evt.AssetId, commandSender);
+            await SendCashinEmailAsync(evt.OperationId, evt.ClientId, evt.Amount, evt.AssetId, commandSender);
         }
 
         //From CashoutProcessor
@@ -55,6 +63,10 @@ namespace Lykke.Job.Messages.Sagas
             var clientModel = await _clientAccountClient.GetByIdAsync(evt.ClientId.ToString());
             var clientEmail = await _personalDataService.GetEmailAsync(evt.ClientId.ToString());
             EmailValidator.ValidateEmail(clientEmail, evt.ClientId);
+            var operationId = evt.OperationId;
+            if (await _deduplicationRepository.IsExistsAsync(operationId))
+                return;
+
             var asset = await _cachedAssetsService.TryGetAssetAsync(evt.AssetId);
 
             var parameters = new
@@ -74,13 +86,18 @@ namespace Lykke.Job.Messages.Sagas
                     Payload = parameters
                 },
                 EmailMessagesBoundedContext.Name);
+
+            await _deduplicationRepository.InsertOrReplaceAsync(operationId);
         }
 
-        private async Task SendCashinEmailAsync(Guid clientId, decimal amount, string assetId, ICommandSender commandSender)
+        private async Task SendCashinEmailAsync(Guid operationId, Guid clientId, decimal amount, string assetId, ICommandSender commandSender)
         {
             var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());
             var clientEmail = await _personalDataService.GetEmailAsync(clientId.ToString());
             EmailValidator.ValidateEmail(clientEmail, clientId);
+            if (await _deduplicationRepository.IsExistsAsync(operationId))
+                return;
+
             var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
             string amountFormatted = NumberFormatter.FormatNumber(amount, asset.Accuracy);
 
@@ -114,6 +131,8 @@ namespace Lykke.Job.Messages.Sagas
                     },
                     PushNotificationsBoundedContext.Name);
             }
+
+            await _deduplicationRepository.InsertOrReplaceAsync(operationId);
         }
     }
 }
