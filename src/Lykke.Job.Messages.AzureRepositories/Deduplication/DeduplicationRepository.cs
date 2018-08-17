@@ -18,7 +18,7 @@ namespace Lykke.Job.Messages.AzureRepositories.Deduplication
         {
             var storage = AzureTableStorage<DeduplicationEntity>.Create(
                 connectionString,
-                "CashinMatchinEngineCallsDeduplication",
+                "OperationMessagesDeduplication",
                 log);
 
             return new DeduplicationRepository(storage);
