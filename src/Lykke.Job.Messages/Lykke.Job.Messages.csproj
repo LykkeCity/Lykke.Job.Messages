@@ -22,18 +22,17 @@
     <PackageReference Include="Lykke.Cqrs" Version="5.0.1" />
     <PackageReference Include="Lykke.Job.BlockchainCashinDetector.Contract" Version="1.1.1" />
     <PackageReference Include="Lykke.Job.BlockchainCashoutProcessor.Contract" Version="2.2.0" />
-    <PackageReference Include="Lykke.Job.BlockchainOperationsExecutor.Contract" Version="9.0.0" />
+    <PackageReference Include="Lykke.Job.BlockchainOperationsExecutor.Contract" Version="10.0.0" />
     <PackageReference Include="Lykke.JobTriggers" Version="2.2.0" />
     <PackageReference Include="Lykke.Logs" Version="5.2.0" />
     <PackageReference Include="Lykke.Messages" Version="1.9.0" />
     <PackageReference Include="Lykke.Messaging" Version="6.0.1" />
     <PackageReference Include="Lykke.Messaging.RabbitMq" Version="2.1.0" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="4.4.0" />
-    <PackageReference Include="Lykke.Service.ClientAccount.Client" Version="2.2.2" />
+    <PackageReference Include="Lykke.Service.ClientAccount.Client" Version="2.2.3" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter.Client" Version="2.0.4" />
     <PackageReference Include="Lykke.Service.PersonalData" Version="2.0.2" />
-    <PackageReference Include="Lykke.Service.PostProcessing.Contracts" Version="1.5.0" />
     <PackageReference Include="Lykke.Service.PushNotifications.Client" Version="2.0.2" />
     <PackageReference Include="Lykke.Service.Registration.Contract" Version="1.0.0" />
     <PackageReference Include="Lykke.Service.Session.Client" Version="1.22.1" />

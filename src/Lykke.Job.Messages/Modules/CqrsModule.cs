@@ -11,6 +11,7 @@ using System.Linq;
 using Lykke.Job.BlockchainCashoutProcessor.Contract.Events;
 using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Sagas;
+using Lykke.Messaging.Serialization;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PostProcessing.Contracts.Cqrs.Events;
 using Lykke.Service.PushNotifications.Contract;
@@ -67,13 +68,13 @@ namespace Lykke.Job.Messages.Modules
 
             var sagasEndpointResolver = new RabbitMqConventionEndpointResolver(
                 "SagasRabbitMq",
-                Messaging.Serialization.SerializationFormat.MessagePack,
+                SerializationFormat.MessagePack,
                 environment: "lykke",
                 exclusiveQueuePostfix: "k8s");
 
             var clientEndpointResolver = new RabbitMqConventionEndpointResolver(
                 "ClientRabbitMq",
-                Messaging.Serialization.SerializationFormat.MessagePack,
+                SerializationFormat.MessagePack,
                 environment: "lykke",
                 exclusiveQueuePostfix: "k8s");
 
