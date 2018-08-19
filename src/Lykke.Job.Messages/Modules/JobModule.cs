@@ -5,12 +5,14 @@ using Autofac.Extensions.DependencyInjection;
 using AzureStorage.Queue;
 using AzureStorage.Tables;
 using Common.Log;
+using Lykke.Job.Messages.AzureRepositories.Deduplication;
 using Lykke.Job.Messages.AzureRepositories.DepositRefId;
 using Lykke.Job.Messages.AzureRepositories.Email;
 using Lykke.Job.Messages.AzureRepositories.Regulator;
 using Lykke.Job.Messages.AzureRepositories.Sms;
 using Lykke.Job.Messages.AzureRepositories.SwiftCredentials;
 using Lykke.Job.Messages.Core;
+using Lykke.Job.Messages.Core.Domain.Deduplication;
 using Lykke.Job.Messages.Core.Domain.DepositRefId;
 using Lykke.Job.Messages.Core.Domain.Email;
 using Lykke.Job.Messages.Core.Domain.Sms;
@@ -125,6 +127,11 @@ namespace Lykke.Job.Messages.Modules
 
             builder.RegisterInstance<ITemplateBlobRepository>(new TemplateBlobRepository(
                 BlobSpace.AzureBlobStorage.Create(_settings.ConnectionString(s => s.Db.EmailTemplatesConnString)), "templates"));
+
+            builder.Register(c => DeduplicationRepository.Create(_settings.ConnectionString(x => x.Db.SharedStorageConnString),
+                    _log))
+                .As<IOperationMessagesDeduplicationRepository>()
+                .SingleInstance();
         }
 
         private void RegisterSlackServices(ContainerBuilder builder)
