@@ -3,7 +3,6 @@ using Autofac;
 using Common.Log;
 using Lykke.Job.Messages.Core;
 using Lykke.SettingsReader;
-using Lykke.Job.Messages.Utils;
 using Lykke.Cqrs;
 using Lykke.Messaging;
 using Lykke.Messaging.RabbitMq;
@@ -11,6 +10,7 @@ using Lykke.Cqrs.Configuration;
 using System.Linq;
 using Lykke.Job.BlockchainCashoutProcessor.Contract.Events;
 using Lykke.Job.Messages.Sagas;
+using Lykke.Messaging.Serialization;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PushNotifications.Contract;
 using Lykke.Service.PushNotifications.Contract.Commands;
@@ -61,13 +61,13 @@ namespace Lykke.Job.Messages.Modules
 
             var sagasEndpointResolver = new RabbitMqConventionEndpointResolver(
                 "SagasRabbitMq",
-                "messagepack",
+                SerializationFormat.MessagePack,
                 environment: "lykke",
                 exclusiveQueuePostfix: "k8s");
 
             var clientEndpointResolver = new RabbitMqConventionEndpointResolver(
                 "ClientRabbitMq",
-                "messagepack",
+                SerializationFormat.MessagePack,
                 environment: "lykke",
                 exclusiveQueuePostfix: "k8s");
 
