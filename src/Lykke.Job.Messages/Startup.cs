@@ -51,6 +51,13 @@ namespace Lykke.Job.Messages
 
             var builder = new ContainerBuilder();
             var appSettings = Configuration.LoadSettings<AppSettings>();
+
+            Configuration.CheckDependenciesAsync(
+                appSettings,
+                appSettings.CurrentValue.SlackNotifications.AzureQueue.ConnectionString,
+                appSettings.CurrentValue.SlackNotifications.AzureQueue.QueueName,
+                "Lykke.Job.Messages");
+
             var log = CreateLogWithSlack(services, appSettings);
 
             builder.RegisterModule(new JobModule(appSettings, log));
