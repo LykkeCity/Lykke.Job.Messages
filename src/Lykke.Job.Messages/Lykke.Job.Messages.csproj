@@ -41,7 +41,7 @@
     <PackageReference Include="Lykke.Service.SwiftWithdrawal.Contracts" Version="1.0.2" />
     <PackageReference Include="Lykke.Service.TemplateFormatter.Client" Version="1.0.54" />
     <PackageReference Include="Lykke.Service.SmsSender.Client" Version="1.0.0" />
-    <PackageReference Include="Lykke.SettingsReader" Version="3.1.0" />
+    <PackageReference Include="Lykke.SettingsReader" Version="3.0.0" />
     <PackageReference Include="Lykke.SlackNotification.AzureQueue" Version="2.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.1" />
