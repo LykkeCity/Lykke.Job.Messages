@@ -37,6 +37,9 @@ namespace Lykke.Job.Messages.Sagas
             var order = evt.Order;
             var walletId = order.WalletId;
 
+            if (order.Type != OrderType.Limit && order.Type != OrderType.StopLimit)
+                return;
+
             if (order.Trades == null || !order.Trades.Any())
             {
                 _log.Warning("The order has no trades.");
