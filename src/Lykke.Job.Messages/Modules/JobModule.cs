@@ -73,17 +73,10 @@ namespace Lykke.Job.Messages.Modules
                 .As<IHealthService>()
                 .SingleInstance();
 
-            // NOTE: You can implement your own poison queue notifier. See https://github.com/LykkeCity/JobTriggers/blob/master/readme.md
-            // builder.Register<PoisionQueueNotifierImplementation>().As<IPoisionQueueNotifier>();
+            _services.RegisterAssetsClient(AssetServiceSettings.Create(
+                new Uri(_appSettings.CurrentValue.Assets.ServiceUrl),
+                _settings.CurrentValue.AssetsCache.ExpirationPeriod), _log);
 
-            _services.RegisterAssetsClient
-            (
-                AssetServiceSettings.Create(
-                    new Uri(_appSettings.CurrentValue.Assets.ServiceUrl),
-                    _settings.CurrentValue.AssetsCache.ExpirationPeriod),
-                _log
-            );
-            
             builder.RegisterType<SmsQueueConsumer>().SingleInstance();
             builder.RegisterType<EmailQueueConsumer>().SingleInstance();
 
