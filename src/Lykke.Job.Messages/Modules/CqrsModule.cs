@@ -13,6 +13,7 @@ using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Sagas;
 using Lykke.Messaging.Serialization;
 using Lykke.Service.EmailPartnerRouter.Contracts;
+using Lykke.Service.PayAuth.Contract.Events;
 using Lykke.Service.PostProcessing.Contracts.Cqrs.Events;
 using Lykke.Service.PushNotifications.Contract;
 using Lykke.Service.PushNotifications.Contract.Commands;
@@ -56,6 +57,7 @@ namespace Lykke.Job.Messages.Modules
                 .WithParameters(new[] { TypedParameter.From(_settings.CurrentValue.SpecialSelfieSettings) });
             builder.RegisterType<SpecialSelfieNotificationsSaga>().SingleInstance();
             builder.RegisterType<OrderExecutionSaga>().SingleInstance();
+            builder.RegisterType<LykkePayOperationsSaga>().SingleInstance();
 
             var messagingEngine = new MessagingEngine(_log,
                 new TransportResolver(new Dictionary<string, TransportInfo>
@@ -173,7 +175,15 @@ namespace Lykke.Job.Messages.Modules
                           .WithEndpointResolver(clientEndpointResolver)
                           .PublishingCommands(typeof(SendEmailCommand)).To("email")
                           .With(commandsRoute)
-                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
+                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+
+                      Register.Saga<LykkePayOperationsSaga>("lykkepay-employee-registration-saga")
+                        .ListeningEvents(typeof(EmployeeRegistrationCompletedEvent), typeof(EmployeeUpdateCompletedEvent))
+                        .From("lykkepay-registration")
+                        .On(eventsRoute)
+                        .PublishingCommands(typeof(SendEmailCommand))
+                        .To(EmailMessagesBoundedContext.Name)
+                        .With(commandsRoute)
                       );
 
               })
