@@ -33,6 +33,7 @@ using Lykke.Job.Messages.Services.Templates;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.EmailPartnerRouter;
+using Lykke.Service.PayInvoice.Client;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.SmsSender.Client;
@@ -87,6 +88,10 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterInstance<IClientAccountClient>(
                 new ClientAccountClient(_appSettings.CurrentValue
                     .ClientAccountServiceClient.ServiceUrl));
+
+            builder.RegisterInstance(new PayInvoiceClient(_appSettings.CurrentValue.PayInvoiceServiceClient))
+                .As<IPayInvoiceClient>()
+                .SingleInstance();
 
             RegistermSmsServices(builder);
             RegisterEmailServices(builder);
