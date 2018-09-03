@@ -13,6 +13,7 @@ using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Sagas;
 using Lykke.Messaging.Serialization;
 using Lykke.Service.EmailPartnerRouter.Contracts;
+using Lykke.Service.PayAuth.Contract;
 using Lykke.Service.PayAuth.Contract.Events;
 using Lykke.Service.PostProcessing.Contracts.Cqrs.Events;
 using Lykke.Service.PushNotifications.Contract;
@@ -177,9 +178,9 @@ namespace Lykke.Job.Messages.Modules
                           .With(commandsRoute)
                           .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
 
-                      Register.Saga<LykkePayOperationsSaga>("lykkepay-employee-registration-saga")
+                      Register.Saga<LykkePayOperationsSaga>("lykkepay-employee-registration-notifications-saga")
                         .ListeningEvents(typeof(EmployeeRegistrationCompletedEvent), typeof(EmployeeUpdateCompletedEvent))
-                        .From("lykkepay-registration")
+                        .From(EmployeeCredentialsRegistrationBoundedContext.Name)
                         .On(eventsRoute)
                         .PublishingCommands(typeof(SendEmailCommand))
                         .To(EmailMessagesBoundedContext.Name)
