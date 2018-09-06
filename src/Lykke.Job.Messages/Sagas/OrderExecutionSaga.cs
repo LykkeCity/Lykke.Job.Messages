@@ -21,14 +21,14 @@ namespace Lykke.Job.Messages.Sagas
     {
         private readonly IAssetsServiceWithCache _assetsService;
         private readonly IClientAccountClient _clientAccountClient;
-        readonly Dictionary<Guid, bool> walletsByType = new Dictionary<Guid, bool>();
+        readonly Dictionary<Guid, bool> _walletsByType = new Dictionary<Guid, bool>();
         private readonly ILog _log;
 
-        public OrderExecutionSaga([NotNull] IAssetsServiceWithCache assetsService, [NotNull] IClientAccountClient clientAccountClient, ILog log)
+        public OrderExecutionSaga([NotNull] IAssetsServiceWithCache assetsService, [NotNull] IClientAccountClient clientAccountClient, ILogFactory logFactory)
         {
             _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
             _clientAccountClient = clientAccountClient ?? throw new ArgumentNullException(nameof(clientAccountClient));
-            _log = log.CreateComponentScope(nameof(OrderExecutionSaga));
+            _log = logFactory.CreateLog(this);
         }
 
         [UsedImplicitly]
@@ -42,16 +42,16 @@ namespace Lykke.Job.Messages.Sagas
 
             if (order.Trades == null || !order.Trades.Any())
             {
-                _log.Warning("The order has no trades.");
+                _log.Warning(nameof(ManualOrderTradeProcessedEvent), "The order has no trades.");
                 return;
             }
 
             #region Checking if this wallet is used for manual trading
             // todo: This filtering logic should be transfered into PostProcessing 
-            if (!walletsByType.ContainsKey(walletId))
-                walletsByType[walletId] = (await _clientAccountClient.IsTrustedAsync(walletId.ToString())).Value;
+            if (!_walletsByType.ContainsKey(walletId))
+                _walletsByType[walletId] = (await _clientAccountClient.IsTrustedAsync(walletId.ToString())).Value;
 
-            var isRobot = walletsByType[walletId];
+            var isRobot = _walletsByType[walletId];
             if (isRobot)
                 return;
             #endregion
@@ -96,9 +96,8 @@ namespace Lykke.Job.Messages.Sagas
                 case OrderStatus.Pending:
                 case OrderStatus.Placed:
                 case OrderStatus.Rejected:
-                    _log.Warning($"The order has unexpected status {order.Status}.");
+                    _log.Warning(nameof(ManualOrderTradeProcessedEvent), $"The order has unexpected status {order.Status}.");
                     return;
-                case OrderStatus.Unknown:
                 default:
                     // ReSharper disable once NotResolvedInText
                     throw new ArgumentOutOfRangeException("evt.Orders.Status", order.Status, nameof(OrderStatus));
@@ -122,14 +121,14 @@ namespace Lykke.Job.Messages.Sagas
             {
                 foreach (var swap in trades)
                 {
-                    var amount1 = Convert.ToDecimal(swap.Volume);
-                    var amount2 = Convert.ToDecimal(swap.OppositeVolume);
+                    var amount1 = Convert.ToDecimal(swap.BaseVolume);
+                    var amount2 = Convert.ToDecimal(swap.QuotingVolume);
 
-                    AddAmount(list, swap.WalletId, swap.AssetId, -amount1);
-                    AddAmount(list, swap.OppositeWalletId, swap.AssetId, amount1);
+                    AddAmount(list, swap.WalletId, swap.BaseAssetId, -amount1);
+                    AddAmount(list, swap.OppositeWalletId, swap.BaseAssetId, amount1);
 
-                    AddAmount(list, swap.OppositeWalletId, swap.OppositeAssetId, -amount2);
-                    AddAmount(list, swap.WalletId, swap.OppositeAssetId, amount2);
+                    AddAmount(list, swap.OppositeWalletId, swap.QuotingAssetId, -amount2);
+                    AddAmount(list, swap.WalletId, swap.QuotingAssetId, amount2);
                 }
             }
 

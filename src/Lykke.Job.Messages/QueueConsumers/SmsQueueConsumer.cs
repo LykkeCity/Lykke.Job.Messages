@@ -7,10 +7,12 @@ using Lykke.Service.TemplateFormatter.TemplateModels;
 using System;
 using System.Threading.Tasks;
 using Lykke.Service.TemplateFormatter.Client;
+using Autofac;
+using Lykke.Common.Log;
 
 namespace Lykke.Job.Messages.QueueConsumers
 {
-    public class SmsQueueConsumer
+    public class SmsQueueConsumer : IStartable
     {
         private readonly IQueueReader _queueReader;
         private readonly ISmsSenderClient _smsSenderClient;
@@ -21,12 +23,12 @@ namespace Lykke.Job.Messages.QueueConsumers
             IQueueReader queueReader,
             ISmsSenderClient smsSenderClient,
             ITemplateFormatter templateFormatter,
-            ILog log)
+            ILogFactory logFactory)
         {
             _queueReader = queueReader;
             _smsSenderClient = smsSenderClient;
             _templateFormatter = templateFormatter;
-            _log = log;
+            _log = logFactory.CreateLog(this);
 
             InitQueues();
         }
@@ -37,12 +39,7 @@ namespace Lykke.Job.Messages.QueueConsumers
             {
                 if (data == null)
                 {
-                    _log.WriteWarningAsync(
-                        nameof(Messages),
-                        nameof(SmsQueueConsumer),
-                        nameof(InitQueues),
-                        "Queue had unknown SMS send request")
-                        .Wait();
+                    _log.Info(nameof(InitQueues), "Queue had unknown SMS send request");
                     return Task.FromResult(false);
                 }
                 return Task.FromResult(true);
@@ -52,20 +49,12 @@ namespace Lykke.Job.Messages.QueueConsumers
                 "SmsConfirmMessage", HandleSmsRequestAsync);
             _queueReader.RegisterHandler<SendSmsData<string>>("SimpleSmsMessage", HandleSimpleSmsRequestAsync);
 
-            _log.WriteInfoAsync(
-                nameof(Messages),
-                nameof(SmsQueueConsumer),
-                nameof(InitQueues),
-                $"Registered:{_queueReader.GetComponentName()}")
-                .Wait();
+            _log.Info(nameof(InitQueues), $"Registered:{_queueReader.GetComponentName()}");
         }
 
         private async Task HandleSimpleSmsRequestAsync(SendSmsData<string> request)
         {
-            await _log.WriteInfoAsync(
-                nameof(Messages),
-                nameof(SmsQueueConsumer),
-                nameof(HandleSimpleSmsRequestAsync),
+            _log.Info(nameof(HandleSimpleSmsRequestAsync),
                 $"SMS: {request.MessageData}. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}");
 
             await _smsSenderClient.SendSmsAsync(request.PhoneNumber, request.MessageData);
@@ -73,10 +62,7 @@ namespace Lykke.Job.Messages.QueueConsumers
 
         private async Task HandleSmsRequestAsync(SendSmsData<SmsConfirmationData> request)
         {
-            await _log.WriteInfoAsync(
-                nameof(Messages),
-                nameof(SmsQueueConsumer),
-                nameof(HandleSmsRequestAsync),
+            _log.Info(nameof(HandleSmsRequestAsync),
                 $"SMS: Phone confirmation. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}");
 
             var msgText = await _templateFormatter.FormatAsync(nameof(SmsConfirmationTemplate), request.PartnerId, "EN",
@@ -91,12 +77,7 @@ namespace Lykke.Job.Messages.QueueConsumers
         public void Start()
         {
             _queueReader.Start();
-            _log.WriteInfoAsync(
-                nameof(Messages),
-                nameof(SmsQueueConsumer),
-                nameof(Start),
-                $"Started:{_queueReader.GetComponentName()}")
-                .Wait();
+            _log.Info(nameof(Start), $"Started:{_queueReader.GetComponentName()}");
         }
     }
 }

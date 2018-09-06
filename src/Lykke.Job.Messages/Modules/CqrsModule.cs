@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Autofac;
-using Common.Log;
 using Lykke.Job.Messages.Core;
 using Lykke.SettingsReader;
 using Lykke.Cqrs;
@@ -8,6 +7,8 @@ using Lykke.Messaging;
 using Lykke.Messaging.RabbitMq;
 using Lykke.Cqrs.Configuration;
 using System.Linq;
+using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.Job.BlockchainCashoutProcessor.Contract.Events;
 using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Sagas;
@@ -25,25 +26,26 @@ using Lykke.Service.SwiftWithdrawal.Contracts;
 
 namespace Lykke.Job.Messages.Modules
 {
+    [UsedImplicitly]
     public class CqrsModule : Module
     {
         private readonly IReloadingManager<AppSettings> _settings;
-        private readonly ILog _log;
 
-        public CqrsModule(IReloadingManager<AppSettings> settings, ILog log)
+        public CqrsModule(IReloadingManager<AppSettings> settings)
         {
             _settings = settings;
-            _log = log;
         }
 
         protected override void Load(ContainerBuilder builder)
         {
-            string selfRoute = "self";
             string commandsRoute = "commands";
             string eventsRoute = "events";
-            Messaging.Serialization.MessagePackSerializerFactory.Defaults.FormatterResolver = MessagePack.Resolvers.ContractlessStandardResolver.Instance;
-            var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CurrentValue.MessagesJob.Transports.ClientRabbitMqConnectionString };
-            var rabbitMqSagasSettings = new RabbitMQ.Client.ConnectionFactory { Uri = _settings.CurrentValue.SagasRabbitMq.RabbitConnectionString };
+            MessagePackSerializerFactory.Defaults.FormatterResolver =
+                MessagePack.Resolvers.ContractlessStandardResolver.Instance;
+            var rabbitMqSettings = new RabbitMQ.Client.ConnectionFactory
+                {Uri = _settings.CurrentValue.MessagesJob.Transports.ClientRabbitMqConnectionString};
+            var rabbitMqSagasSettings = new RabbitMQ.Client.ConnectionFactory
+                {Uri = _settings.CurrentValue.SagasRabbitMq.RabbitConnectionString};
 
             builder.Register(context => new AutofacDependencyResolver(context)).As<IDependencyResolver>();
 
@@ -55,142 +57,148 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<LoginPushNotificationsSaga>().SingleInstance();
             builder.RegisterType<SwiftWithdrawalEmailNotificationSaga>().SingleInstance();
             builder.RegisterType<SpecialSelfieSupportNotificationSaga>().SingleInstance()
-                .WithParameters(new[] { TypedParameter.From(_settings.CurrentValue.SpecialSelfieSettings) });
+                .WithParameters(new[] {TypedParameter.From(_settings.CurrentValue.SpecialSelfieSettings)});
             builder.RegisterType<SpecialSelfieNotificationsSaga>().SingleInstance();
             builder.RegisterType<OrderExecutionSaga>().SingleInstance();
             builder.RegisterType<LykkePayOperationsSaga>().SingleInstance();
 
-            var messagingEngine = new MessagingEngine(_log,
-                new TransportResolver(new Dictionary<string, TransportInfo>
-                {
-                    { "SagasRabbitMq", new TransportInfo(rabbitMqSagasSettings.Endpoint.ToString(), rabbitMqSagasSettings.UserName, rabbitMqSagasSettings.Password, "None", "RabbitMq") },
-                    { "ClientRabbitMq", new TransportInfo(rabbitMqSettings.Endpoint.ToString(), rabbitMqSettings.UserName, rabbitMqSettings.Password, "None", "RabbitMq") },
-                    { "PostProcessingRabbitMq", new TransportInfo(rabbitMqSagasSettings.Endpoint.ToString(), rabbitMqSagasSettings.UserName, rabbitMqSagasSettings.Password, "None", "RabbitMq") }
-                }),
-                new RabbitMqTransportFactory());
-
-            var sagasEndpointResolver = new RabbitMqConventionEndpointResolver(
-                "SagasRabbitMq",
-                SerializationFormat.MessagePack,
-                environment: "lykke",
-                exclusiveQueuePostfix: "k8s");
-
-            var clientEndpointResolver = new RabbitMqConventionEndpointResolver(
-                "ClientRabbitMq",
-                SerializationFormat.MessagePack,
-                environment: "lykke",
-                exclusiveQueuePostfix: "k8s");
-
-            var postProcessingEndpointResolver = new RabbitMqConventionEndpointResolver(
-                "PostProcessingRabbitMq",
-                Messaging.Serialization.SerializationFormat.ProtoBuf,
-                environment: "lykke");
-
-            var pushNotificationsCommands = typeof(PushNotificationsBoundedContext).Assembly
-                .GetTypes()
-                .Where(x => x.Namespace == typeof(TextNotificationCommand).Namespace)
-                .ToArray();
-
             builder.Register(ctx =>
-              {
-                  return new CqrsEngine(_log,
-                      ctx.Resolve<IDependencyResolver>(),
-                      messagingEngine,
-                      new DefaultEndpointProvider(),
-                      true,
-                      Register.DefaultEndpointResolver(sagasEndpointResolver),
+                {
+                    var logFactory = ctx.Resolve<ILogFactory>();
 
-                      Register.Saga<TerminalSessionsSaga>("terminal-sessions-saga")
-                          .ListeningEvents(typeof(TradingSessionCreatedEvent))
-                              .From("sessions").On(eventsRoute)
-                              .WithEndpointResolver(clientEndpointResolver)
-                          .PublishingCommands(typeof(DataNotificationCommand))
-                              .To(PushNotificationsBoundedContext.Name)
-                              .With(commandsRoute)
-                              .ProcessingOptions(commandsRoute).MultiThreaded(4).QueueCapacity(1024),
+                    var messagingEngine = new MessagingEngine(logFactory,
+                        new TransportResolver(new Dictionary<string, TransportInfo>
+                        {
+                            {
+                                "SagasRabbitMq",
+                                new TransportInfo(rabbitMqSagasSettings.Endpoint.ToString(),
+                                    rabbitMqSagasSettings.UserName, rabbitMqSagasSettings.Password, "None", "RabbitMq")
+                            },
+                            {
+                                "ClientRabbitMq",
+                                new TransportInfo(rabbitMqSettings.Endpoint.ToString(), rabbitMqSettings.UserName,
+                                    rabbitMqSettings.Password, "None", "RabbitMq")
+                            },
+                            {
+                                "PostProcessingRabbitMq",
+                                new TransportInfo(rabbitMqSagasSettings.Endpoint.ToString(),
+                                    rabbitMqSagasSettings.UserName, rabbitMqSagasSettings.Password, "None", "RabbitMq")
+                            }
+                        }),
+                        new RabbitMqTransportFactory(logFactory));
 
-					  Register.Saga<LoginEmailNotificationsSaga>("login-email-notifications-saga")
-                        .ListeningEvents(typeof(ClientLoggedEvent))
-                            .From("registration").On(eventsRoute)
-					        .WithEndpointResolver(clientEndpointResolver)
-                        .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                    var sagasEndpointResolver = new RabbitMqConventionEndpointResolver(
+                        "SagasRabbitMq",
+                        SerializationFormat.MessagePack,
+                        environment: "lykke",
+                        exclusiveQueuePostfix: "k8s");
+
+                    var clientEndpointResolver = new RabbitMqConventionEndpointResolver(
+                        "ClientRabbitMq",
+                        SerializationFormat.MessagePack,
+                        environment: "lykke",
+                        exclusiveQueuePostfix: "k8s");
+
+                    var postProcessingEndpointResolver = new RabbitMqConventionEndpointResolver(
+                        "PostProcessingRabbitMq",
+                        SerializationFormat.ProtoBuf,
+                        environment: "lykke");
+
+                    var pushNotificationsCommands = typeof(PushNotificationsBoundedContext).Assembly
+                        .GetTypes()
+                        .Where(x => x.Namespace == typeof(TextNotificationCommand).Namespace)
+                        .ToArray();
+
+                    return new CqrsEngine(logFactory,
+                        ctx.Resolve<IDependencyResolver>(),
+                        messagingEngine,
+                        new DefaultEndpointProvider(),
+                        true,
+                        Register.DefaultEndpointResolver(sagasEndpointResolver),
+                        Register.Saga<TerminalSessionsSaga>("terminal-sessions-saga")
+                            .ListeningEvents(typeof(TradingSessionCreatedEvent))
+                            .From("sessions").On(eventsRoute)
+                            .WithEndpointResolver(clientEndpointResolver)
+                            .PublishingCommands(typeof(DataNotificationCommand))
+                            .To(PushNotificationsBoundedContext.Name)
                             .With(commandsRoute)
-                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
-
-                      Register.Saga<LoginPushNotificationsSaga>("login-push-notifications-saga")
-                        .ListeningEvents(typeof(ClientLoggedEvent))
+                            .ProcessingOptions(commandsRoute).MultiThreaded(4).QueueCapacity(1024),
+                        Register.Saga<LoginEmailNotificationsSaga>("login-email-notifications-saga")
+                            .ListeningEvents(typeof(ClientLoggedEvent))
                             .From("registration").On(eventsRoute)
                             .WithEndpointResolver(clientEndpointResolver)
-                        .PublishingCommands(typeof(TextNotificationCommand)).To("push-notifications")
+                            .PublishingCommands(typeof(SendEmailCommand)).To("email")
                             .With(commandsRoute)
                             .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
-
-                      Register.Saga<OrderExecutionSaga>("order-execution-notifications-saga")
-                          .ListeningEvents(typeof(ManualOrderTradeProcessedEvent))
-                          .From(Service.PostProcessing.Contracts.Cqrs.PostProcessingBoundedContext.Name).On(eventsRoute)
-                          .WithEndpointResolver(postProcessingEndpointResolver)
-                          .PublishingCommands(typeof(LimitOrderNotificationCommand)).To("push-notifications")
-                          .With(commandsRoute)
-                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
-
-                      Register.Saga<SwiftWithdrawalEmailNotificationSaga>("swift-withdrawal-email-notifications-saga")
-                          .ListeningEvents(typeof(SwiftCashoutCreatedEvent))
-                          .From(SwiftWithdrawalBoundedContext.Name).On(eventsRoute)
-                          .PublishingCommands(typeof(SendEmailCommand)).To("email")
-                          .With(commandsRoute)
-                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
-                      
-                      Register.Saga<SwiftCredentialsRequestSaga>("swift-credentials-request-saga")
-                          .ListeningEvents(typeof(SwiftCredentialsRequestedEvent))
-                          .From(SwiftCredentialsBoundedContext.Name).On(eventsRoute)
-                          .PublishingCommands(typeof(SendEmailCommand)).To("email")
-                          .With(commandsRoute)
-                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
-
-                      Register.Saga<BlockchainOperationsSaga>("blockchain-notification-saga")
-                          .ListeningEvents(typeof(CashinCompletedEvent), typeof(CashoutCompletedEvent))
-                              .From(BlockchainCashoutProcessor.Contract.BlockchainCashoutProcessorBoundedContext.Name).On(eventsRoute)
-                              .ProcessingOptions(eventsRoute).MultiThreaded(2).QueueCapacity(512)
-                          .ListeningEvents(typeof(BlockchainCashinDetector.Contract.Events.CashinCompletedEvent))
-                              .From(BlockchainCashinDetector.Contract.BlockchainCashinDetectorBoundedContext.Name).On(eventsRoute)
-                              .ProcessingOptions(eventsRoute).MultiThreaded(2).QueueCapacity(512)
-                          .PublishingCommands(pushNotificationsCommands)
-                              .To(PushNotificationsBoundedContext.Name)
-                              .With(commandsRoute)
-                          .PublishingCommands(typeof(SendEmailCommand)).To("email")
-                               .With(commandsRoute)
-                              .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
-
-                      Register.Saga<SpecialSelfieSupportNotificationSaga>("special-selfie-support-notification-saga")
-                          .ListeningEvents(typeof(SelfiePostedEvent))
-                          .From("client-account-recovery").On(eventsRoute)
-                          .WithEndpointResolver(clientEndpointResolver)
-                          .PublishingCommands(typeof(SendEmailCommand)).To("email")
-                          .With(commandsRoute)
-                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
-                              .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
-
-                      Register.Saga<SpecialSelfieNotificationsSaga>("special-selfie-email-notifications-saga")
-                          .ListeningEvents(typeof(SpecialSelfieEvent))
-                          .From("backoffice").On(eventsRoute)
-                          .WithEndpointResolver(clientEndpointResolver)
-                          .PublishingCommands(typeof(SendEmailCommand)).To("email")
-                          .With(commandsRoute)
-                          .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
-
-                      Register.Saga<LykkePayOperationsSaga>("lykkepay-employee-registration-notifications-saga")
-                        .ListeningEvents(typeof(EmployeeRegistrationCompletedEvent), typeof(EmployeeUpdateCompletedEvent))
-                        .From(EmployeeCredentialsRegistrationBoundedContext.Name)
-                        .On(eventsRoute)
-                        .PublishingCommands(typeof(SendEmailCommand))
-                        .To(EmailMessagesBoundedContext.Name)
-                        .With(commandsRoute)
-                      );
-
-              })
-              .As<ICqrsEngine>()
-              .SingleInstance()
-              .AutoActivate();
+                        Register.Saga<LoginPushNotificationsSaga>("login-push-notifications-saga")
+                            .ListeningEvents(typeof(ClientLoggedEvent))
+                            .From("registration").On(eventsRoute)
+                            .WithEndpointResolver(clientEndpointResolver)
+                            .PublishingCommands(typeof(TextNotificationCommand)).To("push-notifications")
+                            .With(commandsRoute)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+                        Register.Saga<OrderExecutionSaga>("order-execution-notifications-saga")
+                            .ListeningEvents(typeof(ManualOrderTradeProcessedEvent))
+                            .From(Service.PostProcessing.Contracts.Cqrs.PostProcessingBoundedContext.Name)
+                            .On(eventsRoute)
+                            .WithEndpointResolver(postProcessingEndpointResolver)
+                            .PublishingCommands(typeof(LimitOrderNotificationCommand)).To("push-notifications")
+                            .With(commandsRoute)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+                        Register.Saga<SwiftWithdrawalEmailNotificationSaga>("swift-withdrawal-email-notifications-saga")
+                            .ListeningEvents(typeof(SwiftCashoutCreatedEvent))
+                            .From(SwiftWithdrawalBoundedContext.Name).On(eventsRoute)
+                            .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                            .With(commandsRoute)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+                        Register.Saga<SwiftCredentialsRequestSaga>("swift-credentials-request-saga")
+                            .ListeningEvents(typeof(SwiftCredentialsRequestedEvent))
+                            .From(SwiftCredentialsBoundedContext.Name).On(eventsRoute)
+                            .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                            .With(commandsRoute)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+                        Register.Saga<BlockchainOperationsSaga>("blockchain-notification-saga")
+                            .ListeningEvents(typeof(CashinCompletedEvent), typeof(CashoutCompletedEvent))
+                            .From(BlockchainCashoutProcessor.Contract.BlockchainCashoutProcessorBoundedContext.Name)
+                            .On(eventsRoute)
+                            .ProcessingOptions(eventsRoute).MultiThreaded(2).QueueCapacity(512)
+                            .ListeningEvents(typeof(BlockchainCashinDetector.Contract.Events.CashinCompletedEvent))
+                            .From(BlockchainCashinDetector.Contract.BlockchainCashinDetectorBoundedContext.Name)
+                            .On(eventsRoute)
+                            .ProcessingOptions(eventsRoute).MultiThreaded(2).QueueCapacity(512)
+                            .PublishingCommands(pushNotificationsCommands)
+                            .To(PushNotificationsBoundedContext.Name)
+                            .With(commandsRoute)
+                            .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                            .With(commandsRoute)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+                        Register.Saga<SpecialSelfieSupportNotificationSaga>("special-selfie-support-notification-saga")
+                            .ListeningEvents(typeof(SelfiePostedEvent))
+                            .From("client-account-recovery").On(eventsRoute)
+                            .WithEndpointResolver(clientEndpointResolver)
+                            .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                            .With(commandsRoute)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+                        Register.Saga<SpecialSelfieNotificationsSaga>("special-selfie-email-notifications-saga")
+                            .ListeningEvents(typeof(SpecialSelfieEvent))
+                            .From("backoffice").On(eventsRoute)
+                            .WithEndpointResolver(clientEndpointResolver)
+                            .PublishingCommands(typeof(SendEmailCommand)).To("email")
+                            .With(commandsRoute)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+                        Register.Saga<LykkePayOperationsSaga>("lykkepay-employee-registration-notifications-saga")
+                            .ListeningEvents(typeof(EmployeeRegistrationCompletedEvent),
+                                typeof(EmployeeUpdateCompletedEvent))
+                            .From(EmployeeCredentialsRegistrationBoundedContext.Name)
+                            .On(eventsRoute)
+                            .PublishingCommands(typeof(SendEmailCommand))
+                            .To(EmailMessagesBoundedContext.Name)
+                            .With(commandsRoute)
+                    );
+                })
+                .As<ICqrsEngine>()
+                .SingleInstance()
+                .AutoActivate();
         }
     }
 }
