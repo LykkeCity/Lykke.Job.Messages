@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Job.Messages.Contract.Emails;
 using Lykke.Job.Messages.Core.Domain.Email;
 using Lykke.Job.Messages.Core.Services.Email;
@@ -16,10 +17,10 @@ namespace Lykke.Job.Messages.Services.Email
         private readonly IEmailPartnerRouter _emailPartnerRouter;
         private readonly IBroadcastMailsRepository _broadcastMailsRepository;
 
-        public SmtpMailSender(ILog log, IEmailPartnerRouter emailPartnerRouter,
+        public SmtpMailSender(ILogFactory logFactory, IEmailPartnerRouter emailPartnerRouter,
             IBroadcastMailsRepository broadcastMailsRepository)
         {
-            _log = log;
+            _log = logFactory.CreateLog(this);
             _emailPartnerRouter = emailPartnerRouter;
             _broadcastMailsRepository = broadcastMailsRepository;
         }
@@ -32,8 +33,7 @@ namespace Lykke.Job.Messages.Services.Email
             }
             catch (Exception ex)
             {
-                if (_log != null)
-                    await _log.WriteWarningAsync("Mail sender", "Send mail", emailAddress.SanitizeEmail(), ex.Message);
+                _log?.Warning(nameof(SendEmailAsync), ex.Message, ex, emailAddress.SanitizeEmail());
             }
         }
 

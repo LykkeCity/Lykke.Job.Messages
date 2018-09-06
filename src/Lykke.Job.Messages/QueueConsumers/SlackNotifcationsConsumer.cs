@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Job.Messages.Contract.Slack;
 using Lykke.Job.Messages.Services.Slack;
-using Lykke.JobTriggers.Triggers.Attributes;
 
 namespace Lykke.Job.Messages.QueueConsumers
 {
@@ -13,13 +13,12 @@ namespace Lykke.Job.Messages.QueueConsumers
         private readonly SrvSlackNotifications _srvSlackNotifications;
         private readonly ILog _log;
 
-        public SlackNotifcationsConsumer(SrvSlackNotifications srvSlackNotifications, ILog log)
+        public SlackNotifcationsConsumer(SrvSlackNotifications srvSlackNotifications, ILogFactory logFactory)
         {
             _srvSlackNotifications = srvSlackNotifications;
-            _log = log;
+            _log = logFactory.CreateLog(this);
         }
 
-        //[QueueTrigger("slack-notifications")]
         public async Task ProcessInMessage(SlackNotificationRequestMsg msg)
         {
             try
@@ -28,7 +27,7 @@ namespace Lykke.Job.Messages.QueueConsumers
             }
             catch (Exception ex)
             {
-                await _log.WriteErrorAsync("SlackNotificationRequestsConsumer", "ProcessInMessage", msg.ToJson(), ex);
+                _log.Error(nameof(ProcessInMessage), ex, msg.ToJson());
                 throw;
             }
         }

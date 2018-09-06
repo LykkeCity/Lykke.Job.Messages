@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Autofac;
-using Autofac.Extensions.DependencyInjection;
 using AzureStorage.Queue;
 using AzureStorage.Tables;
-using Common.Log;
+using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.Job.Messages.AzureRepositories.Deduplication;
 using Lykke.Job.Messages.AzureRepositories.DepositRefId;
 using Lykke.Job.Messages.AzureRepositories.Email;
@@ -30,6 +30,8 @@ using Lykke.Job.Messages.Services.Slack;
 using Lykke.Job.Messages.Services.Sms.Mocks;
 using Lykke.Job.Messages.Services.SwiftCredentials;
 using Lykke.Job.Messages.Services.Templates;
+using Lykke.JobTriggers.Extenstions;
+using Lykke.Logs;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.EmailPartnerRouter;
@@ -37,27 +39,21 @@ using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.SmsSender.Client;
 using Lykke.SettingsReader;
-using Microsoft.Extensions.DependencyInjection;
 using Lykke.Service.TemplateFormatter;
 using BlobSpace = AzureStorage.Blob;
 
 namespace Lykke.Job.Messages.Modules
 {
+    [UsedImplicitly]
     public class JobModule : Module
     {
         private readonly IReloadingManager<AppSettings> _appSettings;
         private readonly IReloadingManager<AppSettings.MessagesSettings> _settings;
-        private readonly ILog _log;
-        private readonly ServiceCollection _services;
 
-
-        public JobModule(IReloadingManager<AppSettings> settings, ILog log)
+        public JobModule(IReloadingManager<AppSettings> settings)
         {
             _appSettings = settings;
             _settings = settings.Nested(x => x.MessagesJob);
-            _log = log;
-
-            _services = new ServiceCollection();
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -65,24 +61,29 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterInstance(_settings)
                 .SingleInstance();
 
-            builder.RegisterInstance(_log)
-                .As<ILog>()
-                .SingleInstance();
-
             builder.RegisterType<HealthService>()
                 .As<IHealthService>()
                 .SingleInstance();
-
-            _services.RegisterAssetsClient(AssetServiceSettings.Create(
+            
+            builder.RegisterAssetsClient(AssetServiceSettings.Create(
                 new Uri(_appSettings.CurrentValue.Assets.ServiceUrl),
-                _settings.CurrentValue.AssetsCache.ExpirationPeriod), _log);
+                _settings.CurrentValue.AssetsCache.ExpirationPeriod));
 
-            builder.RegisterType<SmsQueueConsumer>().SingleInstance();
-            builder.RegisterType<EmailQueueConsumer>().SingleInstance();
+            builder.RegisterType<SmsQueueConsumer>()
+                .As<IStartable>()
+                .AutoActivate()
+                .SingleInstance();
+            
+            builder.RegisterType<EmailQueueConsumer>()
+                .As<IStartable>()
+                .AutoActivate()
+                .SingleInstance();
 
-            builder.RegisterType<PersonalDataService>()
+            builder.Register(ctx =>
+                    new PersonalDataService(_appSettings.CurrentValue.PersonalDataServiceSettings,
+                        ctx.Resolve<ILogFactory>().CreateLog(nameof(PersonalDataService))))
                 .As<IPersonalDataService>()
-                .WithParameter(TypedParameter.From(_appSettings.CurrentValue.PersonalDataServiceSettings));
+                .SingleInstance();
 
             builder.RegisterInstance<IClientAccountClient>(
                 new ClientAccountClient(_appSettings.CurrentValue
@@ -92,41 +93,62 @@ namespace Lykke.Job.Messages.Modules
             RegisterEmailServices(builder);
             RegisterSlackServices(builder);
             RegisterRepositories(builder);
-
-            builder.Populate(_services);
+            
+            builder.AddTriggers(pool =>
+            {
+                pool.AddDefaultConnection(_settings.Nested(x => x.Db.SharedStorageConnString));
+            });
         }
 
         private void RegisterRepositories(ContainerBuilder builder)
         {
-            builder.RegisterInstance<IBroadcastMailsRepository>(new BroadcastMailsRepository(
-                AzureTableStorage<BroadcastMailEntity>.Create(
-                    _settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString), "BroadcastMails", _log)));
+            builder.Register(ctx => new BroadcastMailsRepository(
+                    AzureTableStorage<BroadcastMailEntity>.Create(
+                        _settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString), "BroadcastMails",
+                        ctx.Resolve<ILogFactory>()))
+                ).As<IBroadcastMailsRepository>()
+                .SingleInstance();
 
-            builder.RegisterInstance<IRegulatorRepository>(new RegulatorRepository(
-                AzureTableStorage<RegulatorEntity>.Create(
-                    _settings.ConnectionString(s => s.Db.SharedStorageConnString), "Residences", _log)));
+            builder.Register(ctx => new RegulatorRepository(
+                    AzureTableStorage<RegulatorEntity>.Create(
+                        _settings.ConnectionString(s => s.Db.SharedStorageConnString), "Residences",
+                        ctx.Resolve<ILogFactory>())))
+                .As<IRegulatorRepository>()
+                .SingleInstance();
 
-            builder.RegisterInstance<ISmsMockRepository>(new SmsMockRepository(
-                AzureTableStorage<SmsMessageMockEntity>.Create(
-                    _settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString), "MockSms", _log)));
+            builder.Register(ctx => new SmsMockRepository(
+                    AzureTableStorage<SmsMessageMockEntity>.Create(
+                        _settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString), "MockSms",
+                        ctx.Resolve<ILogFactory>())))
+                .As<ISmsMockRepository>()
+                .SingleInstance();
 
-            builder.RegisterInstance<IDepositRefIdInUseRepository>(new DepositRefIdInUseRepository(
+            builder.Register(ctx => new DepositRefIdInUseRepository(
                 AzureTableStorage<DepositRefIdInUseEntity>.Create(
-                    _settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString), "DepositRefIdsInUse", _log)));
+                    _settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString), "DepositRefIdsInUse", ctx.Resolve<ILogFactory>())))
+                .As<IDepositRefIdInUseRepository>()
+                .SingleInstance();
 
-            builder.RegisterInstance<IDepositRefIdRepository>(new DepositRefIdRepository(
-                AzureTableStorage<DepositRefIdEntity>.Create(
-                    _settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString), "DepositRefIds", _log)));
+            builder.Register(ctx => new DepositRefIdRepository(
+                    AzureTableStorage<DepositRefIdEntity>.Create(
+                        _settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString), "DepositRefIds",
+                        ctx.Resolve<ILogFactory>())))
+                .As<IDepositRefIdRepository>()
+                .SingleInstance();
 
-            builder.RegisterInstance<ISwiftCredentialsRepository>(new SwiftCredentialsRepository(
-                AzureTableStorage<SwiftCredentialsEntity>.Create(
-                    _settings.ConnectionString(s => s.Db.DictsConnString), "SwiftCredentials", _log)));
+            builder.Register(ctx => new SwiftCredentialsRepository(
+                    AzureTableStorage<SwiftCredentialsEntity>.Create(
+                        _settings.ConnectionString(s => s.Db.DictsConnString), "SwiftCredentials",
+                        ctx.Resolve<ILogFactory>())))
+                .As<ISwiftCredentialsRepository>()
+                .SingleInstance();
 
             builder.RegisterInstance<ITemplateBlobRepository>(new TemplateBlobRepository(
                 BlobSpace.AzureBlobStorage.Create(_settings.ConnectionString(s => s.Db.EmailTemplatesConnString)), "templates"));
 
-            builder.Register(c => DeduplicationRepository.Create(_settings.ConnectionString(x => x.Db.SharedStorageConnString),
-                    _log))
+            builder.Register(ctx => DeduplicationRepository.Create(
+                    _settings.ConnectionString(x => x.Db.SharedStorageConnString),
+                    ctx.Resolve<ILogFactory>()))
                 .As<IOperationMessagesDeduplicationRepository>()
                 .SingleInstance();
         }
@@ -139,22 +161,15 @@ namespace Lykke.Job.Messages.Modules
 
         private void RegisterEmailServices(ContainerBuilder builder)
         {
-            var emailsQueue = AzureQueueExt.Create(_settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString),
-                "emailsqueue");
-            var internalEmailQueueReader = new QueueReader(emailsQueue, "InternalEmailQueueReader", 3000, _log);
-            var blockChainEmailQueue =
-                AzureQueueExt.Create(_settings.ConnectionString(s => s.Db.BitCoinQueueConnectionString), "emailsqueue");
-            var blockChainEmailQueueReader =
-                new QueueReader(blockChainEmailQueue, "BlockchainEmailQueueReader", 3000, _log);
-            var sharedEmailQueue = AzureQueueExt.Create(_settings.ConnectionString(s => s.Db.SharedStorageConnString),
-                "emailsqueue");
-            var sharedEmailQueueReader = new QueueReader(sharedEmailQueue, "SharedEmailQueueReader", 3000, _log);
+            var emailsQueue = AzureQueueExt.Create(_settings.ConnectionString(s => s.Db.ClientPersonalInfoConnString), "emailsqueue");
+            var blockChainEmailQueue = AzureQueueExt.Create(_settings.ConnectionString(s => s.Db.BitCoinQueueConnectionString), "emailsqueue");
+            var sharedEmailQueue = AzureQueueExt.Create(_settings.ConnectionString(s => s.Db.SharedStorageConnString), "emailsqueue");
 
-            builder.Register<IEnumerable<IQueueReader>>(x => new List<IQueueReader>
+            builder.Register<IEnumerable<IQueueReader>>(ctx => new List<IQueueReader>
                 {
-                    internalEmailQueueReader,
-                    blockChainEmailQueueReader,
-                    sharedEmailQueueReader
+                    new QueueReader(emailsQueue, "InternalEmailQueueReader", TimeSpan.FromMilliseconds(3000), ctx.Resolve<ILogFactory>()),
+                    new QueueReader(blockChainEmailQueue, "BlockchainEmailQueueReader", TimeSpan.FromMilliseconds(3000), ctx.Resolve<ILogFactory>()),
+                    new QueueReader(sharedEmailQueue, "SharedEmailQueueReader", TimeSpan.FromMilliseconds(3000), ctx.Resolve<ILogFactory>())
                 })
                 .SingleInstance();
 
@@ -165,11 +180,13 @@ namespace Lykke.Job.Messages.Modules
                 .SingleInstance();
 
             // Email formatting dependencies
-
             builder.RegisterType<RemoteTemplateGenerator>()
                 .As<IRemoteTemplateGenerator>()
                 .SingleInstance();
-            builder.RegisterTemplateFormatter(_appSettings.CurrentValue.MessagesJob.Email.EmailFormatterUrl, _log);
+            
+            builder.RegisterTemplateFormatter(_appSettings.CurrentValue.MessagesJob.Email.EmailFormatterUrl, 
+                EmptyLogFactory.Instance.CreateLog("TemplateFormatterClient"));
+            
             builder.RegisterType<EmailGenerator>()
                 .As<IEmailGenerator>()
                 .SingleInstance()
@@ -184,14 +201,14 @@ namespace Lykke.Job.Messages.Modules
                 .As<IEmailTemplateProvide>()
                 .SingleInstance();
 
-            //builder.RegisterType<EmailMessageProcessor>()
-            //   .As<IEmailMessageProcessor>()
-            //   .SingleInstance();
-
             // Email sending dependencies
-
-            builder.RegisterEmailPartnerRouter(_appSettings.CurrentValue.MessagesJob.Email.EmailPartnerRouterUrl, _log);
-            builder.Register<ISmtpEmailSender>(x => new SmtpMailSender(_log, x.Resolve<IEmailPartnerRouter>(), x.Resolve<IBroadcastMailsRepository>()))
+            builder.Register(ctx => 
+                new EmailPartnerRouterClient(_appSettings.CurrentValue.MessagesJob.Email.EmailPartnerRouterUrl, 
+                    ctx.Resolve<ILogFactory>().CreateLog(nameof(EmailPartnerRouterClient))))
+                .As<IEmailPartnerRouter>().SingleInstance();
+            
+            builder.Register<ISmtpEmailSender>(ctx => 
+                    new SmtpMailSender(ctx.Resolve<ILogFactory>(), ctx.Resolve<IEmailPartnerRouter>(), ctx.Resolve<IBroadcastMailsRepository>()))
                 .As<ISmtpEmailSender>()
                 .SingleInstance();
         }
@@ -202,9 +219,10 @@ namespace Lykke.Job.Messages.Modules
                 _appSettings.ConnectionString(o => o.SmsNotifications.AzureQueue.ConnectionString),
                 _appSettings.CurrentValue.SmsNotifications.AzureQueue.QueueName);
 
-            var smsQueueReader = new QueueReader(smsQueue, "SmsQueueReader", 3000, _log);
-
-            builder.Register<IQueueReader>(x => smsQueueReader).SingleInstance();
+            builder.Register<IQueueReader>(ctx => 
+                new QueueReader(smsQueue, "SmsQueueReader", TimeSpan.FromMilliseconds(3000), ctx.Resolve<ILogFactory>())
+                ).SingleInstance();
+            
             builder.RegisterType<TemplateGenerator>().As<ITemplateGenerator>();
 
             if (_settings.CurrentValue.Sms.UseMocks)
@@ -213,7 +231,8 @@ namespace Lykke.Job.Messages.Modules
             }
             else
             {
-                builder.RegisterSmsSenderClient(_appSettings.CurrentValue.SmsSenderServiceClient.ServiceUrl, _log);
+                builder.RegisterSmsSenderClient(_appSettings.CurrentValue.SmsSenderServiceClient.ServiceUrl,
+                    EmptyLogFactory.Instance.CreateLog(nameof(SmsSenderClient)));
             }
         }
     }
