@@ -1,6 +1,7 @@
 ﻿using System;
 using Lykke.Sdk.Settings;
 using Lykke.Service.ClientAccount.Client;
+using Lykke.Service.PayInvoice.Client;
 using Lykke.Service.PersonalData.Settings;
 using Lykke.SettingsReader.Attributes;
 
@@ -15,6 +16,7 @@ namespace Lykke.Job.Messages.Core
         public SmsSenderSettings SmsSenderServiceClient { get; set; }
         public ClientAccountServiceClientSettings ClientAccountServiceClient { get; set; }
         public SagasRabbitMq SagasRabbitMq { get; set; }
+        public PayInvoiceServiceClientSettings PayInvoiceServiceClient { get; set; }
 
         public class MessagesSettings
         {
