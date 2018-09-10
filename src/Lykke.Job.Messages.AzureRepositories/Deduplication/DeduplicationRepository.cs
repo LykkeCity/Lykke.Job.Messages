@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Tables;
-using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Job.Messages.Core.Domain.Deduplication;
 using Lykke.SettingsReader;
 
@@ -14,12 +12,12 @@ namespace Lykke.Job.Messages.AzureRepositories.Deduplication
     {
         private readonly INoSQLTableStorage<DeduplicationEntity> _storage;
 
-        public static DeduplicationRepository Create(IReloadingManager<string> connectionString, ILog log)
+        public static DeduplicationRepository Create(IReloadingManager<string> connectionString, ILogFactory logFactory)
         {
             var storage = AzureTableStorage<DeduplicationEntity>.Create(
                 connectionString,
                 "OperationMessagesDeduplication",
-                log);
+                logFactory);
 
             return new DeduplicationRepository(storage);
         }

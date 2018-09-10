@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Lykke.Common.Log;
 
 namespace Lykke.Job.Messages.Services.Email
 {
@@ -17,10 +18,10 @@ namespace Lykke.Job.Messages.Services.Email
         private readonly ITemplateBlobRepository _templateBlobRepository;
         private readonly ILog _log;
 
-        public EmailTemplateProvider(ITemplateBlobRepository templateBlobRepository, ILog log)
+        public EmailTemplateProvider(ITemplateBlobRepository templateBlobRepository, ILogFactory logFactory)
         {
             _templateBlobRepository = templateBlobRepository;
-            _log = log;
+            _log = logFactory.CreateLog(this);
         }
 
         public async Task<FormattedEmail> FormatAsync(string templateId, string partnerId, string language, Dictionary<string, string> parameters)
@@ -63,7 +64,7 @@ namespace Lykke.Job.Messages.Services.Email
             }
             catch (Exception ex)
             {
-                await _log.WriteErrorAsync(nameof(EmailTemplateProvider), nameof(FormatAsync), parameters.ToJson(), ex, DateTime.UtcNow);
+                _log.Error(nameof(FormatAsync), ex, parameters.ToJson());
                 throw;
             }
         }

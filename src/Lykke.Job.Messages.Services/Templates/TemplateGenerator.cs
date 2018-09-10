@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using RazorLight;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Job.Messages.Core.Services.Templates;
 
 namespace Lykke.Job.Messages.Services.Templates
@@ -10,9 +11,9 @@ namespace Lykke.Job.Messages.Services.Templates
     {
         private readonly ILog _log;
 
-        public TemplateGenerator(ILog log)
+        public TemplateGenerator(ILogFactory logFactory)
         {
-            _log = log;
+            _log = logFactory.CreateLog(this);
         }
 
         public async Task<string> GenerateAsync<T>(string templateName, T templateModel)
@@ -30,11 +31,7 @@ namespace Lykke.Job.Messages.Services.Templates
             }
             catch (Exception ex)
             {
-                await _log.WriteWarningAsync(
-                    nameof(Messages),
-                    nameof(TemplateGenerator),
-                    nameof(GenerateAsync),
-                    $"Fail template \"{template}\" compilation: {ex.Message}");
+                _log.Warning(nameof(GenerateAsync), $"Fail template \"{template}\" compilation: {ex.Message}", ex);
                 throw;
             }
         }

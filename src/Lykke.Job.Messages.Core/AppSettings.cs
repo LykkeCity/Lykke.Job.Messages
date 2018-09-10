@@ -1,19 +1,20 @@
 ﻿using System;
+using Lykke.Sdk.Settings;
+using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PayInvoice.Client;
 using Lykke.Service.PersonalData.Settings;
 using Lykke.SettingsReader.Attributes;
 
 namespace Lykke.Job.Messages.Core
 {
-    public class AppSettings
+    public class AppSettings : BaseAppSettings
     {
         public MessagesSettings MessagesJob { get; set; }
-        public SlackNotificationsSettings SlackNotifications { get; set; }
         public AssetsSettings Assets { get; set; }
         public PersonalDataServiceClientSettings PersonalDataServiceSettings { get; set; }
         public SmsNotificationsSettings SmsNotifications { get; set; }
         public SmsSenderSettings SmsSenderServiceClient { get; set; }
-        public Lykke.Service.ClientAccount.Client.ClientAccountServiceClientSettings ClientAccountServiceClient { get; set; }
+        public ClientAccountServiceClientSettings ClientAccountServiceClient { get; set; }
         public SagasRabbitMq SagasRabbitMq { get; set; }
         public PayInvoiceServiceClientSettings PayInvoiceServiceClient { get; set; }
 
@@ -90,13 +91,6 @@ namespace Lykke.Job.Messages.Core
         {
             [HttpCheck("/api/isalive")]
             public string ServiceUrl { get; set; }
-        }
-
-        public class SlackNotificationsSettings
-        {
-            public AzureQueueSettings AzureQueue { get; set; }
-
-            public int ThrottlingLimitSeconds { get; set; }
         }
 
         public class AzureQueueSettings
