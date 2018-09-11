@@ -39,7 +39,7 @@ namespace Lykke.Job.Messages.QueueConsumers
             {
                 if (data == null)
                 {
-                    _log.Info(nameof(InitQueues), "Queue had unknown SMS send request");
+                    _log.Warning(nameof(InitQueues), "Queue had unknown SMS send request");
                     return Task.FromResult(false);
                 }
                 return Task.FromResult(true);

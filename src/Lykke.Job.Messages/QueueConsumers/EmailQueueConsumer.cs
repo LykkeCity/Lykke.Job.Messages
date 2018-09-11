@@ -42,7 +42,7 @@ namespace Lykke.Job.Messages.QueueConsumers
                 {
                     if (data == null)
                     {
-                        _log.Info(nameof(InitQueues), "Queue had unknown message");
+                        _log.Warning(nameof(InitQueues), "Queue had unknown message");
                         return Task.FromResult(false);
                     }
                     return Task.FromResult(true);
