@@ -16,6 +16,8 @@ namespace Lykke.Job.Messages.Sagas
     {
         private readonly IPayInvoiceClient _payInvoiceClient;
 
+        private const string EmailApplicationId = "LykkePay"; 
+
         public LykkePayOperationsSaga([NotNull] IPayInvoiceClient payInvoiceClient)
         {
             _payInvoiceClient = payInvoiceClient ?? throw new ArgumentNullException(nameof(payInvoiceClient));
@@ -28,6 +30,7 @@ namespace Lykke.Job.Messages.Sagas
 
             sender.SendCommand(new SendEmailCommand
             {
+                ApplicationId = EmailApplicationId,
                 EmailAddresses = new [] {employee.Email},
                 Template = "lykkepay_employee_registration",
                 Payload = new Dictionary<string, string>
@@ -49,6 +52,7 @@ namespace Lykke.Job.Messages.Sagas
 
             sender.SendCommand(new SendEmailCommand
             {
+                ApplicationId = EmailApplicationId,
                 EmailAddresses = new [] {employee.Email},
                 Template = "lykkepay_password_reset",
                 Payload = new Dictionary<string, string>
