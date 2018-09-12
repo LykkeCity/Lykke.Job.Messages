@@ -189,8 +189,7 @@ namespace Lykke.Job.Messages.Modules
                 .As<IRemoteTemplateGenerator>()
                 .SingleInstance();
 
-            builder.RegisterTemplateFormatter(_appSettings.CurrentValue.MessagesJob.Email.EmailFormatterUrl, 
-                EmptyLogFactory.Instance.CreateLog("TemplateFormatterClient"));
+            builder.RegisterTemplateFormatter(_appSettings.CurrentValue.MessagesJob.Email.EmailFormatterUrl);
             
             builder.RegisterType<EmailGenerator>()
                 .As<IEmailGenerator>()
@@ -236,8 +235,11 @@ namespace Lykke.Job.Messages.Modules
             }
             else
             {
-                builder.RegisterSmsSenderClient(_appSettings.CurrentValue.SmsSenderServiceClient.ServiceUrl,
-                    EmptyLogFactory.Instance.CreateLog(nameof(SmsSenderClient)));
+                builder.Register(ctx =>
+                        new SmsSenderClient(_appSettings.CurrentValue.SmsSenderServiceClient.ServiceUrl,
+                            ctx.Resolve<ILogFactory>().CreateLog(nameof(SmsSenderClient))))
+                    .As<ISmsSenderClient>()
+                    .SingleInstance();
             }
         }
     }
