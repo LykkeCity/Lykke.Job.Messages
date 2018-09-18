@@ -88,7 +88,7 @@ MessagesJob:
       types: [ Tag ]
   AssetsCache:
     ExpirationPeriod:
-      settings-key: AssetsCacheExpirationPeriod
+      settings-key: MessagesJob-AssetsCacheExpirationPeriod
       types: [ Tag ]
 MonitoringServiceClient:
   MonitoringServiceUrl:
