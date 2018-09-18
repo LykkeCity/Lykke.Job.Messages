@@ -1,7 +1,8 @@
-﻿using System;
-using Lykke.Service.PayInvoice.Client;
+using System;
 using Lykke.Sdk.Settings;
 using Lykke.Service.ClientAccount.Client;
+using Lykke.Service.Kyc.Client;
+using Lykke.Service.PayInvoice.Client;
 using Lykke.Service.PersonalData.Settings;
 using Lykke.SettingsReader.Attributes;
 
@@ -12,6 +13,8 @@ namespace Lykke.Job.Messages.Core
         public MessagesSettings MessagesJob { get; set; }
         public AssetsSettings Assets { get; set; }
         public PersonalDataServiceClientSettings PersonalDataServiceSettings { get; set; }
+        public KycServiceClientSettings KycServiceSettings { get; set; }
+        public LykkeKycWebsiteUrlSettings LykkeKycWebsiteUrlSettings { get; set; }
         public SmsNotificationsSettings SmsNotifications { get; set; }
         public SmsSenderSettings SmsSenderServiceClient { get; set; }
         public ClientAccountServiceClientSettings ClientAccountServiceClient { get; set; }
@@ -105,11 +108,17 @@ namespace Lykke.Job.Messages.Core
         {
             public AzureQueueSettings AzureQueue { get; set; }
         }
+
         public class SpecialSelfieSetting
         {
             public string SelfieUrl { get; set; }
             public string SupportEmail { get; set; }
         }
+    }
+
+    public class LykkeKycWebsiteUrlSettings
+    {
+        public string Url { get; set; }
     }
 
     public class SagasRabbitMq
