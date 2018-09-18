@@ -146,3 +146,7 @@ KycServiceSettings:
   ApiKey:
     settings-key: KycService-ApiKey
     types: [ Tag ]
+LykkeKycWebsiteUrlSettings:
+  Url:
+    settings-key: KycWebsiteUrl
+    types: [ Tag ]
