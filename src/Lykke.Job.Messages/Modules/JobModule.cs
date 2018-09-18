@@ -31,10 +31,11 @@ using Lykke.Job.Messages.Services.Sms.Mocks;
 using Lykke.Job.Messages.Services.SwiftCredentials;
 using Lykke.Job.Messages.Services.Templates;
 using Lykke.JobTriggers.Extenstions;
-using Lykke.Logs;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.EmailPartnerRouter;
+using Lykke.Service.Kyc.Abstractions.Services;
+using Lykke.Service.Kyc.Client;
 using Lykke.Service.PayInvoice.Client;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
@@ -80,10 +81,14 @@ namespace Lykke.Job.Messages.Modules
                 .AutoActivate()
                 .SingleInstance();
 
-            builder.Register(ctx =>
-                    new PersonalDataService(_appSettings.CurrentValue.PersonalDataServiceSettings,
-                        ctx.Resolve<ILogFactory>().CreateLog(nameof(PersonalDataService))))
+            builder.Register(ctx => new PersonalDataService(_appSettings.CurrentValue.PersonalDataServiceSettings, ctx.Resolve<ILogFactory>()))
                 .As<IPersonalDataService>()
+                .SingleInstance();
+
+            builder.RegisterInstance(_appSettings.CurrentValue.LykkeKycWebsiteUrlSettings);
+
+            builder.Register(ctx => new KycDocumentsServiceV2Client(_appSettings.CurrentValue.KycServiceSettings, ctx.Resolve<ILogFactory>()))
+                .As<IKycDocumentsServiceV2>()
                 .SingleInstance();
 
             builder.RegisterInstance<IClientAccountClient>(
