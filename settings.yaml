@@ -1,0 +1,159 @@
+Assets:
+  ServiceUrl:
+    settings-key: AssetsServiceUrl
+    types: [ Tag ]
+  CacheExpirationPeriod:
+    settings-key: AssetsServiceExpirationPeriod
+    types: [ Tag ]
+ClientAccountServiceClient:
+  ServiceUrl:
+    settings-key: ClientAccountServiceUrl
+    types: [ Tag ]
+MessagesJob:
+  Db:
+    LogsConnString:
+      settings-key: MessagesJob-LogsConnString
+      types: [ AzureTableStorage, Tag ]
+    ClientPersonalInfoConnString:
+      settings-key: MessagesJob-ClientPersonalInfoConnString
+      types: [ AzureTableStorage, Tag ]
+    BitCoinQueueConnectionString:
+      settings-key: BitCoinQueueConnectionString
+      types: [ AzureTableStorage, Tag ]
+    SharedStorageConnString:
+      settings-key: SharedStorageConnString
+      types: [ AzureTableStorage, Tag ]
+    DictsConnString:
+      settings-key: DictsConnString
+      types: [ AzureTableStorage, Tag ]
+    EmailTemplatesConnString:
+      settings-key: EmailTemplatesConnString
+      types: [ AzureTableStorage, Tag ]
+  Transports:
+    ClientRabbitMqConnectionString:
+      settings-key: MessagesJob-ClientRabbitMqConnectionString
+      types: [ Tag ]
+  Sms:
+    UseMocks:
+      settings-key: MessagesJob-SmsUseMocks
+      types: [ Tag ]
+  Email:
+    EmailTemplatesHost:
+      settings-key: MessagesJob-EmailTemplatesHost
+      types: [ Tag ]
+    EmailFormatterUrl:
+      settings-key: EmailFormatterServiceUrl
+      types: [ Tag ]
+    EmailPartnerRouterUrl:
+      settings-key: EmailPartnerRouterServiceUrl
+      types: [ Tag ]
+    RefundTimeoutInDays: 
+      settings-key: MessagesJob-RefundTimeoutInDays
+      types: [ Tag ]
+    SmtpHost:
+      settings-key: MessagesJob-SmtpHost
+      types: [ Tag ]
+    SmtpPort:
+      settings-key: MessagesJob-SmtpPort
+      types: [ Tag ]
+    SmtpLogin:
+      settings-key: MessagesJob-SmtpLogin
+      types: [ Tag ]
+    SmtpPwd:
+      settings-key: MessagesJob-SmtpPassword
+      types: [ Tag ]
+    EmailFromDisplayName:
+      settings-key: MessagesJob-EmailFromDisplayName
+      types: [ Tag ]
+    EmailFrom:
+      settings-key: MessagesJob-EmailFrom
+      types: [ Tag ]
+    UseMocks:
+      settings-key: MessagesJob-EmailUseMocks
+      types: [ Tag ]
+  Slack:
+    Env:
+      settings-key: MessagesJob-SlackEnv
+      types: [ Tag ]
+    Channels:
+      settings-key: MessagesJob-SlackChannels
+      types: [ JsonArray, Tag ]
+  Blockchain:
+    ExplorerUrl:
+      settings-key: MessagesJob-BlockchainExplorerUrl
+      types: [ Tag ]
+  WalletApi:
+    Host:
+      settings-key: WalletApiUrl
+      types: [ Tag ]
+  AssetsCache:
+    ExpirationPeriod:
+      settings-key: MessagesJob-AssetsCacheExpirationPeriod
+      types: [ Tag ]
+MonitoringServiceClient:
+  MonitoringServiceUrl:
+    settings-key: MonitoringServiceUrl
+    types: [ Tag ]
+PayInvoiceServiceClient:
+  ServiceUrl:
+    settings-key: PayInvoiceServiceUrl
+    types: [ Tag ]
+PersonalDataServiceSettings:
+  ServiceUri:
+    settings-key: PersonalDataServiceUrl
+    types: [ Tag ]
+  ServiceExternalUri:
+    settings-key: PersonalDataServiceExternalUrl
+    types: [ Tag ]
+  ApiKey:
+    settings-key: PersonalDataService-ApiKey
+    types: [ Tag ]
+SagasRabbitMq:
+  RabbitConnectionString:
+    settings-key: RabbitSagas
+    types: [ RabbitMq, Tag ]
+  RetryDelay:
+    settings-key: MessagesJob-SagaRetryDelay
+    types: [ Tag ]
+SlackNotifications:
+  AzureQueue:
+    ConnectionString:
+      settings-key: SlackNotificationsConnString
+      types: [ AzureTableStorage ]
+    QueueName:
+      settings-key: SlackQueueName
+      types: [ AzureTableStorage ]
+SmsNotifications:
+  AzureQueue:
+    ConnectionString: 
+      settings-key: SmsNotificationsConnString
+      types: [ AzureTableStorage, Tag ]
+    QueueName:
+      settings-key: SmsQueueName
+      types: [ Tag ]
+SmsSenderServiceClient:
+  ServiceUrl:
+    settings-key: SmsSenderServiceUrl
+    types: [ Tag ]
+SwiftCredentialsServiceClient:
+  ServiceUrl:
+    settings-key: SwiftCredentialsServiceUrl
+    types: [ Tag ]
+KycServiceSettings:
+  ServiceUri:
+    settings-key: KycServiceUrl
+    types: [ Tag ]
+  ApiKey:
+    settings-key: KycService-ApiKey
+    types: [ Tag ]
+LykkeKycWebsiteUrlSettings:
+  Url:
+    settings-key: LykkeKycWebsiteUrl
+    types: [ Tag ]
+SpecialSelfieSettings:
+  SelfieUrl:
+    settings-key: SpecialSelfieUrl
+    types: [ Tag ]
+  SupportEmail:
+    settings-key: LykkeSupportEmail
+    types: [ Tag ]
