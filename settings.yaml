@@ -139,5 +139,10 @@ SwiftCredentialsServiceClient:
   ServiceUrl:
     settings-key: SwiftCredentialsServiceUrl
     types: [ Tag ]
-
-
+KycServiceSettings:
+  ServiceUri:
+    settings-key: KycServiceUrl
+    types: [ Tag ]
+  ApiKey:
+    settings-key: KycService-ApiKey
+    types: [ Tag ]
