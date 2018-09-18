@@ -148,5 +148,12 @@ KycServiceSettings:
     types: [ Tag ]
 LykkeKycWebsiteUrlSettings:
   Url:
-    settings-key: KycWebsiteUrl
+    settings-key: LykkeKycWebsiteUrl
+    types: [ Tag ]
+SpecialSelfieSettings:
+  SelfieUrl:
+    settings-key: SpecialSelfieUrl
+    types: [ Tag ]
+  SupportEmail:
+    settings-key: LykkeSupportEmail
     types: [ Tag ]
