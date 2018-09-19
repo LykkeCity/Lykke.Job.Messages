@@ -14,6 +14,7 @@ using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Sagas;
 using Lykke.Messaging.Serialization;
 using Lykke.Service.EmailPartnerRouter.Contracts;
+using Lykke.Service.Kyc.Abstractions.Domain.Profile;
 using Lykke.Service.PayAuth.Contract;
 using Lykke.Service.PayAuth.Contract.Events;
 using Lykke.Service.PostProcessing.Contracts.Cqrs.Events;
@@ -55,6 +56,7 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<SwiftWithdrawalEmailNotificationSaga>().SingleInstance();
             builder.RegisterType<OrderExecutionSaga>().SingleInstance();
             builder.RegisterType<LykkePayOperationsSaga>().SingleInstance();
+            builder.RegisterType<KycChangeStatusSaga>().SingleInstance();
 
             builder.Register(ctx =>
                 {
@@ -97,6 +99,12 @@ namespace Lykke.Job.Messages.Modules
                         "PostProcessingRabbitMq",
                         SerializationFormat.ProtoBuf,
                         environment: "lykke");
+
+                    var kycEndpointResolver = new RabbitMqConventionEndpointResolver(
+                        "ClientRabbitMq",
+                        SerializationFormat.ProtoBuf,
+                        environment: "lykke",
+                        exclusiveQueuePostfix: "k8s");
 
                     var pushNotificationsCommands = typeof(PushNotificationsBoundedContext).Assembly
                         .GetTypes()
@@ -183,6 +191,16 @@ namespace Lykke.Job.Messages.Modules
                             .PublishingCommands(typeof(SendEmailCommand))
                             .To(EmailMessagesBoundedContext.Name)
                             .With(commandsRoute)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+
+                        Register.Saga<KycChangeStatusSaga>("kyc-change-status-notifications-saga")
+                            .ListeningEvents(typeof(ChangeStatusEvent))
+                            .From("kyc-profile-status-changes").On(eventsRoute)
+                            .WithEndpointResolver(kycEndpointResolver)
+                            .PublishingCommands(pushNotificationsCommands)
+                            .To(PushNotificationsBoundedContext.Name).With(commandsRoute)
+                            .PublishingCommands(typeof(SendEmailCommand))
+                            .To(EmailMessagesBoundedContext.Name).With(commandsRoute)
                             .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
                     );
                 })
