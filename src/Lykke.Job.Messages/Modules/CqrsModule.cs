@@ -195,7 +195,7 @@ namespace Lykke.Job.Messages.Modules
 
                         Register.Saga<KycChangeStatusSaga>("kyc-change-status-notifications-saga")
                             .ListeningEvents(typeof(ChangeStatusEvent))
-                            .From("kyc-profile-status-changes").On(eventsRoute)
+                            .From("kyc").On(eventsRoute)
                             .WithEndpointResolver(kycEndpointResolver)
                             .PublishingCommands(pushNotificationsCommands)
                             .To(PushNotificationsBoundedContext.Name).With(commandsRoute)
