@@ -56,7 +56,9 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<SwiftWithdrawalEmailNotificationSaga>().SingleInstance();
             builder.RegisterType<OrderExecutionSaga>().SingleInstance();
             builder.RegisterType<LykkePayOperationsSaga>().SingleInstance();
-            builder.RegisterType<KycChangeStatusSaga>().SingleInstance();
+            builder.RegisterType<KycEmailNotificationsSaga>().SingleInstance();
+            builder.RegisterType<KycPushNotificationsSaga>().SingleInstance();
+            builder.RegisterType<KycSmsNotificationsSaga>().SingleInstance();
 
             builder.Register(ctx =>
                 {
@@ -193,15 +195,26 @@ namespace Lykke.Job.Messages.Modules
                             .With(commandsRoute)
                             .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
 
-                        Register.Saga<KycChangeStatusSaga>("kyc-change-status-notifications-saga")
+                        Register.Saga<KycEmailNotificationsSaga>("kyc-email-notifications-saga")
+                            .ListeningEvents(typeof(ChangeStatusEvent))
+                            .From("kyc").On(eventsRoute)
+                            .WithEndpointResolver(kycEndpointResolver)
+                            .PublishingCommands(typeof(SendEmailCommand))
+                            .To(EmailMessagesBoundedContext.Name).With(commandsRoute)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+
+                        Register.Saga<KycPushNotificationsSaga>("kyc-push-notifications-saga")
                             .ListeningEvents(typeof(ChangeStatusEvent))
                             .From("kyc").On(eventsRoute)
                             .WithEndpointResolver(kycEndpointResolver)
                             .PublishingCommands(pushNotificationsCommands)
                             .To(PushNotificationsBoundedContext.Name).With(commandsRoute)
-                            .PublishingCommands(typeof(SendEmailCommand))
-                            .To(EmailMessagesBoundedContext.Name).With(commandsRoute)
-                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+
+                        Register.Saga<KycSmsNotificationsSaga>("kyc-sms-notifications-saga")
+                            .ListeningEvents(typeof(ChangeStatusEvent))
+                            .From("kyc").On(eventsRoute)
+                            .WithEndpointResolver(kycEndpointResolver)
                     );
                 })
                 .As<ICqrsEngine>()
