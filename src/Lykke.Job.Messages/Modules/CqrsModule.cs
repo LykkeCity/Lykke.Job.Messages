@@ -63,6 +63,7 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<OrderExecutionSaga>().SingleInstance();
             builder.RegisterType<LykkePayOperationsSaga>().SingleInstance();
             builder.RegisterType<KycEmailNotificationsSaga>().SingleInstance();
+            builder.RegisterType<KycPushNotificationsSaga>().SingleInstance();
 
             builder.Register(ctx =>
                 {
