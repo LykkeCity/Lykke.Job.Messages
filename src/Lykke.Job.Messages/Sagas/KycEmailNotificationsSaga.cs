@@ -57,7 +57,7 @@ namespace Lykke.Job.Messages.Sagas
                     break;
 
                 case nameof(KycStatus.NeedToFillData):
-                    var declinedDocumentsData = GetDeclinedDocumentsData(evt.ClientId, personalData.FullName, _websiteUrlSettings.Url);
+                    var declinedDocumentsData = await GetDeclinedDocumentsData(evt.ClientId, personalData.FullName, _websiteUrlSettings.Url);
                     await SendEmail(commandSender, evt.ClientId, applicationId, "DeclinedDocumentsTemplate", declinedDocumentsData);
                     break;
 
@@ -79,6 +79,11 @@ namespace Lykke.Job.Messages.Sagas
 
         private async Task SendEmail(ICommandSender commandSender, string clientId, string applicationId, string template, object message)
         {
+            if (message == null)
+            {
+                return;
+            }
+
             var personalData = await _personalDataService.GetAsync(clientId);
 
             commandSender.SendCommand(new SendEmailCommand {
@@ -90,7 +95,7 @@ namespace Lykke.Job.Messages.Sagas
             EmailMessagesBoundedContext.Name);
         }
 
-        private async Task<object> GetDeclinedDocumentsData(string clientId, string fullName, string webUrl)
+        private async Task<DeclinedDocumentsTemplate> GetDeclinedDocumentsData(string clientId, string fullName, string webUrl)
         {
             var documents = await _kycDocumentsService.GetCurrentDocumentsAsync(clientId);
             var declinedDocuments = documents
