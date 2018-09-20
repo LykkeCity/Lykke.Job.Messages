@@ -50,7 +50,7 @@ namespace Lykke.Job.Messages.Sagas
         {
             var clientAccount = await _clientAccountClient.GetByIdAsync(clientId);
             var personalData = await _personalDataService.GetAsync(clientId);
-            var message = await _templateFormatter.FormatAsync(nameof(TTemplate), clientAccount.PartnerId, "EN", new TTemplate());
+            var message = await _templateFormatter.FormatAsync(typeof(TTemplate).Name, clientAccount.PartnerId, "EN", new TTemplate());
             await _smsSenderClient.SendSmsAsync(personalData.ContactPhone, message.Subject);
         }
     }
