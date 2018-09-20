@@ -64,6 +64,7 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<LykkePayOperationsSaga>().SingleInstance();
             builder.RegisterType<KycEmailNotificationsSaga>().SingleInstance();
             builder.RegisterType<KycPushNotificationsSaga>().SingleInstance();
+            builder.RegisterType<KycSmsNotificationsSaga>().SingleInstance();
 
             builder.Register(ctx =>
                 {
@@ -219,7 +220,12 @@ namespace Lykke.Job.Messages.Modules
                             .WithEndpointResolver(kycEndpointResolver)
                             .PublishingCommands(pushNotificationsCommands)
                             .To(PushNotificationsBoundedContext.Name).With(commandsRoute)
-                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+
+                        Register.Saga<KycSmsNotificationsSaga>("kyc-sms-notifications-saga")
+                            .ListeningEvents(typeof(ChangeStatusEvent))
+                            .From("kyc").On(eventsRoute)
+                            .WithEndpointResolver(kycEndpointResolver)
                     );
                 })
                 .As<ICqrsEngine>()
