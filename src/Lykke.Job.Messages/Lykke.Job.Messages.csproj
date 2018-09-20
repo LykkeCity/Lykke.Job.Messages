@@ -32,8 +32,9 @@
     <PackageReference Include="Lykke.Service.ClientAccount.Client" Version="2.2.3" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter.Client" Version="2.0.4" />
+    <PackageReference Include="Lykke.Service.Kyc.Client" Version="1.0.259" />
     <PackageReference Include="Lykke.Service.PayAuth.Contract" Version="1.0.1" />
-    <PackageReference Include="Lykke.Service.PersonalData" Version="2.0.2" />
+    <PackageReference Include="Lykke.Service.PersonalData" Version="2.0.5" />
     <PackageReference Include="Lykke.Service.PostProcessing.Contracts" Version="1.7.0" />
     <PackageReference Include="Lykke.Service.PushNotifications.Client" Version="2.0.2" />
     <PackageReference Include="Lykke.Service.Registration.Contract" Version="1.0.0" />
