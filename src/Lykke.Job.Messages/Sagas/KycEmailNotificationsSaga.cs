@@ -84,12 +84,12 @@ namespace Lykke.Job.Messages.Sagas
                 return;
             }
 
-            var personalData = await _personalDataService.GetAsync(clientId);
+            var email = await _personalDataService.GetEmailAsync(clientId);
 
             commandSender.SendCommand(new SendEmailCommand {
                 ApplicationId = applicationId,
                 Template = template,
-                EmailAddresses = new[] { personalData.Email },
+                EmailAddresses = new[] { email },
                 Payload = message
             },
             EmailMessagesBoundedContext.Name);
