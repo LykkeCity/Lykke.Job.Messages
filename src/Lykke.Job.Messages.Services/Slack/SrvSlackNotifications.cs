@@ -22,14 +22,9 @@ namespace Lykke.Job.Messages.Services.Slack
             {
                 var text = new StringBuilder();
 
-                if (!string.IsNullOrEmpty(_settings.Env))
-                    text.AppendLine($"Environment: {_settings.Env}");
-
                 text.AppendLine(sender != null ? $"{sender} : {message}" : message);
 
-                await
-                    new HttpRequestClient().PostRequest(new { text = text.ToString() }.ToJson(),
-                        webHookUrl);
+                await new HttpRequestClient().PostRequest(new {text = text.ToString()}.ToJson(), webHookUrl);
             }
         }
     }

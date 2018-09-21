@@ -53,7 +53,6 @@ namespace Lykke.Job.Messages.Core
                 public string WebHookUrl { get; set; }
             }
 
-            public string Env { get; set; }
             public Channel[] Channels { get; set; }
         }
 
