@@ -15,7 +15,7 @@ namespace Lykke.Job.Messages
             ApiTitle = "Messages API",
             ApiVersion = "v1"
         };
-        
+
         [UsedImplicitly]
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {

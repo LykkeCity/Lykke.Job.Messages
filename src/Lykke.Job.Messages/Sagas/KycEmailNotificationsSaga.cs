@@ -14,19 +14,18 @@ using Lykke.Service.Kyc.Abstractions.Domain.Profile;
 using Lykke.Service.Kyc.Abstractions.Domain.Verification;
 using Lykke.Service.Kyc.Abstractions.Services;
 using Lykke.Service.PersonalData.Contract;
-using Lykke.Service.PushNotifications.Contract.Commands;
 using Lykke.Service.TemplateFormatter.TemplateModels;
 
 namespace Lykke.Job.Messages.Sagas
 {
-    public class KycChangeStatusSaga
+    public class KycEmailNotificationsSaga
     {
         private readonly IClientAccountClient _clientAccountClient;
         private readonly IPersonalDataService _personalDataService;
         private readonly IKycDocumentsServiceV2 _kycDocumentsService;
         private readonly LykkeKycWebsiteUrlSettings _websiteUrlSettings;
 
-        public KycChangeStatusSaga(
+        public KycEmailNotificationsSaga(
             [NotNull] IClientAccountClient clientAccountClient,
             [NotNull] IPersonalDataService personalDataService,
             [NotNull] IKycDocumentsServiceV2 kycDocumentsService,
@@ -55,14 +54,11 @@ namespace Lykke.Job.Messages.Sagas
                 case nameof(KycStatus.Ok):
                     var welcomeTemplate = clientAccount.IsCyprusClient ? "WelcomeFxCypTemplate" : "WelcomeFxTemplate";
                     await SendEmail(commandSender, evt.ClientId, applicationId, welcomeTemplate, baseTemplateData);
-                    await SendPush(commandSender, evt.ClientId, "Ok", "You are approved to trade FX.");
                     break;
 
                 case nameof(KycStatus.NeedToFillData):
-                    var declinedDocumentsData = GetDeclinedDocumentsData(evt.ClientId, personalData.FullName, _websiteUrlSettings.Url);
-
+                    var declinedDocumentsData = await GetDeclinedDocumentsData(evt.ClientId, personalData.FullName, _websiteUrlSettings.Url);
                     await SendEmail(commandSender, evt.ClientId, applicationId, "DeclinedDocumentsTemplate", declinedDocumentsData);
-                    await SendPush(commandSender, evt.ClientId, "NeedToFillData", "Some of your photos have failed verification, tap to re-upload.");
                     break;
 
                 case nameof(KycStatus.Rejected):
@@ -71,51 +67,35 @@ namespace Lykke.Job.Messages.Sagas
                     break;
 
                 case nameof(KycStatus.RestrictedArea):
-                    var restrictedData = new RestrictedAreaTemplate
-                    {
+                    var restrictedData = new RestrictedAreaTemplate {
                         FirstName = personalData.FirstName,
                         LastName = personalData.LastName,
                         Year = DateTime.UtcNow.Year
                     };
-
                     await SendEmail(commandSender, evt.ClientId, applicationId, "RestrictedAreaTemplate", restrictedData);
-                    await SendPush(commandSender, evt.ClientId, "RestrictedArea", "Lykke is not allowed to onboard clients from your region at the moment. We apologise for the inconvenience.");
                     break;
             }
         }
 
         private async Task SendEmail(ICommandSender commandSender, string clientId, string applicationId, string template, object message)
         {
-            var personalData = await _personalDataService.GetAsync(clientId);
+            if (message == null)
+            {
+                return;
+            }
+
+            var email = await _personalDataService.GetEmailAsync(clientId);
 
             commandSender.SendCommand(new SendEmailCommand {
                 ApplicationId = applicationId,
                 Template = template,
-                EmailAddresses = new[] { personalData.Email },
+                EmailAddresses = new[] { email },
                 Payload = message
             },
             EmailMessagesBoundedContext.Name);
         }
 
-        private async Task SendPush(ICommandSender commandSender, string clientId, string type, string message)
-        {
-            var pushSettings = await _clientAccountClient.GetPushNotificationAsync(clientId);
-            var notificationIds = new[] { (await _clientAccountClient.GetByIdAsync(clientId)).NotificationsId };
-
-            if (pushSettings.Enabled)
-            {
-                var command = new TextNotificationCommand
-                {
-                    NotificationIds = notificationIds,
-                    Type = type,
-                    Message = message
-                };
-
-                commandSender.SendCommand(command, "push-notifications");
-            }
-        }
-
-        private async Task<object> GetDeclinedDocumentsData(string clientId, string fullName, string webUrl)
+        private async Task<DeclinedDocumentsTemplate> GetDeclinedDocumentsData(string clientId, string fullName, string webUrl)
         {
             var documents = await _kycDocumentsService.GetCurrentDocumentsAsync(clientId);
             var declinedDocuments = documents

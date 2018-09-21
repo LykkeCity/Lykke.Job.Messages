@@ -14,6 +14,7 @@ using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Sagas;
 using Lykke.Messaging.Serialization;
 using Lykke.Service.EmailPartnerRouter.Contracts;
+using Lykke.Service.Kyc.Abstractions.Domain.Profile;
 using Lykke.Service.PayAuth.Contract;
 using Lykke.Service.PayAuth.Contract.Events;
 using Lykke.Service.PostProcessing.Contracts.Cqrs.Events;
@@ -61,6 +62,9 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterType<SpecialSelfieNotificationsSaga>().SingleInstance();
             builder.RegisterType<OrderExecutionSaga>().SingleInstance();
             builder.RegisterType<LykkePayOperationsSaga>().SingleInstance();
+            builder.RegisterType<KycEmailNotificationsSaga>().SingleInstance();
+            builder.RegisterType<KycPushNotificationsSaga>().SingleInstance();
+            builder.RegisterType<KycSmsNotificationsSaga>().SingleInstance();
 
             builder.Register(ctx =>
                 {
@@ -103,6 +107,12 @@ namespace Lykke.Job.Messages.Modules
                         "PostProcessingRabbitMq",
                         SerializationFormat.ProtoBuf,
                         environment: "lykke");
+
+                    var kycEndpointResolver = new RabbitMqConventionEndpointResolver(
+                        "ClientRabbitMq",
+                        SerializationFormat.ProtoBuf,
+                        environment: "lykke",
+                        exclusiveQueuePostfix: "k8s");
 
                     var pushNotificationsCommands = typeof(PushNotificationsBoundedContext).Assembly
                         .GetTypes()
@@ -194,6 +204,28 @@ namespace Lykke.Job.Messages.Modules
                             .PublishingCommands(typeof(SendEmailCommand))
                             .To(EmailMessagesBoundedContext.Name)
                             .With(commandsRoute)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+
+                        Register.Saga<KycEmailNotificationsSaga>("kyc-email-notifications-saga")
+                            .ListeningEvents(typeof(ChangeStatusEvent))
+                            .From("kyc").On(eventsRoute)
+                            .WithEndpointResolver(kycEndpointResolver)
+                            .PublishingCommands(typeof(SendEmailCommand))
+                            .To(EmailMessagesBoundedContext.Name).With(commandsRoute)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+
+                        Register.Saga<KycPushNotificationsSaga>("kyc-push-notifications-saga")
+                            .ListeningEvents(typeof(ChangeStatusEvent))
+                            .From("kyc").On(eventsRoute)
+                            .WithEndpointResolver(kycEndpointResolver)
+                            .PublishingCommands(pushNotificationsCommands)
+                            .To(PushNotificationsBoundedContext.Name).With(commandsRoute)
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+
+                        Register.Saga<KycSmsNotificationsSaga>("kyc-sms-notifications-saga")
+                            .ListeningEvents(typeof(ChangeStatusEvent))
+                            .From("kyc").On(eventsRoute)
+                            .WithEndpointResolver(kycEndpointResolver)
                     );
                 })
                 .As<ICqrsEngine>()
