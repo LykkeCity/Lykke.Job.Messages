@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Lykke.Sdk.Settings;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.Kyc.Client;
@@ -57,7 +57,6 @@ namespace Lykke.Job.Messages.Core
                 public string WebHookUrl { get; set; }
             }
 
-            public string Env { get; set; }
             public Channel[] Channels { get; set; }
         }
 

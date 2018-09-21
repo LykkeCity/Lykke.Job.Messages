@@ -72,9 +72,6 @@ MessagesJob:
       settings-key: MessagesJob-EmailUseMocks
       types: [ Tag ]
   Slack:
-    Env:
-      settings-key: MessagesJob-SlackEnv
-      types: [ Tag ]
     Channels:
       settings-key: MessagesJob-SlackChannels
       types: [ JsonArray, Tag ]
