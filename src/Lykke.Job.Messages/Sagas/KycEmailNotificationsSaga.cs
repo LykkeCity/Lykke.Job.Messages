@@ -29,12 +29,12 @@ namespace Lykke.Job.Messages.Sagas
             [NotNull] IClientAccountClient clientAccountClient,
             [NotNull] IPersonalDataService personalDataService,
             [NotNull] IKycDocumentsServiceV2 kycDocumentsService,
-            LykkeKycWebsiteUrlSettings websiteUrlSettings)
+            [NotNull] LykkeKycWebsiteUrlSettings websiteUrlSettings)
         {
             _clientAccountClient = clientAccountClient ?? throw new ArgumentNullException(nameof(clientAccountClient));
             _personalDataService = personalDataService ?? throw new ArgumentNullException(nameof(personalDataService));
-            _kycDocumentsService = kycDocumentsService;
-            _websiteUrlSettings = websiteUrlSettings;
+            _kycDocumentsService = kycDocumentsService ?? throw new ArgumentNullException(nameof(kycDocumentsService));
+            _websiteUrlSettings = websiteUrlSettings ?? throw new ArgumentNullException(nameof(websiteUrlSettings));
         }
 
         [UsedImplicitly]
@@ -58,7 +58,10 @@ namespace Lykke.Job.Messages.Sagas
 
                 case nameof(KycStatus.NeedToFillData):
                     var declinedDocumentsData = await GetDeclinedDocumentsData(evt.ClientId, personalData.FullName, _websiteUrlSettings.Url);
-                    await SendEmail(commandSender, evt.ClientId, applicationId, "DeclinedDocumentsTemplate", declinedDocumentsData);
+                    if (declinedDocumentsData != null)
+                    {
+                        await SendEmail(commandSender, evt.ClientId, applicationId, "DeclinedDocumentsTemplate", declinedDocumentsData);
+                    }
                     break;
 
                 case nameof(KycStatus.Rejected):
