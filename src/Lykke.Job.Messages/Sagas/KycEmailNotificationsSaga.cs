@@ -58,7 +58,10 @@ namespace Lykke.Job.Messages.Sagas
 
                 case nameof(KycStatus.NeedToFillData):
                     var declinedDocumentsData = await GetDeclinedDocumentsData(evt.ClientId, personalData.FullName, _websiteUrlSettings.Url);
-                    await SendEmail(commandSender, evt.ClientId, applicationId, "DeclinedDocumentsTemplate", declinedDocumentsData);
+                    if (declinedDocumentsData != null)
+                    {
+                        await SendEmail(commandSender, evt.ClientId, applicationId, "DeclinedDocumentsTemplate", declinedDocumentsData);
+                    }
                     break;
 
                 case nameof(KycStatus.Rejected):
