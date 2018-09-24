@@ -48,8 +48,11 @@ namespace Lykke.Job.Messages.Sagas
 
         private async Task SendSms<TTemplate>(string clientId) where TTemplate : new()
         {
-            var clientAccount = await _clientAccountClient.GetByIdAsync(clientId);
             var personalData = await _personalDataService.GetAsync(clientId);
+            if (string.IsNullOrEmpty(personalData.ContactPhone)) {
+                return;
+            }
+            var clientAccount = await _clientAccountClient.GetByIdAsync(clientId);
             if (string.IsNullOrEmpty(personalData.ContactPhone))
                 return;
 
