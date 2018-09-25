@@ -103,7 +103,7 @@ namespace Lykke.Job.Messages.Modules
                         environment: "lykke");
 
                     var kycEndpointResolver = new RabbitMqConventionEndpointResolver(
-                        "ClientRabbitMq",
+                        "SagasRabbitMq",
                         SerializationFormat.ProtoBuf,
                         environment: "lykke",
                         exclusiveQueuePostfix: "k8s");
