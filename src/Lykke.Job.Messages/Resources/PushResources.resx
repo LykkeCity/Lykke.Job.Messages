@@ -117,12 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="LimitOrderExecuted" xml:space="preserve">
-    <value>Limit Order for {0} {1} {2} executed
-Price {3} {4} volume {5} {6}</value>
-  </data>
-  <data name="LimitOrderPartiallyExecuted" xml:space="preserve">
-    <value>Limit Order for {0} {1} {2} partially executed
-Price {3} {4} volume {5} {6}</value>
-  </data>
 </root>
