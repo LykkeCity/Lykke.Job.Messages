@@ -120,7 +120,7 @@ namespace Lykke.Job.Messages.Modules
                         .ToArray();
 
                     return new CqrsEngine(logFactory,
-                        ctx.Resolve<IDependencyResolver>(),
+                        new AutofacDependencyResolver(ctx.Resolve<IComponentContext>()),
                         messagingEngine,
                         new DefaultEndpointProvider(),
                         true,
@@ -229,8 +229,7 @@ namespace Lykke.Job.Messages.Modules
                     );
                 })
                 .As<ICqrsEngine>()
-                .SingleInstance()
-                .AutoActivate();
+                .SingleInstance();
         }
     }
 }

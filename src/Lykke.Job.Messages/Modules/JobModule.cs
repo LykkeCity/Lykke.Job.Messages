@@ -31,6 +31,7 @@ using Lykke.Job.Messages.Services.Sms.Mocks;
 using Lykke.Job.Messages.Services.SwiftCredentials;
 using Lykke.Job.Messages.Services.Templates;
 using Lykke.JobTriggers.Extenstions;
+using Lykke.Sdk;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.EmailPartnerRouter;
@@ -63,6 +64,10 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterInstance(_settings)
                 .SingleInstance();
 
+            builder.RegisterType<StartupManager>()
+                .As<IStartupManager>()
+                .SingleInstance();
+            
             builder.RegisterType<HealthService>()
                 .As<IHealthService>()
                 .SingleInstance();
@@ -108,6 +113,8 @@ namespace Lykke.Job.Messages.Modules
             {
                 pool.AddDefaultConnection(_settings.Nested(x => x.Db.SharedStorageConnString));
             });
+            
+            builder.RegisterTemplateFormatter(_appSettings.CurrentValue.TemplateFormatterServiceClient.ServiceUrl);
         }
 
         private void RegisterRepositories(ContainerBuilder builder)
