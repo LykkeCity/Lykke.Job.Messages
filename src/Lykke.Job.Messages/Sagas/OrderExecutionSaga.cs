@@ -54,11 +54,18 @@ namespace Lykke.Job.Messages.Sagas
                 return;
             }
 
-            var clientAccount = await _clientAccountClient.GetByIdAsync(order.WalletId.ToString());
+            string clientId = order.WalletId.ToString();
+            
+            var wallet = await _clientAccountClient.GetWalletAsync(clientId);
+
+            if (wallet != null)
+                clientId = wallet.ClientId;
+            
+            var clientAccount = await _clientAccountClient.GetByIdAsync(clientId);
 
             if (clientAccount == null)
             {
-                _log.Warning(nameof(ManualOrderTradeProcessedEvent), $"Client not found (clientId = {walletId.ToString()})");
+                _log.Warning(nameof(ManualOrderTradeProcessedEvent), $"Client not found (clientId = {clientId})");
                 return;
             }
 
