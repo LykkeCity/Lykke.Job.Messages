@@ -59,25 +59,5 @@ namespace Lykke.Job.Messages.Resources {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Limit Order for {0} {1} {2} executed
-        ///Price {3} {4} volume {5} {6}.
-        /// </summary>
-        internal static string LimitOrderExecuted {
-            get {
-                return ResourceManager.GetString("LimitOrderExecuted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Limit Order for {0} {1} {2} partially executed
-        ///Price {3} {4} volume {5} {6}.
-        /// </summary>
-        internal static string LimitOrderPartiallyExecuted {
-            get {
-                return ResourceManager.GetString("LimitOrderPartiallyExecuted", resourceCulture);
-            }
-        }
     }
 }

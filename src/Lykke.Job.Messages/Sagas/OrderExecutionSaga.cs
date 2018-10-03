@@ -3,7 +3,6 @@ using Common.Log;
 using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Cqrs;
-using Lykke.Job.Messages.Resources;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PostProcessing.Contracts.Cqrs.Events;
@@ -14,6 +13,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lykke.Service.EmailSender;
+using Lykke.Service.PushNotifications.Contract;
+using Lykke.Service.TemplateFormatter.Client;
 
 namespace Lykke.Job.Messages.Sagas
 {
@@ -21,13 +23,19 @@ namespace Lykke.Job.Messages.Sagas
     {
         private readonly IAssetsServiceWithCache _assetsService;
         private readonly IClientAccountClient _clientAccountClient;
+        [NotNull] private readonly ITemplateFormatter _templateFormatter;
         readonly Dictionary<Guid, bool> _walletsByType = new Dictionary<Guid, bool>();
         private readonly ILog _log;
 
-        public OrderExecutionSaga([NotNull] IAssetsServiceWithCache assetsService, [NotNull] IClientAccountClient clientAccountClient, ILogFactory logFactory)
+        public OrderExecutionSaga(
+            [NotNull] IAssetsServiceWithCache assetsService, 
+            [NotNull] IClientAccountClient clientAccountClient,
+            [NotNull] ITemplateFormatter templateFormatter,
+            ILogFactory logFactory)
         {
             _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
             _clientAccountClient = clientAccountClient ?? throw new ArgumentNullException(nameof(clientAccountClient));
+            _templateFormatter = templateFormatter ?? throw new ArgumentNullException(nameof(templateFormatter));
             _log = logFactory.CreateLog(this);
         }
 
@@ -46,6 +54,21 @@ namespace Lykke.Job.Messages.Sagas
                 return;
             }
 
+            string clientId = order.WalletId.ToString();
+            
+            var wallet = await _clientAccountClient.GetWalletAsync(clientId);
+
+            if (wallet != null)
+                clientId = wallet.ClientId;
+            
+            var clientAccount = await _clientAccountClient.GetByIdAsync(clientId);
+
+            if (clientAccount == null)
+            {
+                _log.Warning(nameof(ManualOrderTradeProcessedEvent), $"Client not found (clientId = {clientId})");
+                return;
+            }
+
             #region Checking if this wallet is used for manual trading
             // todo: This filtering logic should be transfered into PostProcessing 
             if (!_walletsByType.ContainsKey(walletId))
@@ -57,7 +80,8 @@ namespace Lykke.Job.Messages.Sagas
             #endregion
 
             var pushSettings = await _clientAccountClient.GetPushNotificationAsync(walletId.ToString());
-            if (!pushSettings.Enabled)
+            
+            if (!pushSettings.Enabled || string.IsNullOrEmpty(clientAccount.NotificationsId))
                 return;
 
             var aggregatedSwaps = AggregateSwaps(order.Trades);
@@ -76,20 +100,51 @@ namespace Lykke.Job.Messages.Sagas
 
             var orderSide = order.Side.ToString().ToLower();
 
-            string message;
             string status;
+            EmailMessage template;
+            
             switch (order.Status)
             {
                 case OrderStatus.PartiallyMatched:
-                    message = string.Format(PushResources.LimitOrderPartiallyExecuted, orderSide, order.AssetPairId, order.Volume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
+                    template = await _templateFormatter.FormatAsync("PushLimitOrderPartiallyExecutedTemplate", clientAccount.PartnerId, "EN", 
+                        new
+                        {
+                            OrderSide = orderSide,
+                            AssetPairId = order.AssetPairId,
+                            Volume = order.Volume,
+                            Price = order.Price,
+                            AssetDisplayId = priceAsset.DisplayId,
+                            ExecutedSum = executedSum,
+                            ReservedAssetDisplayId = receivedAssetEntity.DisplayId
+                        });
                     status = "Processing";
                     break;
                 case OrderStatus.Cancelled:
-                    message = string.Format(PushResources.LimitOrderExecuted, orderSide, order.AssetPairId, order.Volume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
+                    template = await _templateFormatter.FormatAsync("PushLimitOrderExecutedTemplate", clientAccount.PartnerId, "EN", 
+                        new
+                        {
+                            OrderSide = orderSide,
+                            AssetPairId = order.AssetPairId,
+                            Volume = order.Volume,
+                            Price = order.Price,
+                            AssetDisplayId = priceAsset.DisplayId,
+                            ExecutedSum = executedSum,
+                            ReservedAssetDisplayId = receivedAssetEntity.DisplayId
+                        });
                     status = "Cancelled";
                     break;
                 case OrderStatus.Matched:
-                    message = string.Format(PushResources.LimitOrderExecuted, orderSide, order.AssetPairId, order.Volume, order.Price, priceAsset.DisplayId, executedSum, receivedAssetEntity.DisplayId);
+                    template = await _templateFormatter.FormatAsync("PushLimitOrderExecutedTemplate", clientAccount.PartnerId, "EN", 
+                        new
+                        {
+                            OrderSide = orderSide,
+                            AssetPairId = order.AssetPairId,
+                            Volume = order.Volume,
+                            Price = order.Price,
+                            AssetDisplayId = priceAsset.DisplayId,
+                            ExecutedSum = executedSum,
+                            ReservedAssetDisplayId = receivedAssetEntity.DisplayId
+                        });
                     status = "Matched";
                     break;
                 case OrderStatus.Replaced:
@@ -102,15 +157,17 @@ namespace Lykke.Job.Messages.Sagas
                     // ReSharper disable once NotResolvedInText
                     throw new ArgumentOutOfRangeException("evt.Orders.Status", order.Status, nameof(OrderStatus));
             }
-            var notificationIds = new[] { (await _clientAccountClient.GetByIdAsync(order.WalletId.ToString())).NotificationsId };
-            var command = new LimitOrderNotificationCommand
+
+            if (template != null)
             {
-                NotificationIds = notificationIds,
-                Message = message,
-                OrderStatus = status,
-                OrderType = order.Side.ToString()
-            };
-            commandSender.SendCommand(command, "push-notifications");
+                commandSender.SendCommand(new LimitOrderNotificationCommand
+                {
+                    NotificationIds = new[] {clientAccount.NotificationsId},
+                    Message = template.Subject,
+                    OrderStatus = status,
+                    OrderType = order.Side.ToString()
+                }, PushNotificationsBoundedContext.Name);
+            }
         }
 
         private List<AggregatedTransfer> AggregateSwaps(IEnumerable<TradeModel> trades)
