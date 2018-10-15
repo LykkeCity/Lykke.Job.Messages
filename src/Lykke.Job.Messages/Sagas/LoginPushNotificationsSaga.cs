@@ -50,15 +50,18 @@ namespace Lykke.Job.Messages.Sagas
             
             var isMobile = !string.IsNullOrWhiteSpace(evt.ClientInfo);
             
-            var template = await _templateFormatter.FormatAsync("PushLoginSuccessfulTemplate", clientAccount.PartnerId, "EN", 
+            var template = await _templateFormatter.FormatAsync(
+                "PushLoginSuccessfulTemplate",
+                clientAccount.PartnerId,
+                "EN", 
                 new
                 {
                     DeviceType = isMobile
                         ? "on mobile"
                         : "on the web",
-                    Name = isMobile
-                        ? GetDeviceName(evt.UserAgent)
-                        : GetBrowserName(evt.UserAgent),
+                    Name = string.IsNullOrWhiteSpace(evt.UserAgent)
+                        ? null
+                        : (isMobile ? GetDeviceName(evt.UserAgent) : GetBrowserName(evt.UserAgent)),
                     Date = $"{dateTimeNow:dd.MM.yyyy}",
                     Time = $"{dateTimeNow:HH:mm}"
                 });
