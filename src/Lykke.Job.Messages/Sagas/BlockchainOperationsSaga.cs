@@ -54,59 +54,37 @@ namespace Lykke.Job.Messages.Sagas
             await SendCashinEmailAsync(evt.OperationId, evt.ClientId, evt.Amount, evt.AssetId, commandSender);
         }
 
-        //From CashoutProcessor
+        #region CashoutProcessor
+
         [UsedImplicitly]
-        public async Task Handle(CashinCompletedEvent evt, ICommandSender commandSender)
+        public async Task Handle(CrossClientCashoutCompletedEvent evt, ICommandSender commandSender)
         {
             await SendCashinEmailAsync(evt.OperationId, evt.ClientId, evt.Amount, evt.AssetId, commandSender);
         }
 
-        //From CashoutProcessor
         [UsedImplicitly]
         public async Task Handle(CashoutCompletedEvent evt, ICommandSender commandSender)
         {
-            var clientModel = await _clientAccountClient.GetByIdAsync(evt.ClientId.ToString());
-            var clientEmail = await _personalDataService.GetEmailAsync(evt.ClientId.ToString());
-            EmailValidator.ValidateEmail(clientEmail, evt.ClientId);
-            var operationId = evt.OperationId;
-            
-            if (await _deduplicationRepository.IsExistsAsync(operationId))
-                return;
-
-            
-            if (clientModel == null)
-            {
-                _log.Warning(nameof(CashoutCompletedEvent), $"Client not found (clientId = {evt.ClientId})");
-                return;
-            }
-            
-            var asset = await _cachedAssetsService.TryGetAssetAsync(evt.AssetId);
-            
-            if (asset == null)
-            {
-                _log.Warning(nameof(CashoutCompletedEvent), $"Asset not found (assetId = {evt.AssetId})");
-                return;
-            }
-
-            var parameters = new
-            {
-                AssetId = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId,
-                Amount = NumberFormatter.FormatNumber(evt.Amount, asset.Accuracy),
-                ExplorerUrl = "",
-                //{ "ExplorerUrl", string.Format(_blockchainSettings.ExplorerUrl, messageData.SrcBlockchainHash },
-                Year = DateTime.UtcNow.Year.ToString()
-            };
-
-            commandSender.SendCommand(new SendEmailCommand
-            {
-                ApplicationId = clientModel.PartnerId,
-                Template = "NoRefundOCashOutTemplate",
-                EmailAddresses = new[] {clientEmail},
-                Payload = parameters
-            }, EmailMessagesBoundedContext.Name);
-
-            await _deduplicationRepository.InsertOrReplaceAsync(operationId);
+            await SendCashoutEmailAsync(evt.OperationId, evt.ClientId, evt.Amount, evt.AssetId, commandSender);
         }
+
+        [UsedImplicitly]
+        public async Task Handle(CashoutsBatchCompletedEvent evt, ICommandSender commandSender)
+        {
+            if (evt.Cashouts == null || evt.Cashouts.Length == 0)
+            {
+                _log.Warning($"Batch cashouts are empty. BatchId {evt.BatchId}", context: evt);
+
+                return;
+            }
+
+            foreach (var cashout in evt.Cashouts)
+            {
+                await SendCashoutEmailAsync(cashout.OperationId, cashout.ClientId, cashout.Amount, evt.AssetId, commandSender);
+            }
+        }
+
+        #endregion
 
         private async Task SendCashinEmailAsync(Guid operationId, Guid clientId, decimal amount, string assetId, ICommandSender commandSender)
         {
@@ -172,6 +150,50 @@ namespace Lykke.Job.Messages.Sagas
             }
 
             await _deduplicationRepository.InsertOrReplaceAsync(operationId);
+        }
+
+        public async Task SendCashoutEmailAsync(Guid operationId, Guid clientId, decimal amount, string assetId, ICommandSender commandSender)
+        {
+            var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());
+            var clientEmail = await _personalDataService.GetEmailAsync(clientId.ToString());
+            EmailValidator.ValidateEmail(clientEmail, clientId);
+            
+            if (await _deduplicationRepository.IsExistsAsync(operationId))
+                return;
+            
+            if (clientModel == null)
+            {
+                _log.Warning(nameof(CashoutCompletedEvent), $"Client not found (clientId = {clientId})");
+                return;
+            }
+            
+            var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
+            
+            if (asset == null)
+            {
+                _log.Warning(nameof(CashoutCompletedEvent), $"Asset not found (assetId = {assetId})");
+                return;
+            }
+
+            var parameters = new
+            {
+                AssetId = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId,
+                Amount = NumberFormatter.FormatNumber(amount, asset.Accuracy),
+                ExplorerUrl = "",
+                //{ "ExplorerUrl", string.Format(_blockchainSettings.ExplorerUrl, messageData.SrcBlockchainHash },
+                Year = DateTime.UtcNow.Year.ToString()
+            };
+
+            commandSender.SendCommand(new SendEmailCommand
+            {
+                ApplicationId = clientModel.PartnerId,
+                Template = "NoRefundOCashOutTemplate",
+                EmailAddresses = new[] {clientEmail},
+                Payload = parameters
+            }, EmailMessagesBoundedContext.Name);
+
+            await _deduplicationRepository.InsertOrReplaceAsync(operationId);
+
         }
     }
 }

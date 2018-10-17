@@ -168,7 +168,10 @@ namespace Lykke.Job.Messages.Modules
                             .With(commandsRoute)
                             .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
                         Register.Saga<BlockchainOperationsSaga>("blockchain-notification-saga")
-                            .ListeningEvents(typeof(CashinCompletedEvent), typeof(CashoutCompletedEvent))
+                            .ListeningEvents(
+                                typeof(CashoutCompletedEvent),
+                                typeof(CashoutsBatchCompletedEvent),
+                                typeof(CrossClientCashoutCompletedEvent))
                             .From(BlockchainCashoutProcessor.Contract.BlockchainCashoutProcessorBoundedContext.Name)
                             .On(eventsRoute)
                             .ProcessingOptions(eventsRoute).MultiThreaded(2).QueueCapacity(512)
