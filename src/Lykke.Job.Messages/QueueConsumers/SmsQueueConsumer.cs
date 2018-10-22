@@ -57,6 +57,9 @@ namespace Lykke.Job.Messages.QueueConsumers
             _log.Info(nameof(HandleSimpleSmsRequestAsync),
                 $"SMS: {request.MessageData}. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}");
 
+            if (string.IsNullOrWhiteSpace(request.PhoneNumber))
+                throw new ArgumentException($"{nameof(request.PhoneNumber)} must be not empty in sms message: {request.ToJson()}");
+
             await _smsSenderClient.SendSmsAsync(request.PhoneNumber, request.MessageData);
         }
 
