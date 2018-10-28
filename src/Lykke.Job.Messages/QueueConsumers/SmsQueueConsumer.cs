@@ -58,7 +58,7 @@ namespace Lykke.Job.Messages.QueueConsumers
                 $"SMS: {request.MessageData}. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}");
 
             if (string.IsNullOrWhiteSpace(request.PhoneNumber))
-                throw new ArgumentException($"{nameof(request.PhoneNumber)} must be not empty in sms message: {request.ToJson()}");
+                throw new ArgumentException($"{nameof(request.PhoneNumber)} can't be empty in sms request: {request.ToJson()}");
 
             await _smsSenderClient.SendSmsAsync(request.PhoneNumber, request.MessageData);
         }
@@ -67,6 +67,9 @@ namespace Lykke.Job.Messages.QueueConsumers
         {
             _log.Info(nameof(HandleSmsRequestAsync),
                 $"SMS: Phone confirmation. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}");
+
+            if (string.IsNullOrWhiteSpace(request.PhoneNumber))
+                throw new ArgumentException($"{nameof(request.PhoneNumber)} can't be empty in sms request: {request.ToJson()}");
 
             var msgText = await _templateFormatter.FormatAsync(nameof(SmsConfirmationTemplate), request.PartnerId, "EN",
                 new SmsConfirmationTemplate
