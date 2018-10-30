@@ -68,9 +68,7 @@ namespace Lykke.Job.Messages.Sagas
         {
             if (evt.Cashouts == null || evt.Cashouts.Length == 0)
             {
-                _log.Warning($"Batch cashouts are empty. BatchId {evt.BatchId}", context: evt);
-
-                return;
+                throw new InvalidOperationException($"Batch cashouts are empty. BatchId {evt.BatchId}");
             }
 
             foreach (var cashout in evt.Cashouts)
