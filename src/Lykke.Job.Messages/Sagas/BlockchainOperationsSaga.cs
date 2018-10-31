@@ -51,10 +51,15 @@ namespace Lykke.Job.Messages.Sagas
 
         #region CashoutProcessor
 
+        //TODO: Should it be splitted in additoinal distibuted steps?
         [UsedImplicitly]
         public async Task Handle(CrossClientCashoutCompletedEvent evt, ICommandSender commandSender)
         {
-            await SendCashinEmailAsync(evt.OperationId, evt.ClientId, evt.Amount, evt.AssetId, commandSender);
+            //Cross client means we change ME Balance and do not broadcast any transactions
+            //Send confirmation to sender that cashout is completed
+            await SendCashoutEmailAsync(evt.OperationId, evt.ClientId, evt.Amount, evt.AssetId, commandSender);
+            //Send confirmation to recepient that cashin is completed
+            await SendCashinEmailAsync(evt.CashinOperationId, evt.RecipientClientId, evt.Amount, evt.AssetId, commandSender);
         }
 
         [UsedImplicitly]
