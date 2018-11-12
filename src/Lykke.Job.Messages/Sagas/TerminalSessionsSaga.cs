@@ -34,15 +34,17 @@ namespace Lykke.Job.Messages.Sagas
                 _log.Warning(nameof(TradingSessionCreatedEvent), $"Client not found (clientId = {evt.ClientId})");
                 return;
             }
+            
+            var pushSettings = await _clientAccountClient.GetPushNotificationAsync(evt.ClientId);
 
-            if (!string.IsNullOrEmpty(clientAccount.NotificationsId))
+            if (!pushSettings.Enabled || string.IsNullOrEmpty(clientAccount.NotificationsId))
+                return;
+            
+            commandSender.SendCommand(new DataNotificationCommand
             {
-                commandSender.SendCommand(new DataNotificationCommand
-                {
-                    NotificationIds = new[] {clientAccount.NotificationsId},
-                    Type = NotificationType.TradingSessionCreated.ToString()
-                }, PushNotificationsBoundedContext.Name);
-            }
+                NotificationIds = new[] {clientAccount.NotificationsId},
+                Type = NotificationType.TradingSessionCreated.ToString()
+            }, PushNotificationsBoundedContext.Name);
         }
     }
 }
