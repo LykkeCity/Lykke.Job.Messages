@@ -103,7 +103,7 @@ namespace Lykke.Job.Messages.Modules
                         environment: "lykke");
 
                     var kycEndpointResolver = new RabbitMqConventionEndpointResolver(
-                        "ClientRabbitMq",
+                        "SagasRabbitMq",
                         SerializationFormat.ProtoBuf,
                         environment: "lykke",
                         exclusiveQueuePostfix: "k8s");
@@ -114,7 +114,7 @@ namespace Lykke.Job.Messages.Modules
                         .ToArray();
 
                     return new CqrsEngine(logFactory,
-                        ctx.Resolve<IDependencyResolver>(),
+                        new AutofacDependencyResolver(ctx.Resolve<IComponentContext>()),
                         messagingEngine,
                         new DefaultEndpointProvider(),
                         true,
@@ -218,8 +218,7 @@ namespace Lykke.Job.Messages.Modules
                     );
                 })
                 .As<ICqrsEngine>()
-                .SingleInstance()
-                .AutoActivate();
+                .SingleInstance();
         }
     }
 }
