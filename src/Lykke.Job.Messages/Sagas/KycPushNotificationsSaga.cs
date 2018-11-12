@@ -35,9 +35,6 @@ namespace Lykke.Job.Messages.Sagas
         [UsedImplicitly]
         public async Task Handle(ChangeStatusEvent evt, ICommandSender commandSender)
         {
-            EmailMessage template = null;
-            string type = null;
-            
             var clientAccount = await _clientAccountClient.GetClientByIdAsync(evt.ClientId);
 
             if (clientAccount == null)
@@ -50,6 +47,9 @@ namespace Lykke.Job.Messages.Sagas
 
             if (!pushSettings.Enabled || string.IsNullOrEmpty(clientAccount.NotificationsId))
                 return;
+            
+            EmailMessage template = null;
+            string type = null;
             
             switch (evt.NewStatus)
             {
@@ -69,15 +69,15 @@ namespace Lykke.Job.Messages.Sagas
                     break;
             }
 
-            if (template != null)
+            if (template == null)
+                return;
+            
+            commandSender.SendCommand(new TextNotificationCommand
             {
-                commandSender.SendCommand(new TextNotificationCommand
-                {
-                    NotificationIds = new[] {clientAccount.NotificationsId},
-                    Type = type,
-                    Message = template.Subject
-                }, PushNotificationsBoundedContext.Name);
-            }
+                NotificationIds = new[] {clientAccount.NotificationsId},
+                Type = type,
+                Message = template.Subject
+            }, PushNotificationsBoundedContext.Name);
         }
     }
 }
