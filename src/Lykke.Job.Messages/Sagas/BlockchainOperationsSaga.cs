@@ -51,7 +51,6 @@ namespace Lykke.Job.Messages.Sagas
 
         #region CashoutProcessor
 
-        //TODO: Should it be splitted in additoinal distibuted steps?
         [UsedImplicitly]
         public async Task Handle(CrossClientCashoutCompletedEvent evt, ICommandSender commandSender)
         {
@@ -156,15 +155,14 @@ namespace Lykke.Job.Messages.Sagas
             var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());
             if (clientModel == null)
             {
-                _log.Warning(nameof(CashoutCompletedEvent), $"Client not found (clientId = {evt.ClientId})");
+                _log.Warning(nameof(CashoutCompletedEvent), $"Client not found (clientId = {clientId})");
                 return;
             }
             
-            var asset = await _cachedAssetsService.TryGetAssetAsync(evt.AssetId);
-            
+            var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
             if (asset == null)
             {
-                _log.Warning(nameof(CashoutCompletedEvent), $"Asset not found (assetId = {evt.AssetId})");
+                _log.Warning(nameof(CashoutCompletedEvent), $"Asset not found (assetId = {assetId})");
                 return;
             }
 
