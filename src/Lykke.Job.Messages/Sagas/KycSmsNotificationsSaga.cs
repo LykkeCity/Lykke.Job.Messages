@@ -53,10 +53,10 @@ namespace Lykke.Job.Messages.Sagas
                 return;
             }
 
-            if (string.IsNullOrEmpty(personalData.ContactPhone))
-                return;
-
             var clientAccount = await _clientAccountClient.GetByIdAsync(clientId);
+            if (clientAccount == null)
+                return;
+           
             var message = await _templateFormatter.FormatAsync(typeof(TTemplate).Name, clientAccount.PartnerId, "EN", new TTemplate());
             await _smsSenderClient.SendSmsAsync(personalData.ContactPhone, message.Subject);
         }
