@@ -56,7 +56,6 @@ namespace Lykke.Job.Messages.Sagas
 
         #region CashoutProcessor
 
-        //TODO: Should it be splitted in additoinal distibuted steps?
         [UsedImplicitly]
         public async Task Handle(CrossClientCashoutCompletedEvent evt, ICommandSender commandSender)
         {
@@ -157,13 +156,10 @@ namespace Lykke.Job.Messages.Sagas
 
         public async Task SendCashoutEmailAsync(Guid operationId, Guid clientId, decimal amount, string assetId, ICommandSender commandSender)
         {
-            var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());
-            var clientEmail = await _personalDataService.GetEmailAsync(clientId.ToString());
-            EmailValidator.ValidateEmail(clientEmail, clientId);
-            
             if (await _deduplicationRepository.IsExistsAsync(operationId))
                 return;
-            
+
+            var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());
             if (clientModel == null)
             {
                 _log.Warning(nameof(CashoutCompletedEvent), $"Client not found (clientId = {clientId})");
@@ -171,7 +167,6 @@ namespace Lykke.Job.Messages.Sagas
             }
             
             var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
-            
             if (asset == null)
             {
                 _log.Warning(nameof(CashoutCompletedEvent), $"Asset not found (assetId = {assetId})");
@@ -188,15 +183,15 @@ namespace Lykke.Job.Messages.Sagas
             };
 
             commandSender.SendCommand(new SendEmailCommand
-            {
-                ApplicationId = clientModel.PartnerId,
-                Template = "NoRefundOCashOutTemplate",
-                EmailAddresses = new[] {clientEmail},
-                Payload = parameters
-            }, EmailMessagesBoundedContext.Name);
+                {
+                    ApplicationId = clientModel.PartnerId,
+                    Template = "NoRefundOCashOutTemplate",
+                    EmailAddresses = new[] { clientModel.Email },
+                    Payload = parameters
+                },
+                EmailMessagesBoundedContext.Name);
 
             await _deduplicationRepository.InsertOrReplaceAsync(operationId);
-
         }
     }
 }
