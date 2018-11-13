@@ -1,33 +1,31 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Common.Log;
 using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.Cqrs;
 using Lykke.Job.Messages.Contract;
-using Lykke.Job.Messages.Core;
 using Lykke.Job.Messages.Utils;
-using JetBrains.Annotations;
-using Lykke.Cqrs;
-using Lykke.Job.Messages.Contract;
 using Lykke.Service.ClientAccount.Client;
-using Lykke.Service.ClientAccount.Client.Models;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PersonalData.Contract;
-using Lykke.Service.PersonalData.Contract.Models;
 using Lykke.Service.Registration.Contract.Events;
-using System;
-using System.Globalization;
-using System.Threading.Tasks;
 
 namespace Lykke.Job.Messages.Sagas
 {
     public class LoginEmailNotificationsSaga
-    {        
+    {
         private readonly IPersonalDataService _personalDataService;
         private readonly IClientAccountClient _clientAccountClient;
+        private readonly ILog _log;
 
-        public LoginEmailNotificationsSaga(IPersonalDataService personalDataService, IClientAccountClient clientAccountClient)
-        {            
+        public LoginEmailNotificationsSaga(
+            ILogFactory logFactory,
+            IPersonalDataService personalDataService,
+            IClientAccountClient clientAccountClient)
+        {
+            _log = logFactory.CreateLog(this);
             _personalDataService = personalDataService;
             _clientAccountClient = clientAccountClient;
         }
@@ -36,17 +34,24 @@ namespace Lykke.Job.Messages.Sagas
         public async Task Handle(ClientLoggedEvent evt, ICommandSender commandSender)
         {
             var personalData = await _personalDataService.GetAsync(evt.ClientId);
+            if (personalData == null)
+            {
+                _log.Warning(nameof(ClientLoggedEvent), $"Personal data not found for ClientId = {evt.ClientId}");
+                return;
+            }
+
             EmailValidator.ValidateEmail(personalData.Email, evt.ClientId);
 
-            var parameters = new 
+            var now = DateTime.UtcNow;
+            var parameters = new
             {
                 personalData.FullName,
                 evt.ClientInfo,
                 evt.Ip,
                 evt.Country,
                 evt.City,
-                Date = DateTime.UtcNow.ToString("MMMM dd, yyyy, hh:mm tt", CultureInfo.CreateSpecificCulture("en-US")),
-                Year = DateTime.UtcNow.Year.ToString()
+                Date = now.ToString("MMMM dd, yyyy, hh:mm tt", CultureInfo.CreateSpecificCulture("en-US")),
+                Year = now.Year.ToString()
             };
             var clientAccount = await _clientAccountClient.GetByIdAsync(personalData.Id);
             var template = clientAccount.IsCyprusClient
