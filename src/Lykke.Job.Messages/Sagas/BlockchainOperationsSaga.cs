@@ -31,7 +31,7 @@ namespace Lykke.Job.Messages.Sagas
         private readonly ITemplateFormatter _templateFormatter;
         private readonly ILog _log;
 
-        public BlockchainOperationsSaga(            
+        public BlockchainOperationsSaga(
             IAssetsServiceWithCache cachedAssetsService,
             IClientAccountClient clientAccountClient,
             IPersonalDataService personalDataService,
@@ -107,8 +107,11 @@ namespace Lykke.Job.Messages.Sagas
             
             if (asset == null)
             {
-                _log.Warning(nameof(SendCashinEmailAsync), $"Asset not found (assetId = {assetId})");
-                return;
+                var exception = new InvalidOperationException($"Asset not found (assetId = {assetId})");
+                _log.Error(nameof(SendCashinEmailAsync), exception);
+
+                throw exception;
+
             }
             
             string amountFormatted = NumberFormatter.FormatNumber(amount, asset.Accuracy);
@@ -169,8 +172,10 @@ namespace Lykke.Job.Messages.Sagas
             var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
             if (asset == null)
             {
-                _log.Warning(nameof(CashoutCompletedEvent), $"Asset not found (assetId = {assetId})");
-                return;
+                var exception = new InvalidOperationException($"Asset not found (assetId = {assetId})");
+                _log.Error(nameof(SendCashoutEmailAsync), exception);
+
+                throw exception;
             }
 
             var parameters = new
