@@ -99,8 +99,10 @@ namespace Lykke.Job.Messages.Sagas
 
             if (clientModel == null)
             {
-                _log.Warning(nameof(SendCashinEmailAsync), $"Client not found (clientId = {clientId.ToString()})");
-                return;
+                var exception = new InvalidOperationException($"Client not found(clientId = { clientId })");
+                _log.Error(nameof(SendCashinEmailAsync), exception);
+
+                throw exception;
             }
             
             var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
@@ -165,8 +167,10 @@ namespace Lykke.Job.Messages.Sagas
             var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());
             if (clientModel == null)
             {
-                _log.Warning(nameof(CashoutCompletedEvent), $"Client not found (clientId = {clientId})");
-                return;
+                var exception = new InvalidOperationException($"Client not found(clientId = { clientId })");
+                _log.Error(nameof(SendCashoutEmailAsync), exception);
+
+                throw exception;
             }
             
             var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
