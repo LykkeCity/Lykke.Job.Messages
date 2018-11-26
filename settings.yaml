@@ -9,6 +9,10 @@ ClientAccountServiceClient:
   ServiceUrl:
     settings-key: ClientAccountServiceUrl
     types: [ Tag ]
+TemplateFormatterServiceClient:
+  ServiceUrl:
+    settings-key: TemplateFormatterServiceUrl
+    types: [ Tag ]
 MessagesJob:
   Db:
     LogsConnString:
