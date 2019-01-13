@@ -41,6 +41,7 @@ using Lykke.Service.PayInvoice.Client;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.SmsSender.Client;
+using Lykke.Service.SwiftCredentials.Client;
 using Lykke.SettingsReader;
 using Lykke.Service.TemplateFormatter;
 using BlobSpace = AzureStorage.Blob;
@@ -103,6 +104,8 @@ namespace Lykke.Job.Messages.Modules
             builder.RegisterInstance(new PayInvoiceClient(_appSettings.CurrentValue.PayInvoiceServiceClient))
                 .As<IPayInvoiceClient>()
                 .SingleInstance();
+            
+            builder.RegisterSwiftCredentialsClient(_appSettings.CurrentValue.SwiftCredentialsServiceClient);
 
             RegistermSmsServices(builder);
             RegisterEmailServices(builder);

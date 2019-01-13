@@ -12,6 +12,7 @@
     <PackageReference Include="Lykke.Service.Kyc.Client" Version="1.0.259" />
     <PackageReference Include="Lykke.Service.PayInvoice.Client" Version="5.2.0" />
     <PackageReference Include="Lykke.Service.PersonalData" Version="2.0.4" />
+    <PackageReference Include="Lykke.Service.SwiftCredentials.Client" Version="1.0.0.8" />
     <PackageReference Include="Lykke.Service.TemplateFormatter.Client" Version="1.1.0" />
   </ItemGroup>
   <ItemGroup>
