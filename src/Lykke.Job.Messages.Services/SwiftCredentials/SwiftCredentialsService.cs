@@ -22,10 +22,10 @@ namespace Lykke.Job.Messages.Services.SwiftCredentials
 
         public async Task<ISwiftCredentials> GetCredentialsAsync(string assetId, IPersonalData personalData)
         {
-            var regulationId = personalData.SpotRegulator ??
+            var regulatorId = personalData.SpotRegulator ??
                               (await _regulatorRepository.GetByIdOrDefaultAsync(null)).InternalId;
                               
-            var creds = await _swiftCredentialsClient.GetForClientAsync(personalData.Id, regulationId, assetId);
+            var creds = await _swiftCredentialsClient.GetForClientAsync(personalData.Id, regulatorId, assetId);
 
             return new Core.Domain.SwiftCredentials.SwiftCredentials
             {
