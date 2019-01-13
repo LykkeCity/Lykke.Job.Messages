@@ -4,6 +4,7 @@ using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.Kyc.Client;
 using Lykke.Service.PayInvoice.Client;
 using Lykke.Service.PersonalData.Settings;
+using Lykke.Service.SwiftCredentials.Client;
 using Lykke.Service.TemplateFormatter.Client;
 using Lykke.SettingsReader.Attributes;
 
@@ -22,6 +23,7 @@ namespace Lykke.Job.Messages.Core
         public SagasRabbitMq SagasRabbitMq { get; set; }
         public PayInvoiceServiceClientSettings PayInvoiceServiceClient { get; set; }
         public TemplateFormatterServiceClientSettings TemplateFormatterServiceClient { get; set; }
+        public SwiftCredentialsServiceClientSettings SwiftCredentialsServiceClient { get; set; }
 
         public class MessagesSettings
         {
