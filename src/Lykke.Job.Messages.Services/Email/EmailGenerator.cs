@@ -29,22 +29,26 @@ namespace Lykke.Job.Messages.Services.Email
         private readonly IAssetsServiceWithCache _assetsService;
         private readonly IPersonalDataService _personalDataService;
         private readonly IRemoteTemplateGenerator _templateGenerator;
-        private readonly AppSettings.EmailSettings _emailSettings;
-        private readonly AppSettings.BlockchainSettings _blockchainSettings;
-        private readonly AppSettings.WalletApiSettings _walletApiSettings;
+        private readonly int _refundTimeoutInDays;
+        private readonly string _explorerUrl;
+        private readonly string _walletApiHost;
         private readonly ISwiftCredentialsService _swiftCredentialsService;
 
         public EmailGenerator(
-            IAssetsServiceWithCache assetsService, IPersonalDataService personalDataService,
-            AppSettings.EmailSettings emailSettings, AppSettings.BlockchainSettings blockchainSettings, AppSettings.WalletApiSettings walletApiSettings,
-            IRemoteTemplateGenerator templateGenerator, ISwiftCredentialsService swiftCredentialsService)
+            IAssetsServiceWithCache assetsService,
+            IPersonalDataService personalDataService,
+            int refundTimeoutInDays,
+            string explorerUrl,
+            string walletApiHost,
+            IRemoteTemplateGenerator templateGenerator,
+            ISwiftCredentialsService swiftCredentialsService)
         {
             _assetsService = assetsService;
             _personalDataService = personalDataService;
             _templateGenerator = templateGenerator;
-            _emailSettings = emailSettings;
-            _blockchainSettings = blockchainSettings;
-            _walletApiSettings = walletApiSettings;
+            _refundTimeoutInDays = refundTimeoutInDays;
+            _explorerUrl = explorerUrl;
+            _walletApiHost = walletApiHost;
             _swiftCredentialsService = swiftCredentialsService;
         }
 
@@ -152,7 +156,7 @@ namespace Lykke.Job.Messages.Services.Email
             {
                 AssetId = asset.DisplayId,
                 Amount = NumberFormatter.FormatNumber(messageData.Amount, asset.Accuracy), 
-                ExplorerUrl = string.Format(_blockchainSettings.ExplorerUrl, messageData.SrcBlockchainHash),
+                ExplorerUrl = string.Format(_explorerUrl, messageData.SrcBlockchainHash),
                 Year = DateTime.UtcNow.Year
             };
 
@@ -189,9 +193,9 @@ namespace Lykke.Job.Messages.Services.Email
             var templateVm = new BtcDepositDoneTempate
             {
                 Amount = refundData.Amount,
-                ExplorerUrl = string.Format(_blockchainSettings.ExplorerUrl, refundData.SrcBlockchainHash),
+                ExplorerUrl = string.Format(_explorerUrl, refundData.SrcBlockchainHash),
                 Year = DateTime.UtcNow.Year,
-                ValidDays = refundData.ValidDays > 0 ? refundData.ValidDays : _emailSettings.RefundTimeoutInDays
+                ValidDays = refundData.ValidDays > 0 ? refundData.ValidDays : _refundTimeoutInDays
             };
 
             return _templateGenerator.GenerateAsync(partnerId, "BtcDepositDoneTemplate", templateVm);
@@ -201,9 +205,9 @@ namespace Lykke.Job.Messages.Services.Email
         {
             var templateVm = new SwapDoneTemplate
             {
-                ExplorerUrl = string.Format(_blockchainSettings.ExplorerUrl, refundData.SrcBlockchainHash),
+                ExplorerUrl = string.Format(_explorerUrl, refundData.SrcBlockchainHash),
                 Year = DateTime.UtcNow.Year,
-                ValidDays = refundData.ValidDays > 0 ? refundData.ValidDays : _emailSettings.RefundTimeoutInDays
+                ValidDays = refundData.ValidDays > 0 ? refundData.ValidDays : _refundTimeoutInDays
             };
 
             var emailMessage = await _templateGenerator.GenerateAsync(partnerId, "SwapDoneTemplate", templateVm);
@@ -217,9 +221,9 @@ namespace Lykke.Job.Messages.Services.Email
             {
                 Amount = refundData.Amount,
                 AssetId = refundData.AssetId,
-                ExplorerUrl = string.Format(_blockchainSettings.ExplorerUrl, refundData.SrcBlockchainHash),
+                ExplorerUrl = string.Format(_explorerUrl, refundData.SrcBlockchainHash),
                 Year = DateTime.UtcNow.Year,
-                ValidDays = refundData.ValidDays > 0 ? refundData.ValidDays : _emailSettings.RefundTimeoutInDays
+                ValidDays = refundData.ValidDays > 0 ? refundData.ValidDays : _refundTimeoutInDays
             };
 
             var emailMessage = await _templateGenerator.GenerateAsync(partnerId, "OCashOutDoneTemplate", templateVm);
@@ -238,7 +242,7 @@ namespace Lykke.Job.Messages.Services.Email
                 AmountLkk = transferCompletedData.AmountLkk,
                 AssetId = transferCompletedData.AssetId,
                 ClientName = transferCompletedData.ClientName,
-                ExplorerUrl = string.Format(_blockchainSettings.ExplorerUrl, transferCompletedData.SrcBlockchainHash),
+                ExplorerUrl = string.Format(_explorerUrl, transferCompletedData.SrcBlockchainHash),
                 Year = DateTime.UtcNow.Year
             };
 
@@ -252,7 +256,7 @@ namespace Lykke.Job.Messages.Services.Email
                 Amount = transferCompletedData.Amount,
                 AssetId = transferCompletedData.AssetId,
                 ClientName = transferCompletedData.ClientName,
-                ExplorerUrl = string.Format(_blockchainSettings.ExplorerUrl, transferCompletedData.SrcBlockchainHash),
+                ExplorerUrl = string.Format(_explorerUrl, transferCompletedData.SrcBlockchainHash),
                 Year = DateTime.UtcNow.Year
             };
 
@@ -390,7 +394,7 @@ namespace Lykke.Job.Messages.Services.Email
         {
             var templateVm = new CashoutUnlockTemplate
             {
-                Link = $"{_walletApiSettings.Host}/api/cashout-confirm/{messageData.ClientId}?code={messageData.Code}",
+                Link = $"{_walletApiHost}/api/cashout-confirm/{messageData.ClientId}?code={messageData.Code}",
                 Year = DateTime.UtcNow.Year
             };
 
@@ -410,7 +414,7 @@ namespace Lykke.Job.Messages.Services.Email
                 AccHolderAddress = data.AccHolderAddress,
                 BankName = data.BankName,
                 ExplorerUrl = !string.IsNullOrEmpty(data.BlockchainHash)
-                    ? string.Format(_blockchainSettings.ExplorerUrl, data.BlockchainHash)
+                    ? string.Format(_explorerUrl, data.BlockchainHash)
                     : string.Empty
             };
 
@@ -421,7 +425,7 @@ namespace Lykke.Job.Messages.Services.Email
         {
             var personalData = await _personalDataService.GetAsync(messageData.ClientId);
 
-            var apiHost = _walletApiSettings.Host.Trim().ToLower();
+            var apiHost = _walletApiHost.Trim().ToLower();
             if (apiHost.Last() != '/')
                 apiHost += "/";
 
@@ -627,7 +631,7 @@ namespace Lykke.Job.Messages.Services.Email
                 Amount = transferCompletedData.Amount,
                 AssetId = transferCompletedData.AssetId,
                 ClientName = transferCompletedData.ClientName,
-                ExplorerUrl = string.Format(_blockchainSettings.ExplorerUrl, transferCompletedData.SrcBlockchainHash),
+                ExplorerUrl = string.Format(_explorerUrl, transferCompletedData.SrcBlockchainHash),
                 Year = DateTime.UtcNow.Year
             };
 

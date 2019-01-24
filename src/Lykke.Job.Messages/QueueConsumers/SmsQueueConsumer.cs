@@ -1,14 +1,14 @@
-﻿using AzureStorage.Queue;
+﻿using System;
+using System.Threading.Tasks;
+using Autofac;
+using AzureStorage.Queue;
 using Common;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Job.Messages.Contract.Sms;
 using Lykke.Service.SmsSender.Client;
-using Lykke.Service.TemplateFormatter.TemplateModels;
-using System;
-using System.Threading.Tasks;
 using Lykke.Service.TemplateFormatter.Client;
-using Autofac;
-using Lykke.Common.Log;
+using Lykke.Service.TemplateFormatter.TemplateModels;
 
 namespace Lykke.Job.Messages.QueueConsumers
 {
@@ -45,8 +45,7 @@ namespace Lykke.Job.Messages.QueueConsumers
                 return Task.FromResult(true);
             });
 
-            _queueReader.RegisterHandler<SendSmsData<SmsConfirmationData>>(
-                "SmsConfirmMessage", HandleSmsRequestAsync);
+            _queueReader.RegisterHandler<SendSmsData<SmsConfirmationData>>("SmsConfirmMessage", HandleSmsRequestAsync);
             _queueReader.RegisterHandler<SendSmsData<string>>("SimpleSmsMessage", HandleSimpleSmsRequestAsync);
 
             _log.Info(nameof(InitQueues), $"Registered:{_queueReader.GetComponentName()}");
@@ -58,9 +57,9 @@ namespace Lykke.Job.Messages.QueueConsumers
                 $"SMS: {request.MessageData}. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}");
 
             if (string.IsNullOrWhiteSpace(request.PhoneNumber))
-                throw new ArgumentException($"{nameof(request.PhoneNumber)} can't be empty in sms request: {request.ToJson()}");
-
-            await _smsSenderClient.SendSmsAsync(request.PhoneNumber, request.MessageData);
+                _log.Warning($"{nameof(request.PhoneNumber)} can't be empty in sms request: {request.ToJson()}");
+            else
+                await _smsSenderClient.SendSmsAsync(request.PhoneNumber, request.MessageData);
         }
 
         private async Task HandleSmsRequestAsync(SendSmsData<SmsConfirmationData> request)
@@ -69,15 +68,19 @@ namespace Lykke.Job.Messages.QueueConsumers
                 $"SMS: Phone confirmation. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}");
 
             if (string.IsNullOrWhiteSpace(request.PhoneNumber))
-                throw new ArgumentException($"{nameof(request.PhoneNumber)} can't be empty in sms request: {request.ToJson()}");
+            {
+                _log.Warning($"{nameof(request.PhoneNumber)} can't be empty in sms request: {request.ToJson()}");
+            }
+            else
+            {
+                var msgText = await _templateFormatter.FormatAsync(nameof(SmsConfirmationTemplate), request.PartnerId, "EN",
+                    new SmsConfirmationTemplate
+                    {
+                        ConfirmationCode = request.MessageData.ConfirmationCode
+                    });
 
-            var msgText = await _templateFormatter.FormatAsync(nameof(SmsConfirmationTemplate), request.PartnerId, "EN",
-                new SmsConfirmationTemplate
-                {
-                    ConfirmationCode = request.MessageData.ConfirmationCode
-                });
-
-            await _smsSenderClient.SendSmsAsync(request.PhoneNumber, msgText.Subject);
+                await _smsSenderClient.SendSmsAsync(request.PhoneNumber, msgText.Subject);
+            }
         }
 
         public void Start()

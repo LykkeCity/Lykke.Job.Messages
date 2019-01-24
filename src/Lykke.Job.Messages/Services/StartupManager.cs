@@ -12,11 +12,11 @@ namespace Lykke.Job.Messages.Services
         {
             _cqrsEngine = cqrsEngine;
         }
-        
+
         public Task StartAsync()
         {
-            _cqrsEngine.Start();
-            
+            _cqrsEngine.StartSubscribers();
+
             return Task.CompletedTask;
         }
     }
