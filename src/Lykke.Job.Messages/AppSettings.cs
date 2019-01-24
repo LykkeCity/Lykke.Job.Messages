@@ -1,4 +1,5 @@
 ﻿using System;
+using Lykke.Job.Messages.Core;
 using Lykke.Sdk.Settings;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.Kyc.Client;
@@ -8,7 +9,7 @@ using Lykke.Service.SwiftCredentials.Client;
 using Lykke.Service.TemplateFormatter.Client;
 using Lykke.SettingsReader.Attributes;
 
-namespace Lykke.Job.Messages.Core
+namespace Lykke.Job.Messages
 {
     public class AppSettings : BaseAppSettings
     {
@@ -54,13 +55,7 @@ namespace Lykke.Job.Messages.Core
 
         public class SlackSettings
         {
-            public class Channel
-            {
-                public string Type { get; set; }
-                public string WebHookUrl { get; set; }
-            }
-
-            public Channel[] Channels { get; set; }
+            public SlackChannel[] Channels { get; set; }
         }
 
         public class WalletApiSettings

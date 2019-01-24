@@ -11,7 +11,6 @@ using Lykke.Job.Messages.AzureRepositories.Email;
 using Lykke.Job.Messages.AzureRepositories.Regulator;
 using Lykke.Job.Messages.AzureRepositories.Sms;
 using Lykke.Job.Messages.AzureRepositories.SwiftCredentials;
-using Lykke.Job.Messages.Core;
 using Lykke.Job.Messages.Core.Domain.Deduplication;
 using Lykke.Job.Messages.Core.Domain.DepositRefId;
 using Lykke.Job.Messages.Core.Domain.Email;
@@ -42,8 +41,8 @@ using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.SmsSender.Client;
 using Lykke.Service.SwiftCredentials.Client;
-using Lykke.SettingsReader;
 using Lykke.Service.TemplateFormatter;
+using Lykke.SettingsReader;
 using BlobSpace = AzureStorage.Blob;
 
 namespace Lykke.Job.Messages.Modules
@@ -176,7 +175,7 @@ namespace Lykke.Job.Messages.Modules
         private void RegisterSlackServices(ContainerBuilder builder)
         {
             builder.RegisterType<SrvSlackNotifications>()
-                .WithParameter(TypedParameter.From(_settings.CurrentValue.Slack));
+                .WithParameter(TypedParameter.From(_settings.CurrentValue.Slack.Channels));
         }
 
         private void RegisterEmailServices(ContainerBuilder builder)
@@ -205,16 +204,13 @@ namespace Lykke.Job.Messages.Modules
                 .SingleInstance();
             
             builder.RegisterTemplateFormatter(_appSettings.CurrentValue.MessagesJob.Email.EmailFormatterUrl);
-            
+
             builder.RegisterType<EmailGenerator>()
                 .As<IEmailGenerator>()
                 .SingleInstance()
-                .WithParameters(new[]
-                {
-                    TypedParameter.From(_settings.CurrentValue.Email),
-                    TypedParameter.From(_settings.CurrentValue.Blockchain),
-                    TypedParameter.From(_settings.CurrentValue.WalletApi)
-                });
+                .WithParameter("refundTimeoutInDays", _settings.CurrentValue.Email.RefundTimeoutInDays)
+                .WithParameter("explorerUrl", _settings.CurrentValue.Blockchain.ExplorerUrl)
+                .WithParameter("walletApiHost", _settings.CurrentValue.WalletApi.Host);
 
             builder.RegisterType<EmailTemplateProvider>()
                 .As<IEmailTemplateProvide>()
