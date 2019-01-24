@@ -1,6 +1,5 @@
 ﻿using System;
 using JetBrains.Annotations;
-using Lykke.Job.Messages.Core;
 using Lykke.Sdk;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;

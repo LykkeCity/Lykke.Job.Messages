@@ -1,18 +1,16 @@
 ﻿using System.Collections.Generic;
-using Autofac;
-using Lykke.Job.Messages.Core;
-using Lykke.SettingsReader;
-using Lykke.Cqrs;
-using Lykke.Messaging;
-using Lykke.Messaging.RabbitMq;
-using Lykke.Cqrs.Configuration;
 using System.Linq;
+using Autofac;
 using JetBrains.Annotations;
 using Lykke.Common.Log;
+using Lykke.Cqrs;
+using Lykke.Cqrs.Configuration;
 using Lykke.Job.BlockchainCashoutProcessor.Contract.Events;
 using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Sagas;
+using Lykke.Messaging;
 using Lykke.Messaging.Serialization;
+using Lykke.Messaging.RabbitMq;
 using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.Kyc.Abstractions.Domain.Profile;
 using Lykke.Service.PayAuth.Contract;
@@ -24,6 +22,7 @@ using Lykke.Service.Registration.Contract.Events;
 using Lykke.Service.Session.Contracts;
 using Lykke.Service.SwiftCredentials.Contracts;
 using Lykke.Service.SwiftWithdrawal.Contracts;
+using Lykke.SettingsReader;
 
 namespace Lykke.Job.Messages.Modules
 {
@@ -113,7 +112,7 @@ namespace Lykke.Job.Messages.Modules
                         .Where(x => x.Namespace == typeof(TextNotificationCommand).Namespace)
                         .ToArray();
 
-                    return new CqrsEngine(logFactory,
+                    var engine = new CqrsEngine(logFactory,
                         new AutofacDependencyResolver(ctx.Resolve<IComponentContext>()),
                         messagingEngine,
                         new DefaultEndpointProvider(),
@@ -219,8 +218,11 @@ namespace Lykke.Job.Messages.Modules
                             .From("kyc").On(eventsRoute)
                             .WithEndpointResolver(kycEndpointResolver)
                     );
+                    engine.StartPublishers();
+                    return engine;
                 })
                 .As<ICqrsEngine>()
+                .AutoActivate()
                 .SingleInstance();
         }
     }

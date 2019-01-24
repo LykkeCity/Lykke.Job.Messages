@@ -9,23 +9,24 @@ namespace Lykke.Job.Messages.Services.Slack
 {
     public class SrvSlackNotifications
     {
-        private readonly AppSettings.SlackSettings _settings;
-        public SrvSlackNotifications(AppSettings.SlackSettings settings)
+        private readonly SlackChannel[] _slackChannels;
+
+        public SrvSlackNotifications(SlackChannel[] slackChannels)
         {
-            _settings = settings;
+            _slackChannels = slackChannels;
         }
 
         public async Task SendNotification(string type, string message, string sender = null)
         {
-            var webHookUrl = _settings.Channels.FirstOrDefault(x => x.Type == type)?.WebHookUrl;
-            if (webHookUrl != null)
-            {
-                var text = new StringBuilder();
+            var webHookUrl = _slackChannels.FirstOrDefault(x => x.Type == type)?.WebHookUrl;
+            if (webHookUrl == null)
+                return;
 
-                text.AppendLine(sender != null ? $"{sender} : {message}" : message);
+            var text = new StringBuilder();
 
-                await new HttpRequestClient().PostRequest(new {text = text.ToString()}.ToJson(), webHookUrl);
-            }
+            text.AppendLine(sender != null ? $"{sender} : {message}" : message);
+
+            await new HttpRequestClient().PostRequest(new {text = text.ToString()}.ToJson(), webHookUrl);
         }
     }
 }
