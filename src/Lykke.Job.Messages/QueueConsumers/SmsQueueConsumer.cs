@@ -87,7 +87,6 @@ namespace Lykke.Job.Messages.QueueConsumers
                 {
                     _log.Warning("Wrong phone", context: new { phone = request.PhoneNumber}.ToJson(), exception: ex);
                 }
-
             }
         }
 
