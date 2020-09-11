@@ -98,7 +98,7 @@ namespace Lykke.Job.Messages.QueueConsumers
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RemindPasswordData>>>(
                     RemindPasswordData.QueueName, itm => HandleRemindPasswordEmailAsync(itm.Data));
-                
+
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RemindPasswordCypData>>>(
                     RemindPasswordCypData.QueueName, itm => HandleRemindPasswordCypEmailAsync(itm.Data));
 
@@ -143,7 +143,7 @@ namespace Lykke.Job.Messages.QueueConsumers
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<SwiftCashoutDeclinedData>>>(
                     SwiftCashoutDeclinedData.QueueName, itm => HandleSwiftCashoutDeclinedEmailAsync(itm.Data));
-                
+
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<RegistrationEmailVerifyData>>>(
                     RegistrationEmailVerifyData.QueueName, itm => HandleRegistrationVerifyEmailAsync(itm.Data));
 
@@ -170,7 +170,7 @@ namespace Lykke.Job.Messages.QueueConsumers
 
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<NoAccountPasswordRecoveryCypData>>>(
                     NoAccountPasswordRecoveryCypData.QueueName, itm => HandleNoAccountPasswordRecoveryCypEmailAsync(itm.Data));
-                
+
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<SwiftCashoutProcessedCypData>>>(
                    SwiftCashoutProcessedCypData.QueueName, itm => HandleSwiftCashoutProcessedCypEmailAsync(itm.Data));
 
@@ -190,7 +190,7 @@ namespace Lykke.Job.Messages.QueueConsumers
                  Url = result.MessageData.Url,
                 Year = result.MessageData.Year
              };
- 
+
              var msg = await _emailGenerator.GenerateLykkeCardVisaMsg(result.PartnerId, lykkeVisaCardData);
              await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
          }
@@ -293,7 +293,7 @@ namespace Lykke.Job.Messages.QueueConsumers
 
         private async Task HandleSwiftConfirmedBroadcastAsync(SendBroadcastData<SwiftConfirmedData> result)
         {
-            _log.Info(nameof(HandleSwiftConfirmedBroadcastAsync), $"Broadcast group: {result.BroadcastGroup}");            
+            _log.Info(nameof(HandleSwiftConfirmedBroadcastAsync), $"Broadcast group: {result.BroadcastGroup}");
             var msg = await _emailGenerator.GenerateSwiftConfirmedMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendBroadcastAsync(result.PartnerId, (BroadcastGroup)result.BroadcastGroup, msg);
         }
@@ -346,6 +346,7 @@ namespace Lykke.Job.Messages.QueueConsumers
             var msg = new EmailMessage
             {
                 TextBody = result.MessageData.Text,
+                HtmlBody = result.MessageData.Text,
                 Subject = result.MessageData.Subject
             };
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg, result.MessageData.Sender);
@@ -364,7 +365,7 @@ namespace Lykke.Job.Messages.QueueConsumers
             var msg = await _emailGenerator.GenerateRemindPasswordMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
-        
+
         private async Task HandleRemindPasswordCypEmailAsync(SendEmailData<RemindPasswordCypData> result)
         {
             _log.Info(nameof(HandleRemindPasswordCypEmailAsync), $"Email to: {result.EmailAddress.SanitizeEmail()}");
@@ -441,7 +442,7 @@ namespace Lykke.Job.Messages.QueueConsumers
             var msg = await _emailGenerator.GenerateSwiftCashoutDeclinedMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
         }
-        
+
         private async Task HandleRegistrationVerifyEmailAsync(SendEmailData<RegistrationEmailVerifyData> result)
         {
             _log.Info(nameof(HandleRegistrationVerifyEmailAsync), $"Email to: {result.EmailAddress.SanitizeEmail()}");
@@ -498,7 +499,7 @@ namespace Lykke.Job.Messages.QueueConsumers
             var msg = await _emailGenerator.GenerateNoAccountPasswordRecoveryCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
-        
+
         private async Task HandleSwiftCashoutProcessedCypEmailAsync(SendEmailData<SwiftCashoutProcessedCypData> result)
         {
             _log.Info(nameof(HandleSwiftCashoutProcessedCypEmailAsync), $"Email to: {result.EmailAddress.SanitizeEmail()}");
@@ -517,7 +518,7 @@ namespace Lykke.Job.Messages.QueueConsumers
             var msg = await _emailGenerator.GenerateRejectedEmailCypMsg(result.PartnerId, result.MessageData);
             await _smtpEmailSender.SendEmailAsync("LykkeCyprus", result.EmailAddress, msg);
         }
-        
+
         public void Start()
         {
             foreach (var queueReader in _queueReadersList)
