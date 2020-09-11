@@ -79,7 +79,14 @@ namespace Lykke.Job.Messages.QueueConsumers
                         ConfirmationCode = request.MessageData.ConfirmationCode
                     });
 
-                await _smsSenderClient.SendSmsAsync(request.PhoneNumber, msgText.Subject);
+                try
+                {
+                    await _smsSenderClient.SendSmsAsync(request.PhoneNumber, msgText.Subject);
+                }
+                catch (SmsServiceException ex)
+                {
+                    _log.Warning("Wrong phone", context: new { phone = request.PhoneNumber}.ToJson(), exception: ex);
+                }
             }
         }
 
