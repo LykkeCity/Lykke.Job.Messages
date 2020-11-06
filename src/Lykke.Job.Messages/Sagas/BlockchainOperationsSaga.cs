@@ -23,7 +23,7 @@ namespace Lykke.Job.Messages.Sagas
 {
     //Listens On ME Rabbit
     public class BlockchainOperationsSaga
-    {        
+    {
         private readonly IAssetsServiceWithCache _cachedAssetsService;
         private readonly IClientAccountClient _clientAccountClient;
         private readonly IPersonalDataService _personalDataService;
@@ -38,7 +38,7 @@ namespace Lykke.Job.Messages.Sagas
             IOperationMessagesDeduplicationRepository deduplicationRepository,
             ITemplateFormatter templateFormatter,
             ILogFactory logFactory)
-        {            
+        {
             _cachedAssetsService = cachedAssetsService;
             _clientAccountClient = clientAccountClient;
             _personalDataService = personalDataService;
@@ -52,6 +52,13 @@ namespace Lykke.Job.Messages.Sagas
         public async Task Handle(BlockchainCashinDetector.Contract.Events.CashinCompletedEvent evt, ICommandSender commandSender)
         {
             await SendCashinEmailAsync(evt.OperationId, evt.ClientId, evt.Amount, evt.AssetId, commandSender);
+        }
+
+        //From Sirius DepositsDetector
+        [UsedImplicitly]
+        public async Task Handle(SiriusDepositsDetector.Contract.Events.CashinCompletedEvent evt, ICommandSender commandSender)
+        {
+            await SendCashinEmailAsync(evt.OperationId, Guid.Parse(evt.ClientId), evt.Amount, evt.AssetId, commandSender);
         }
 
         #region CashoutProcessor
@@ -104,9 +111,9 @@ namespace Lykke.Job.Messages.Sagas
 
                 throw exception;
             }
-            
+
             var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
-            
+
             if (asset == null)
             {
                 var exception = new InvalidOperationException($"Asset not found (assetId = {assetId})");
@@ -115,10 +122,10 @@ namespace Lykke.Job.Messages.Sagas
                 throw exception;
 
             }
-            
+
             string amountFormatted = NumberFormatter.FormatNumber(amount, asset.Accuracy);
 
-            var parameters = new 
+            var parameters = new
             {
                 AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId,
                 Amount = amountFormatted,
@@ -132,19 +139,19 @@ namespace Lykke.Job.Messages.Sagas
                 EmailAddresses = new[] { clientEmail },
                 Payload = parameters
             }, EmailMessagesBoundedContext.Name);
-            
+
             var pushSettings = await _clientAccountClient.GetPushNotificationAsync(clientId.ToString());
 
             if (!pushSettings.Enabled || string.IsNullOrEmpty(clientModel.NotificationsId))
                 return;
 
-            var template = await _templateFormatter.FormatAsync("PushDepositCompletedTemplate", clientModel.PartnerId, "EN", 
+            var template = await _templateFormatter.FormatAsync("PushDepositCompletedTemplate", clientModel.PartnerId, "EN",
                 new
                 {
                     Amount = amountFormatted,
                     AssetDisplayId = asset.DisplayId
                 });
-            
+
             if (template != null)
             {
                 commandSender.SendCommand(new AssetsCreditedCommand
@@ -172,7 +179,7 @@ namespace Lykke.Job.Messages.Sagas
 
                 throw exception;
             }
-            
+
             var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
             if (asset == null)
             {
