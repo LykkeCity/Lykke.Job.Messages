@@ -83,6 +83,12 @@ namespace Lykke.Job.Messages.Sagas
         }
 
         [UsedImplicitly]
+        public async Task Handle(SiriusCashoutProcessor.Contract.Events.CashoutCompletedEvent evt, ICommandSender commandSender)
+        {
+            await SendCashoutEmailAsync(evt.OperationId, evt.ClientId, evt.Amount, evt.AssetId, commandSender);
+        }
+
+        [UsedImplicitly]
         public async Task Handle(CashoutsBatchCompletedEvent evt, ICommandSender commandSender)
         {
             if (evt.Cashouts == null || evt.Cashouts.Length == 0)
