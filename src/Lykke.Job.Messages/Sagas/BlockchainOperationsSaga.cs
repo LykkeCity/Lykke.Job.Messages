@@ -58,7 +58,10 @@ namespace Lykke.Job.Messages.Sagas
         [UsedImplicitly]
         public async Task Handle(SiriusDepositsDetector.Contract.Events.CashinCompletedEvent evt, ICommandSender commandSender)
         {
-            await SendCashinEmailAsync(evt.OperationId, Guid.Parse(evt.ClientId), evt.Amount, evt.AssetId, commandSender);
+            if (!Guid.TryParse(evt.ClientId, out var clientId))
+                return;
+
+            await SendCashinEmailAsync(evt.OperationId, clientId, evt.Amount, evt.AssetId, commandSender);
         }
 
         #region CashoutProcessor
