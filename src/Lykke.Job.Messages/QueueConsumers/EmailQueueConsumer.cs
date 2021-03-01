@@ -5,11 +5,14 @@ using AzureStorage.Queue;
 using Common;
 using Common.Log;
 using Lykke.Common.Log;
+using Lykke.Cqrs;
 using Lykke.Job.Messages.Contract.Emails;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Messages.Email.MessageData;
+using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.EmailSender;
 using Lykke.Service.PersonalData.Contract;
+using Lykke.Service.TemplateFormatter.Client;
 
 namespace Lykke.Job.Messages.QueueConsumers
 {
@@ -209,6 +212,10 @@ namespace Lykke.Job.Messages.QueueConsumers
 
             var msg = await _emailGenerator.GenerateWelcomeMsg(result.PartnerId, registerData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+
+            // TODO: temp solution - to notify user about private key backup, can be removed once backup view will be returned on the mobile applications
+            var remindMsg = await _emailGenerator.GenerateRemindBackupMsg(result.PartnerId, registerData);
+            await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, remindMsg);
         }
 
         private async Task HandleKycOkEmailAsync(SendEmailData<KycOkData> result)
