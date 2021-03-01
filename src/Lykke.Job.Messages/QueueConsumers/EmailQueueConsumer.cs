@@ -6,11 +6,17 @@ using AzureStorage.Queue;
 using Common;
 using Common.Log;
 using Lykke.Common.Log;
+using Lykke.Cqrs;
 using Lykke.Job.Messages.Contract.Emails;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Messages.Email.MessageData;
+using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.EmailSender;
 using Lykke.Service.PersonalData.Contract;
+using Lykke.Service.PushNotifications.Contract;
+using Lykke.Service.PushNotifications.Contract.Commands;
+using Lykke.Service.PushNotifications.Contract.Enums;
+using Lykke.Service.TemplateFormatter.Client;
 
 namespace Lykke.Job.Messages.QueueConsumers
 {
@@ -20,15 +26,25 @@ namespace Lykke.Job.Messages.QueueConsumers
         private readonly ISmtpEmailSender _smtpEmailSender;
         private readonly IEmailGenerator _emailGenerator;
         private readonly IPersonalDataService _personalDataService;
+        private readonly IClientAccountClient _clientAccountClient;
+        private readonly ITemplateFormatter _templateFormatter;
+        private readonly ICqrsEngine _cqrsEngine;
         private readonly ILog _log;
 
         public EmailQueueConsumer(IEnumerable<IQueueReader> queueReadersList, ISmtpEmailSender smtpEmailSender,
-            IEmailGenerator emailGenerator, IPersonalDataService personalDataService, ILogFactory logFactory)
+            IEmailGenerator emailGenerator, IPersonalDataService personalDataService,
+            IClientAccountClient clientAccountClient,
+            ITemplateFormatter templateFormatter,
+            ICqrsEngine cqrsEngine,
+            ILogFactory logFactory)
         {
             _queueReadersList = queueReadersList;
             _smtpEmailSender = smtpEmailSender;
             _emailGenerator = emailGenerator;
             _personalDataService = personalDataService;
+            _clientAccountClient = clientAccountClient;
+            _templateFormatter = templateFormatter;
+            _cqrsEngine = cqrsEngine;
             _log = logFactory.CreateLog(this);
 
             InitQueues();
@@ -213,6 +229,35 @@ namespace Lykke.Job.Messages.QueueConsumers
 
             var msg = await _emailGenerator.GenerateWelcomeMsg(result.PartnerId, registerData);
             await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, msg);
+
+            // TODO: temp solution - to notify user about private key backup, can be removed once backup view will be returned on the mobile applications
+            var remindMsg = await _emailGenerator.GenerateRemindBackupMsg(result.PartnerId, registerData);
+            await _smtpEmailSender.SendEmailAsync(result.PartnerId, result.EmailAddress, remindMsg);
+
+            var clientAccountTask = _clientAccountClient.GetByIdAsync(result.MessageData.ClientId);
+            var pushSettingsTask = _clientAccountClient.GetPushNotificationAsync(result.MessageData.ClientId);
+
+            await Task.WhenAll(clientAccountTask, pushSettingsTask);
+
+            var clientAccount = clientAccountTask.Result;
+
+            if (!pushSettingsTask.Result.Enabled || string.IsNullOrEmpty(clientAccount?.NotificationsId))
+                return;
+
+            var template = await _templateFormatter.FormatAsync(
+                "PushRemindBackupTemplate",
+                clientAccount.PartnerId,
+                "EN");
+
+            if (template != null)
+            {
+                _cqrsEngine.SendCommand(new TextNotificationCommand
+                {
+                    NotificationIds = new[] {clientAccount.NotificationsId},
+                    Message = template.Subject,
+                    Type = NotificationType.Info.ToString()
+                }, PushNotificationsBoundedContext.Name, PushNotificationsBoundedContext.Name);
+            }
         }
 
         private async Task HandleKycOkEmailAsync(SendEmailData<KycOkData> result)
