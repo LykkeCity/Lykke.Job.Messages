@@ -73,6 +73,16 @@ namespace Lykke.Job.Messages.Services.Email
             return _templateGenerator.GenerateAsync(partnerId, "WelcomeTemplate", templateVm);
         }
 
+        public Task<EmailMessage> GenerateRemindBackupMsg(string partnerId, RegistrationMessageData kycOkData)
+        {
+            var templateVm = new BaseTemplate
+            {
+                Year = kycOkData.Year
+            };
+
+            return _templateGenerator.GenerateAsync(partnerId, "RemindBackupTemplate", templateVm);
+        }
+
         public Task<EmailMessage> GenerateWelcomeFxMsg(string partnerId, KycOkData kycOkData)
         {
             var templateVm = new BaseTemplate
@@ -151,11 +161,11 @@ namespace Lykke.Job.Messages.Services.Email
             {
                 return null;
             }
-            
+
             var templateVm = new
             {
                 AssetId = asset.DisplayId,
-                Amount = NumberFormatter.FormatNumber(messageData.Amount, asset.Accuracy), 
+                Amount = NumberFormatter.FormatNumber(messageData.Amount, asset.Accuracy),
                 ExplorerUrl = string.Format(_explorerUrl, messageData.SrcBlockchainHash),
                 Year = DateTime.UtcNow.Year
             };
@@ -299,7 +309,7 @@ namespace Lykke.Job.Messages.Services.Email
 
             return _templateGenerator.GenerateAsync(partnerId, string.IsNullOrEmpty(messageData.PasswordHint) ? "NoPasswordHintCypTemplate" : "RemindPasswordCypTemplate", templateVm);
         }
-        
+
         public Task<EmailMessage> GeneratPrivateWalletAddressMsg(string partnerId, PrivateWalletAddressData messageData)
         {
             var templateVm = new PrivateWalletAddressTemplate
@@ -648,7 +658,7 @@ namespace Lykke.Job.Messages.Services.Email
 
             return _templateGenerator.GenerateAsync(partnerId, "NoAccountPasswordRecoveryTemplate", templateVm);
         }
-        
+
         public Task<EmailMessage> GenerateNoAccountPasswordRecoveryCypMsg(string partnerId, NoAccountPasswordRecoveryCypData noAccountData)
         {
             var templateVm = new NoAccountPasswordRecoveryTemplate

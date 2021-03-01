@@ -224,7 +224,13 @@ namespace Lykke.Job.Messages.Modules
                         Register.Saga<KycSmsNotificationsSaga>("kyc-sms-notifications-saga")
                             .ListeningEvents(typeof(ChangeStatusEvent))
                             .From("kyc").On(eventsRoute)
-                            .WithEndpointResolver(kycEndpointResolver)
+                            .WithEndpointResolver(kycEndpointResolver),
+
+                        Register.BoundedContext(JobMessagesBoundedContext.Name)
+                            .PublishingCommands(
+                                typeof (TextNotificationCommand)
+                            )
+                            .To(PushNotificationsBoundedContext.Name).With(commandsRoute)
                     );
                     engine.StartPublishers();
                     return engine;
