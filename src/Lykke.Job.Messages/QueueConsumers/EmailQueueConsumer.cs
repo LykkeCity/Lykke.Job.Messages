@@ -7,6 +7,7 @@ using Common;
 using Common.Log;
 using Lykke.Common.Log;
 using Lykke.Cqrs;
+using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Contract.Emails;
 using Lykke.Job.Messages.Core.Services.Email;
 using Lykke.Messages.Email.MessageData;
@@ -256,7 +257,7 @@ namespace Lykke.Job.Messages.QueueConsumers
                     NotificationIds = new[] {clientAccount.NotificationsId},
                     Message = template.Subject,
                     Type = NotificationType.Info.ToString()
-                }, PushNotificationsBoundedContext.Name, PushNotificationsBoundedContext.Name);
+                }, JobMessagesBoundedContext.Name, PushNotificationsBoundedContext.Name);
             }
         }
 
