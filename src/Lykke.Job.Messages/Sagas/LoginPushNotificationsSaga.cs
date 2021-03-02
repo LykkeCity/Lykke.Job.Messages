@@ -42,18 +42,24 @@ namespace Lykke.Job.Messages.Sagas
                 _log.Warning(nameof(ClientLoggedEvent), $"Client not found (clientId = {evt.ClientId})");
                 return;
             }
-            
-            var pushSettings = await _clientAccountClient.GetPushNotificationAsync(evt.ClientId);
+
+            var pushSettingsTask = _clientAccountClient.GetPushNotificationAsync(evt.ClientId);
+            var backupTask = _clientAccountClient.GetBackupAsync(evt.ClientId);
+
+            await Task.WhenAll(pushSettingsTask, backupTask);
+
+            var pushSettings = pushSettingsTask.Result;
+            var backup = backupTask.Result;
 
             if (!pushSettings.Enabled || string.IsNullOrEmpty(clientAccount.NotificationsId))
                 return;
-            
+
             var isMobile = !string.IsNullOrWhiteSpace(evt.ClientInfo);
-            
+
             var template = await _templateFormatter.FormatAsync(
                 "PushLoginSuccessfulTemplate",
                 clientAccount.PartnerId,
-                "EN", 
+                "EN",
                 new
                 {
                     DeviceType = isMobile
@@ -74,6 +80,24 @@ namespace Lykke.Job.Messages.Sagas
                     Message = template.Subject,
                     Type = NotificationType.Info.ToString()
                 }, PushNotificationsBoundedContext.Name);
+            }
+
+            if (!backup.BackupDone)
+            {
+                template = await _templateFormatter.FormatAsync(
+                    "PushRemindBackupTemplate",
+                    clientAccount.PartnerId,
+                    "EN");
+
+                if (template != null)
+                {
+                    commandSender.SendCommand(new TextNotificationCommand
+                    {
+                        NotificationIds = new[] {clientAccount.NotificationsId},
+                        Message = template.Subject,
+                        Type = NotificationType.Info.ToString()
+                    }, PushNotificationsBoundedContext.Name);
+                }
             }
         }
 
