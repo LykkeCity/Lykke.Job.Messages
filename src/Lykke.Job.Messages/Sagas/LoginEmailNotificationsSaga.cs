@@ -84,7 +84,7 @@ namespace Lykke.Job.Messages.Sagas
                     new SendEmailCommand
                     {
                         ApplicationId = applicationId,
-                        Template = "RemindBackupTemplate",
+                        Template = "RemindBackupOnLoginTemplate",
                         EmailAddresses = new[] { personalData.Email },
                         Payload = new {Year = now.Year.ToString()}
                     },
