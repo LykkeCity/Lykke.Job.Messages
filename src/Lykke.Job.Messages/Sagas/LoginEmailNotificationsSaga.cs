@@ -50,7 +50,14 @@ namespace Lykke.Job.Messages.Sagas
                 Date = now.ToString("MMMM dd, yyyy, hh:mm tt", CultureInfo.CreateSpecificCulture("en-US")),
                 Year = now.Year.ToString()
             };
-            var clientAccount = await _clientAccountClient.GetByIdAsync(personalData.Id);
+            var clientAccountTask = _clientAccountClient.GetByIdAsync(personalData.Id);
+            var backupTask = _clientAccountClient.GetBackupAsync(personalData.Id);
+
+            await Task.WhenAll(clientAccountTask, backupTask);
+
+            var clientAccount = clientAccountTask.Result;
+            var backup = backupTask.Result;
+
             var template = clientAccount.IsCyprusClient
                 ? "LoginNotificationCyp"
                 : "LoginNotification";
@@ -67,8 +74,19 @@ namespace Lykke.Job.Messages.Sagas
                     Payload = parameters
                 },
                 EmailMessagesBoundedContext.Name);
-        }
 
-        
+            if (!backup.BackupDone)
+            {
+                commandSender.SendCommand(
+                    new SendEmailCommand
+                    {
+                        ApplicationId = applicationId,
+                        Template = "RemindBackupOnLoginTemplate",
+                        EmailAddresses = new[] { personalData.Email },
+                        Payload = new {Year = now.Year.ToString()}
+                    },
+                    EmailMessagesBoundedContext.Name);
+            }
+        }
     }
 }
