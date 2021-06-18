@@ -46,14 +46,15 @@ namespace Lykke.Job.Messages.Sagas
         [UsedImplicitly]
         public async Task Handle(BlockchainCashinDetector.Contract.Events.CashinCompletedEvent evt, ICommandSender commandSender)
         {
-            await SendCashinEmailAsync(evt.OperationId, evt.ClientId, evt.Amount, evt.AssetId, commandSender);
+            await SendCashinEmailAsync(evt.OperationId, evt.ClientId, null, evt.Amount, evt.AssetId, commandSender);
         }
 
         //From Sirius DepositsDetector
         [UsedImplicitly]
         public async Task Handle(SiriusDepositsDetector.Contract.Events.CashinCompletedEvent evt, ICommandSender commandSender)
         {
-            await SendCashinEmailAsync(evt.OperationId, Guid.Parse(evt.ClientId), evt.Amount, evt.AssetId, commandSender);
+            var walletId = string.IsNullOrWhiteSpace(evt.WalletId) ? default : Guid.Parse(evt.WalletId);
+            await SendCashinEmailAsync(evt.OperationId, Guid.Parse(evt.ClientId), walletId, evt.Amount, evt.AssetId, commandSender);
         }
 
         #region CashoutProcessor
@@ -63,21 +64,21 @@ namespace Lykke.Job.Messages.Sagas
         {
             //Cross client means we change ME Balance and do not broadcast any transactions
             //Send confirmation to sender that cashout is completed
-            await SendCashoutEmailAsync(evt.OperationId, evt.ClientId, evt.Amount, evt.AssetId, commandSender);
+            await SendCashoutEmailAsync(evt.OperationId, evt.ClientId, null, evt.Amount, evt.AssetId, commandSender);
             //Send confirmation to recepient that cashin is completed
-            await SendCashinEmailAsync(evt.CashinOperationId, evt.RecipientClientId, evt.Amount, evt.AssetId, commandSender);
+            await SendCashinEmailAsync(evt.CashinOperationId, evt.RecipientClientId, null, evt.Amount, evt.AssetId, commandSender);
         }
 
         [UsedImplicitly]
         public async Task Handle(CashoutCompletedEvent evt, ICommandSender commandSender)
         {
-            await SendCashoutEmailAsync(evt.OperationId, evt.ClientId, evt.Amount, evt.AssetId, commandSender);
+            await SendCashoutEmailAsync(evt.OperationId, evt.ClientId, null, evt.Amount, evt.AssetId, commandSender);
         }
 
         [UsedImplicitly]
         public async Task Handle(SiriusCashoutProcessor.Contract.Events.CashoutCompletedEvent evt, ICommandSender commandSender)
         {
-            await SendCashoutEmailAsync(evt.OperationId, evt.ClientId, evt.Amount, evt.AssetId, commandSender);
+            await SendCashoutEmailAsync(evt.OperationId, evt.ClientId, evt.WalletId, evt.Amount, evt.AssetId, commandSender);
         }
 
         [UsedImplicitly]
@@ -90,13 +91,13 @@ namespace Lykke.Job.Messages.Sagas
 
             foreach (var cashout in evt.Cashouts)
             {
-                await SendCashoutEmailAsync(cashout.OperationId, cashout.ClientId, cashout.Amount, evt.AssetId, commandSender);
+                await SendCashoutEmailAsync(cashout.OperationId, cashout.ClientId, null, cashout.Amount, evt.AssetId, commandSender);
             }
         }
 
         #endregion
 
-        private async Task SendCashinEmailAsync(Guid operationId, Guid clientId, decimal amount, string assetId, ICommandSender commandSender)
+        private async Task SendCashinEmailAsync(Guid operationId, Guid clientId, Guid? walletId, decimal amount, string assetId, ICommandSender commandSender)
         {
             if (await _deduplicationRepository.IsExistsAsync(operationId))
                 return;
@@ -123,18 +124,24 @@ namespace Lykke.Job.Messages.Sagas
             }
 
             string amountFormatted = NumberFormatter.FormatNumber(amount, asset.Accuracy);
+            string walletName = walletId.HasValue
+                ? (await _clientAccountClient.GetWalletAsync(walletId.Value.ToString())).Name
+                : default;
 
             var parameters = new
             {
                 AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId,
                 Amount = amountFormatted,
-                Year = DateTime.UtcNow.Year.ToString()
+                Year = DateTime.UtcNow.Year.ToString(),
+                WalletName = walletName
             };
+
+            var emailTemplateName = walletId.HasValue ? "NoRefundDepositApiWalletDoneTemplate" : "NoRefundDepositDoneTemplate";
 
             commandSender.SendCommand(new SendEmailCommand
             {
                 ApplicationId = clientModel.PartnerId,
-                Template = "NoRefundDepositDoneTemplate",
+                Template = emailTemplateName,
                 EmailAddresses = new[] {clientModel.Email},
                 Payload = parameters
             }, EmailMessagesBoundedContext.Name);
@@ -144,20 +151,24 @@ namespace Lykke.Job.Messages.Sagas
             if (!pushSettings.Enabled || string.IsNullOrEmpty(clientModel.NotificationsId))
                 return;
 
-            var template = await _templateFormatter.FormatAsync("PushDepositCompletedTemplate", clientModel.PartnerId, "EN",
+            var pushTemplateName = walletId.HasValue
+                ? "PushDepositAPIWalletCompletedTemplate"
+                : "PushDepositCompletedTemplate";
+            var pushTemplate = await _templateFormatter.FormatAsync(pushTemplateName, clientModel.PartnerId, "EN",
                 new
                 {
                     Amount = amountFormatted,
-                    AssetDisplayId = asset.DisplayId
+                    AssetDisplayId = asset.DisplayId,
+                    WalletName = walletName
                 });
 
-            if (template != null)
+            if (pushTemplate != null)
             {
                 commandSender.SendCommand(new AssetsCreditedCommand
                 {
                     Amount = (double) amount,
                     AssetId = assetId,
-                    Message = template.Subject,
+                    Message = pushTemplate.Subject,
                     NotificationIds = new[] {clientModel.NotificationsId}
                 }, PushNotificationsBoundedContext.Name);
             }
@@ -165,7 +176,7 @@ namespace Lykke.Job.Messages.Sagas
             await _deduplicationRepository.InsertOrReplaceAsync(operationId);
         }
 
-        public async Task SendCashoutEmailAsync(Guid operationId, Guid clientId, decimal amount, string assetId, ICommandSender commandSender)
+        public async Task SendCashoutEmailAsync(Guid operationId, Guid clientId, Guid? walletId, decimal amount, string assetId, ICommandSender commandSender)
         {
             if (await _deduplicationRepository.IsExistsAsync(operationId))
                 return;
@@ -194,13 +205,16 @@ namespace Lykke.Job.Messages.Sagas
                 Amount = NumberFormatter.FormatNumber(amount, asset.Accuracy),
                 ExplorerUrl = "",
                 //{ "ExplorerUrl", string.Format(_blockchainSettings.ExplorerUrl, messageData.SrcBlockchainHash },
-                Year = DateTime.UtcNow.Year.ToString()
+                Year = DateTime.UtcNow.Year.ToString(),
+                WalletName = walletId.HasValue ? (await _clientAccountClient.GetWalletAsync(walletId.Value.ToString())).Name : default
             };
+
+            var template = walletId.HasValue ? "NoRefundOCashOutApiWalletTemplate" : "NoRefundOCashOutTemplate";
 
             commandSender.SendCommand(new SendEmailCommand
                 {
                     ApplicationId = clientModel.PartnerId,
-                    Template = "NoRefundOCashOutTemplate",
+                    Template = template,
                     EmailAddresses = new[] { clientModel.Email },
                     Payload = parameters
                 },
