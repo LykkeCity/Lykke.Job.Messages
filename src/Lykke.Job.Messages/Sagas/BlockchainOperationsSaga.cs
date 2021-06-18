@@ -57,7 +57,7 @@ namespace Lykke.Job.Messages.Sagas
         //From Sirius DepositsDetector
         [UsedImplicitly]
         public async Task Handle(SiriusDepositsDetector.Contract.Events.CashinCompletedEvent evt, ICommandSender commandSender)
-        {g
+        {
             if (!Guid.TryParse(evt.ClientId, out var clientId))
                 return;
             
