@@ -53,7 +53,7 @@ namespace Lykke.Job.Messages.Sagas
         [UsedImplicitly]
         public async Task Handle(SiriusDepositsDetector.Contract.Events.CashinCompletedEvent evt, ICommandSender commandSender)
         {
-            var walletId = string.IsNullOrWhiteSpace(evt.WalletId) ? default : Guid.Parse(evt.WalletId);
+            var walletId = string.IsNullOrWhiteSpace(evt.WalletId) ? (Guid?)null : Guid.Parse(evt.WalletId);
             await SendCashinEmailAsync(evt.OperationId, Guid.Parse(evt.ClientId), walletId, evt.Amount, evt.AssetId, commandSender);
         }
 
@@ -106,27 +106,20 @@ namespace Lykke.Job.Messages.Sagas
 
             if (clientModel == null)
             {
-                var exception = new InvalidOperationException($"Client not found(clientId = { clientId })");
-                _log.Error(nameof(SendCashinEmailAsync), exception);
-
-                throw exception;
+                throw new InvalidOperationException($"Client not found(clientId = { clientId })");
             }
 
             var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
 
             if (asset == null)
             {
-                var exception = new InvalidOperationException($"Asset not found (assetId = {assetId})");
-                _log.Error(nameof(SendCashinEmailAsync), exception);
-
-                throw exception;
-
+                throw new InvalidOperationException($"Asset not found (assetId = {assetId})");
             }
 
             string amountFormatted = NumberFormatter.FormatNumber(amount, asset.Accuracy);
             string walletName = walletId.HasValue
                 ? (await _clientAccountClient.GetWalletAsync(walletId.Value.ToString())).Name
-                : default;
+                : string.Empty;
 
             var parameters = new
             {
@@ -206,7 +199,7 @@ namespace Lykke.Job.Messages.Sagas
                 ExplorerUrl = "",
                 //{ "ExplorerUrl", string.Format(_blockchainSettings.ExplorerUrl, messageData.SrcBlockchainHash },
                 Year = DateTime.UtcNow.Year.ToString(),
-                WalletName = walletId.HasValue ? (await _clientAccountClient.GetWalletAsync(walletId.Value.ToString())).Name : default
+                WalletName = walletId.HasValue ? (await _clientAccountClient.GetWalletAsync(walletId.Value.ToString())).Name : string.Empty
             };
 
             var template = walletId.HasValue ? "NoRefundOCashOutApiWalletTemplate" : "NoRefundOCashOutTemplate";
