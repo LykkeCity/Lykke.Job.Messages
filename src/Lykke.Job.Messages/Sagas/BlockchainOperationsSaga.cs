@@ -3,18 +3,16 @@ using Lykke.Cqrs;
 using Lykke.Job.BlockchainCashoutProcessor.Contract.Events;
 using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Core;
-using Lykke.Job.Messages.Core.Util;
 using Lykke.Job.Messages.Resources;
-using Lykke.Job.Messages.Utils;
-using Lykke.Service.Assets.Client;
 using Lykke.Service.ClientAccount.Client;
 using System;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.Common.Log;
 using Lykke.Job.Messages.Core.Domain.Deduplication;
+using Lykke.Job.Messages.Core.Util;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.EmailPartnerRouter.Contracts;
-using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.PushNotifications.Contract;
 using Lykke.Service.PushNotifications.Contract.Commands;
 using Lykke.Service.TemplateFormatter.Client;
@@ -26,7 +24,6 @@ namespace Lykke.Job.Messages.Sagas
     {
         private readonly IAssetsServiceWithCache _cachedAssetsService;
         private readonly IClientAccountClient _clientAccountClient;
-        private readonly IPersonalDataService _personalDataService;
         private readonly IOperationMessagesDeduplicationRepository _deduplicationRepository;
         private readonly ITemplateFormatter _templateFormatter;
         private readonly ILog _log;
@@ -34,14 +31,12 @@ namespace Lykke.Job.Messages.Sagas
         public BlockchainOperationsSaga(
             IAssetsServiceWithCache cachedAssetsService,
             IClientAccountClient clientAccountClient,
-            IPersonalDataService personalDataService,
             IOperationMessagesDeduplicationRepository deduplicationRepository,
             ITemplateFormatter templateFormatter,
             ILogFactory logFactory)
         {
             _cachedAssetsService = cachedAssetsService;
             _clientAccountClient = clientAccountClient;
-            _personalDataService = personalDataService;
             _deduplicationRepository = deduplicationRepository;
             _templateFormatter = templateFormatter;
             _log = logFactory.CreateLog(this);
@@ -58,11 +53,8 @@ namespace Lykke.Job.Messages.Sagas
         [UsedImplicitly]
         public async Task Handle(SiriusDepositsDetector.Contract.Events.CashinCompletedEvent evt, ICommandSender commandSender)
         {
-            if (!Guid.TryParse(evt.ClientId, out var clientId))
-                return;
-            
-            var walletId = string.IsNullOrWhiteSpace(evt.WalletId) ? default : Guid.Parse(evt.WalletId);
-            await SendCashinEmailAsync(evt.OperationId, clientId, walletId, evt.Amount, evt.AssetId, commandSender);
+            var walletId = string.IsNullOrWhiteSpace(evt.WalletId) ? (Guid?)null : Guid.Parse(evt.WalletId);
+            await SendCashinEmailAsync(evt.OperationId, Guid.Parse(evt.ClientId), walletId, evt.Amount, evt.AssetId, commandSender);
         }
 
         #region CashoutProcessor
@@ -107,36 +99,27 @@ namespace Lykke.Job.Messages.Sagas
 
         private async Task SendCashinEmailAsync(Guid operationId, Guid clientId, Guid? walletId, decimal amount, string assetId, ICommandSender commandSender)
         {
-            var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());
-            var clientEmail = await _personalDataService.GetEmailAsync(clientId.ToString());
-            EmailValidator.ValidateEmail(clientEmail, clientId);
-
             if (await _deduplicationRepository.IsExistsAsync(operationId))
                 return;
 
+            var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());
+
             if (clientModel == null)
             {
-                var exception = new InvalidOperationException($"Client not found(clientId = { clientId })");
-                _log.Error(nameof(SendCashinEmailAsync), exception);
-
-                throw exception;
+                throw new InvalidOperationException($"Client not found(clientId = { clientId })");
             }
 
             var asset = await _cachedAssetsService.TryGetAssetAsync(assetId);
 
             if (asset == null)
             {
-                var exception = new InvalidOperationException($"Asset not found (assetId = {assetId})");
-                _log.Error(nameof(SendCashinEmailAsync), exception);
-
-                throw exception;
-
+                throw new InvalidOperationException($"Asset not found (assetId = {assetId})");
             }
 
             string amountFormatted = NumberFormatter.FormatNumber(amount, asset.Accuracy);
             string walletName = walletId.HasValue
                 ? (await _clientAccountClient.GetWalletAsync(walletId.Value.ToString())).Name
-                : default;
+                : string.Empty;
 
             var parameters = new
             {
@@ -151,8 +134,8 @@ namespace Lykke.Job.Messages.Sagas
             commandSender.SendCommand(new SendEmailCommand
             {
                 ApplicationId = clientModel.PartnerId,
-                Template = "NoRefundDepositDoneTemplate",
-                EmailAddresses = new[] { clientEmail },
+                Template = emailTemplateName,
+                EmailAddresses = new[] {clientModel.Email},
                 Payload = parameters
             }, EmailMessagesBoundedContext.Name);
 
@@ -216,7 +199,7 @@ namespace Lykke.Job.Messages.Sagas
                 ExplorerUrl = "",
                 //{ "ExplorerUrl", string.Format(_blockchainSettings.ExplorerUrl, messageData.SrcBlockchainHash },
                 Year = DateTime.UtcNow.Year.ToString(),
-                WalletName = walletId.HasValue ? (await _clientAccountClient.GetWalletAsync(walletId.Value.ToString())).Name : default
+                WalletName = walletId.HasValue ? (await _clientAccountClient.GetWalletAsync(walletId.Value.ToString())).Name : string.Empty
             };
 
             var template = walletId.HasValue ? "NoRefundOCashOutApiWalletTemplate" : "NoRefundOCashOutTemplate";
