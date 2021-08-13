@@ -102,6 +102,9 @@ namespace Lykke.Job.Messages.Sagas
             if (await _deduplicationRepository.IsExistsAsync(operationId))
                 return;
 
+            if (walletId.HasValue && walletId.Value == Guid.Empty)
+                walletId = null;
+
             var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());
 
             if (clientModel == null)
@@ -173,6 +176,9 @@ namespace Lykke.Job.Messages.Sagas
         {
             if (await _deduplicationRepository.IsExistsAsync(operationId))
                 return;
+
+            if (walletId.HasValue && walletId.Value == Guid.Empty)
+                walletId = null;
 
             var clientModel = await _clientAccountClient.GetByIdAsync(clientId.ToString());
             if (clientModel == null)
