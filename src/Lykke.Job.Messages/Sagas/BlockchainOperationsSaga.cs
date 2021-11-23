@@ -198,6 +198,12 @@ namespace Lykke.Job.Messages.Sagas
                 throw exception;
             }
 
+            if (asset.IsDisabled)
+            {
+                _log.Info("Asset is disabled, skip cashout notification.", new { assetId = asset.Id});
+                return;
+            }
+
             var parameters = new
             {
                 AssetId = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId,
