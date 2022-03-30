@@ -9,7 +9,7 @@
     <None Remove="Email\TemplateModels\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Lykke.Messages" Version="1.9.0" />
+    <PackageReference Include="Lykke.Messages" Version="1.10.0" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="4.4.0" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
     <PackageReference Include="Lykke.Service.TemplateFormatter.Client" Version="1.1.0" />

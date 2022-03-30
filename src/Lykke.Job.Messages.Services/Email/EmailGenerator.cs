@@ -132,6 +132,7 @@ namespace Lykke.Job.Messages.Services.Email
                     messageData.AddressName,
                     messageData.AddressExtension,
                     messageData.AddressExtensionName,
+                    messageData.BlockchainNetworkName,
                     Year = DateTime.UtcNow.Year.ToString(),
                     AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId
                 };
