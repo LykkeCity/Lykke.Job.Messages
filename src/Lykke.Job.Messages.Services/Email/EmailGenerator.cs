@@ -115,11 +115,12 @@ namespace Lykke.Job.Messages.Services.Email
 
             if (string.IsNullOrEmpty(messageData.AddressExtension))
             {
-                var templateVm = new CashInTemplate
+                var templateVm = new
                 {
                     Multisig = messageData.Address,
                     Year = DateTime.UtcNow.Year.ToString(),
-                    AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId
+                    AssetName = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId,
+                    BlockchainNetworkName = messageData.BlockchainNetworkName
                 };
 
                 return await _templateGenerator.GenerateAsync(partnerId, "CashInTemplate", templateVm);
