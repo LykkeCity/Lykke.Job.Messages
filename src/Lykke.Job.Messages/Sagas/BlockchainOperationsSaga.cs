@@ -63,8 +63,8 @@ namespace Lykke.Job.Messages.Sagas
         {
             var operationId = Guid.Parse(evt.OperationId);
 
-            var isHftWallet = evt.WalletId == evt.ClientId;
-            var walletId = isHftWallet? (Guid?)null : Guid.Parse(evt.WalletId);
+            var isTradingWallet = evt.WalletId == evt.ClientId;
+            var walletId = isTradingWallet? (Guid?)null : Guid.Parse(evt.WalletId);
             var clientId = Guid.Parse(evt.ClientId);
             
             if (evt.Amount > 0)
