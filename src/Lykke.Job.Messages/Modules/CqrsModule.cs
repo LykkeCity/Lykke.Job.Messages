@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using Lykke.Common.Log;
 using Lykke.Cqrs;
 using Lykke.Cqrs.Configuration;
+using Lykke.InterestPayout.MessagingContract;
 using Lykke.Job.BlockchainCashoutProcessor.Contract.Events;
 using Lykke.Job.Messages.Contract;
 using Lykke.Job.Messages.Sagas;
@@ -192,7 +193,11 @@ namespace Lykke.Job.Messages.Modules
                             .With(commandsRoute)
                             .PublishingCommands(typeof(SendEmailCommand)).To("email")
                             .With(commandsRoute)
-                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256),
+                            .ProcessingOptions(commandsRoute).MultiThreaded(2).QueueCapacity(256)
+                            .ListeningEvents(typeof(InterestPayout.MessagingContract.PayoutCompletedEvent))
+                            .From(InterestPayoutBoundedContext.Name)
+                            .On(eventsRoute)
+                            .ProcessingOptions(eventsRoute).MultiThreaded(2).QueueCapacity(512),
 
                         Register.Saga<LykkePayOperationsSaga>("lykkepay-employee-registration-notifications-saga")
                             .ListeningEvents(
