@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <Version>1.0.1</Version>
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <LangVersion>7.1</LangVersion>
@@ -19,6 +20,7 @@
   <ItemGroup>
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.12.0" />
     <PackageReference Include="Lykke.Cqrs" Version="8.1.0" />
+    <PackageReference Include="Lykke.InterestPayout.MessagingContract" Version="1.0.4" />
     <PackageReference Include="Lykke.Job.BlockchainCashinDetector.Contract" Version="1.1.1" />
     <PackageReference Include="Lykke.Job.BlockchainCashoutProcessor.Contract" Version="6.0.1" />
     <PackageReference Include="Lykke.Job.SiriusCashoutProcessor.Contract" Version="1.0.2" />

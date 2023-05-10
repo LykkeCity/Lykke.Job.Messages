@@ -56,6 +56,26 @@ namespace Lykke.Job.Messages.Sagas
             var walletId = string.IsNullOrWhiteSpace(evt.WalletId) ? (Guid?)null : Guid.Parse(evt.WalletId);
             await SendCashinEmailAsync(evt.OperationId, Guid.Parse(evt.ClientId), walletId, evt.Amount, evt.AssetId, commandSender);
         }
+        
+        //From InterestPayout
+        [UsedImplicitly]
+        public async Task Handle(InterestPayout.MessagingContract.PayoutCompletedEvent evt, ICommandSender commandSender)
+        {
+            var operationId = Guid.Parse(evt.OperationId);
+
+            var isTradingWallet = evt.WalletId == evt.ClientId;
+            var walletId = isTradingWallet? (Guid?)null : Guid.Parse(evt.WalletId);
+            var clientId = Guid.Parse(evt.ClientId);
+            
+            if (evt.Amount > 0)
+            {
+                await SendCashinEmailAsync(operationId, clientId, walletId, evt.Amount, evt.AssetId, commandSender);
+            }
+            else
+            {
+                await SendCashoutEmailAsync(operationId, clientId, walletId, evt.Amount, evt.AssetId, commandSender);
+            }
+        }
 
         #region CashoutProcessor
 
