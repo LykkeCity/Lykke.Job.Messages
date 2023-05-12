@@ -61,6 +61,10 @@ namespace Lykke.Job.Messages.Sagas
         [UsedImplicitly]
         public async Task Handle(InterestPayout.MessagingContract.PayoutCompletedEvent evt, ICommandSender commandSender)
         {
+            _log.Info(
+                nameof(InterestPayout.MessagingContract.PayoutCompletedEvent), "Started handling of interest payout notification." +
+                       $" ClientId: {evt.ClientId}, OperationId: {evt.OperationId}, WalletId: {evt.WalletId} AssetId: {evt.AssetId} Amount: {evt.Amount}");
+            
             var operationId = Guid.Parse(evt.OperationId);
 
             var isTradingWallet = evt.WalletId == evt.ClientId;
