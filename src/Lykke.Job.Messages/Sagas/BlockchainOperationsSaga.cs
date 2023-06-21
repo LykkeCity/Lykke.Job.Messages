@@ -7,6 +7,7 @@ using Lykke.Job.Messages.Resources;
 using Lykke.Service.ClientAccount.Client;
 using System;
 using System.Threading.Tasks;
+using Common;
 using Common.Log;
 using Lykke.Common.Log;
 using Lykke.Job.Messages.Core.Domain.Deduplication;
@@ -16,6 +17,7 @@ using Lykke.Service.EmailPartnerRouter.Contracts;
 using Lykke.Service.PushNotifications.Contract;
 using Lykke.Service.PushNotifications.Contract.Commands;
 using Lykke.Service.TemplateFormatter.Client;
+using Microsoft.Extensions.Logging;
 
 namespace Lykke.Job.Messages.Sagas
 {
@@ -66,6 +68,14 @@ namespace Lykke.Job.Messages.Sagas
             var isTradingWallet = evt.WalletId == evt.ClientId;
             var walletId = isTradingWallet? (Guid?)null : Guid.Parse(evt.WalletId);
             var clientId = Guid.Parse(evt.ClientId);
+
+            if (!evt.ShouldNotifyUser)
+            {
+                _log.Info(nameof(InterestPayout.MessagingContract.PayoutCompletedEvent),
+                    "PayoutCompletedEvent was received, but notifications are disabled",
+                    context: new { evt.WalletId, evt.ClientId, evt.AssetId, evt.OperationId }.ToJson());
+                return;
+            }
             
             if (evt.Amount > 0)
             {
