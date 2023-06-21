@@ -66,6 +66,9 @@ namespace Lykke.Job.Messages.Sagas
             var isTradingWallet = evt.WalletId == evt.ClientId;
             var walletId = isTradingWallet? (Guid?)null : Guid.Parse(evt.WalletId);
             var clientId = Guid.Parse(evt.ClientId);
+
+            if (!evt.ShouldNotifyUser)
+                return;
             
             if (evt.Amount > 0)
             {
