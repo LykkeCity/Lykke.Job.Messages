@@ -79,11 +79,11 @@ namespace Lykke.Job.Messages.Sagas
             
             if (evt.Amount > 0)
             {
-                await SendCashinEmailAsync(operationId, clientId, walletId, evt.Amount, evt.AssetId, commandSender);
+                await SendCashinEmailAsync(operationId, clientId, walletId, evt.Amount, evt.PayoutAssetId, commandSender);
             }
             else
             {
-                await SendCashoutEmailAsync(operationId, clientId, walletId, evt.Amount, evt.AssetId, commandSender);
+                await SendCashoutEmailAsync(operationId, clientId, walletId, evt.Amount, evt.PayoutAssetId, commandSender);
             }
         }
 
