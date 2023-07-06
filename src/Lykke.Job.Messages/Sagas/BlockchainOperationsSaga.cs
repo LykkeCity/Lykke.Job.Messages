@@ -150,9 +150,28 @@ namespace Lykke.Job.Messages.Sagas
             }
 
             string amountFormatted = NumberFormatter.FormatNumber(amount, asset.Accuracy);
-            string walletName = walletId.HasValue
-                ? (await _clientAccountClient.GetWalletAsync(walletId.Value.ToString())).Name
-                : string.Empty;
+
+            string walletName = string.Empty;
+            if (walletId != null)
+            {
+                var wallet = await _clientAccountClient.GetWalletAsync(walletId.Value.ToString());
+                if (wallet == null)
+                {
+                    _log.Warning(nameof(SendCashinEmailAsync), "No wallet was found for the provided walletId @context",
+                        null,
+                        new
+                        {
+                            operationId,
+                            clientId,
+                            walletId,
+                            amount,
+                            assetId
+                        }.ToJson());
+                    return;
+                }
+
+                walletName = wallet.Name;
+            }
 
             var parameters = new
             {
@@ -234,6 +253,28 @@ namespace Lykke.Job.Messages.Sagas
                 return;
             }
 
+            string walletName = string.Empty;
+            if (walletId != null)
+            {
+                var wallet = await _clientAccountClient.GetWalletAsync(walletId.Value.ToString());
+                if (wallet == null)
+                {
+                    _log.Warning(nameof(SendCashoutEmailAsync), "No wallet was found for the provided walletId @context",
+                        null,
+                        new
+                        {
+                            operationId,
+                            clientId,
+                            walletId,
+                            amount,
+                            assetId
+                        }.ToJson());
+                    return;
+                }
+
+                walletName = wallet.Name;
+            }
+            
             var parameters = new
             {
                 AssetId = asset.Id == LykkeConstants.LykkeAssetId ? EmailResources.LykkeCoins_name : asset.DisplayId,
@@ -241,7 +282,7 @@ namespace Lykke.Job.Messages.Sagas
                 ExplorerUrl = "",
                 //{ "ExplorerUrl", string.Format(_blockchainSettings.ExplorerUrl, messageData.SrcBlockchainHash },
                 Year = DateTime.UtcNow.Year.ToString(),
-                WalletName = walletId.HasValue ? (await _clientAccountClient.GetWalletAsync(walletId.Value.ToString())).Name : string.Empty
+                WalletName = walletName
             };
 
             var template = walletId.HasValue ? "NoRefundOCashOutApiWalletTemplate" : "NoRefundOCashOutTemplate";
