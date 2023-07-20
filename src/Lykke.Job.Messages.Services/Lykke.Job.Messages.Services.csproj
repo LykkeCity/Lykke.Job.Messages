@@ -13,7 +13,7 @@
     <PackageReference Include="Lykke.Service.Assets.Client" Version="4.4.0" />
     <PackageReference Include="Lykke.Service.EmailPartnerRouter" Version="1.0.2" />
     <PackageReference Include="Lykke.Service.TemplateFormatter.Client" Version="1.1.0" />
-    <PackageReference Include="Lykke.Service.SmsSender.Client" Version="1.2.0" />
+    <PackageReference Include="Lykke.Service.SmsSender.Client" Version="2.0.0" />
     <PackageReference Include="Lykke.Service.SwiftCredentials.Client" Version="1.0.0.8" />
     <PackageReference Include="Lykke.Service.PushNotifications.Contract" Version="1.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="2.1.2" />
