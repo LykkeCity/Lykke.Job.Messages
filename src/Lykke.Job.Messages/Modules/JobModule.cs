@@ -246,9 +246,7 @@ namespace Lykke.Job.Messages.Modules
             }
             else
             {
-                builder.Register(ctx =>
-                        new SmsSenderClient(_appSettings.CurrentValue.SmsSenderServiceClient.ServiceUrl,
-                            ctx.Resolve<ILogFactory>().CreateLog(nameof(SmsSenderClient))))
+                builder.Register(ctx => new SmsSenderClient(_appSettings.CurrentValue.SmsSenderServiceClient.ServiceUrl))
                     .As<ISmsSenderClient>()
                     .SingleInstance();
             }

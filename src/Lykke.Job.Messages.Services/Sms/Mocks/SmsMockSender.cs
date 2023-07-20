@@ -13,7 +13,7 @@ namespace Lykke.Job.Messages.Services.Sms.Mocks
             _smsMockRepository = smsMockRepository;
         }
 
-        public async Task SendSmsAsync(string phone, string message)
+        public async Task SendSmsAsync(string phone, string message, string reason, string outerRequestId)
         {
             await _smsMockRepository.InsertAsync(phone, new SmsMessage{Text = message, From = "SMS mock sender"});
         }

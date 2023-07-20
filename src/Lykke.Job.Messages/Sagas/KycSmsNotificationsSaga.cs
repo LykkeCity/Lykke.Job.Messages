@@ -37,16 +37,16 @@ namespace Lykke.Job.Messages.Sagas
             switch (evt.NewStatus)
             {
                 case nameof(KycStatus.Ok):
-                    await SendSms<SmsKycApprovedTemplate>(evt.ClientId);
+                    await SendSms<SmsKycApprovedTemplate>(evt.ClientId, evt.ChangeDateTime);
                     break;
 
                 case nameof(KycStatus.NeedToFillData):
-                    await SendSms<SmsKycAttentionNeededTemplate>(evt.ClientId);
+                    await SendSms<SmsKycAttentionNeededTemplate>(evt.ClientId, evt.ChangeDateTime);
                     break;
             }
         }
 
-        private async Task SendSms<TTemplate>(string clientId) where TTemplate : new()
+        private async Task SendSms<TTemplate>(string clientId, DateTime changeDateTime) where TTemplate : new()
         {
             var personalData = await _personalDataService.GetAsync(clientId);
             if (string.IsNullOrEmpty(personalData.ContactPhone)) {
@@ -58,7 +58,7 @@ namespace Lykke.Job.Messages.Sagas
                 return;
 
             var message = await _templateFormatter.FormatAsync(typeof(TTemplate).Name, clientAccount.PartnerId, "EN", new TTemplate());
-            await _smsSenderClient.SendSmsAsync(personalData.ContactPhone, message.Subject);
+            await _smsSenderClient.SendSmsAsync(personalData.ContactPhone, message.Subject, "Lykke.Job.Message:KycStatusChanged", changeDateTime.ToString("O"));
         }
     }
 }
