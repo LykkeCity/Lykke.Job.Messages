@@ -54,7 +54,8 @@ namespace Lykke.Job.Messages.QueueConsumers
         private async Task HandleSimpleSmsRequestAsync(SendSmsData<string> request)
         {
             _log.Info(nameof(HandleSimpleSmsRequestAsync),
-                $"SMS: {request.MessageData}. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}");
+                $"SMS: {request.MessageData}. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}",
+                new { request.OuterRequestId, request.Reason });
 
             if (string.IsNullOrWhiteSpace(request.PhoneNumber))
                 _log.Warning($"{nameof(request.PhoneNumber)} can't be empty in sms request: {request.ToJson()}");
@@ -65,7 +66,8 @@ namespace Lykke.Job.Messages.QueueConsumers
         private async Task HandleSmsRequestAsync(SendSmsData<SmsConfirmationData> request)
         {
             _log.Info(nameof(HandleSmsRequestAsync),
-                $"SMS: Phone confirmation. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}");
+                $"SMS: Phone confirmation. Receiver: {request.PhoneNumber.SanitizePhone()}, UTC: {DateTime.UtcNow}",
+                new { request.OuterRequestId, request.Reason });
 
             if (string.IsNullOrWhiteSpace(request.PhoneNumber))
             {
